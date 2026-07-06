@@ -25,17 +25,30 @@ This project does not include KeyShot, does not bypass licensing, and does not s
 - Set an environment when the installed KeyShot version exposes that function.
 - Save a scene to a new file.
 
+## Example Workflows
+
+- Batch render multiple camera views from one KeyShot scene.
+- Test several material options on the same product model.
+- Generate product hero images with consistent resolution and output naming.
+- Import a model, apply a material preset, set a camera, and render in one AI instruction.
+
+## Workflow
+
+![KeyShot MCP Workflow](assets/workflow.svg)
+
 ## Requirements
 
 - KeyShot Studio with `keyshot_headless` support.
 - Node.js 20 or newer.
 - A valid KeyShot license already configured on the computer.
 
-Known local test environment:
+## Compatibility
 
-- Windows 11
-- KeyShot Studio 2025 / KeyShot 14.1
-- Node.js 22
+| Platform | KeyShot Version | Node Version | Status |
+| --- | --- | --- | --- |
+| Windows 11 | KeyShot Studio 2025 / 14.1 | Node 22 | Tested |
+| macOS | Not tested | - | Need contributors |
+| Linux | Not tested | - | Need contributors |
 
 ## Install
 
@@ -89,6 +102,26 @@ For this computer, a ready-to-use Codex example is in:
 ```text
 examples/codex-local.example.json
 ```
+
+## Codex Configuration
+
+For Codex, add a `keyshot` MCP server entry to your Codex MCP configuration and point it to the built server file:
+
+```json
+{
+  "mcpServers": {
+    "keyshot": {
+      "command": "node",
+      "args": ["/absolute/path/to/keyshot-mcp/dist/index.js"],
+      "env": {
+        "KEYSHOT_HEADLESS_EXE": "/absolute/path/to/keyshot_headless"
+      }
+    }
+  }
+}
+```
+
+Use `examples/codex-local.example.json` only as a local reference. Replace all paths with paths on your own computer.
 
 ## Environment Variables
 
@@ -154,17 +187,30 @@ MIT
 - 在当前 KeyShot 版本支持时设置环境。
 - 把场景保存为新文件。
 
+## 典型使用场景
+
+- 批量渲染同一个 KeyShot 场景的多个相机视角。
+- 对同一个产品模型快速测试多组材质方案。
+- 统一输出产品首图、封面图、详情页渲染图。
+- 用一句自然语言完成导入模型、替换材质、设置相机、渲染出图。
+
+## 工作流程
+
+![KeyShot MCP Workflow](assets/workflow.svg)
+
 ## 使用要求
 
 - 已安装支持 `keyshot_headless` 的 KeyShot Studio。
 - Node.js 20 或更新版本。
 - 电脑上已经配置好有效的 KeyShot 授权。
 
-本项目已测试环境：
+## 版本兼容表
 
-- Windows 11
-- KeyShot Studio 2025 / KeyShot 14.1
-- Node.js 22
+| 平台 | KeyShot 版本 | Node 版本 | 状态 |
+| --- | --- | --- | --- |
+| Windows 11 | KeyShot Studio 2025 / 14.1 | Node 22 | 已测试 |
+| macOS | 未测试 | - | 需要贡献者 |
+| Linux | 未测试 | - | 需要贡献者 |
 
 ## 安装
 
@@ -218,6 +264,26 @@ npm run status
 ```text
 examples/codex-local.example.json
 ```
+
+## Codex 配置
+
+如果你使用 Codex，请在 Codex 的 MCP 配置里添加一个 `keyshot` 服务，并指向构建后的服务文件：
+
+```json
+{
+  "mcpServers": {
+    "keyshot": {
+      "command": "node",
+      "args": ["/absolute/path/to/keyshot-mcp/dist/index.js"],
+      "env": {
+        "KEYSHOT_HEADLESS_EXE": "/absolute/path/to/keyshot_headless"
+      }
+    }
+  }
+}
+```
+
+`examples/codex-local.example.json` 只是本机配置参考。其他用户需要把里面的路径换成自己电脑上的路径。
 
 ## 环境变量
 

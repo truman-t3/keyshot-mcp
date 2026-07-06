@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="260" viewBox="0 0 920 260" role="img" aria-labelledby="title desc">
+  <title id="title">KeyShot MCP workflow</title>
+  <desc id="desc">AI prompt goes through MCP, KeyShot headless renders, and image files are returned.</desc>
+  <style>
+    .bg { fill: #0d1117; }
+    .box { fill: #161b22; stroke: #30363d; stroke-width: 1.5; }
+    .title { fill: #f0f6fc; font: 700 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .text { fill: #c9d1d9; font: 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .muted { fill: #8b949e; font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .arrow { stroke: #58a6ff; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+    .num { fill: #58a6ff; font: 700 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  </style>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="920" height="260" rx="18"/>
+  <text class="title" x="36" y="48">KeyShot MCP Workflow</text>
+  <g transform="translate(36 82)">
+    <rect class="box" width="170" height="112" rx="12"/>
+    <text class="num" x="18" y="34">1</text>
+    <text class="text" x="18" y="62">AI Prompt</text>
+    <text class="muted" x="18" y="86">Render / inspect / edit</text>
+  </g>
+  <path class="arrow" d="M 224 138 L 298 138"/>
+  <g transform="translate(316 82)">
+    <rect class="box" width="170" height="112" rx="12"/>
+    <text class="num" x="18" y="34">2</text>
+    <text class="text" x="18" y="62">MCP Server</text>
+    <text class="muted" x="18" y="86">Structured tool call</text>
+  </g>
+  <path class="arrow" d="M 504 138 L 578 138"/>
+  <g transform="translate(596 82)">
+    <rect class="box" width="170" height="112" rx="12"/>
+    <text class="num" x="18" y="34">3</text>
+    <text class="text" x="18" y="62">KeyShot Headless</text>
+    <text class="muted" x="18" y="86">Python lux script</text>
+  </g>
+  <path class="arrow" d="M 766 138 L 838 138"/>
+  <g transform="translate(742 206)">
+    <text class="text" x="0" y="0">Output: images / saved scenes / JSON</text>
+  </g>
+</svg>
