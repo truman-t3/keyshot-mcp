@@ -256,4 +256,4 @@ MIT
 
 ## Star History / 星标趋势
 
-[![Star History Chart](https://api.star-history.com/svg?repos=truman-t3/keyshot-mcp&type=Date)](https://www.star-history.com/#truman-t3/keyshot-mcp&Date)
+![Star History Chart](assets/star-history.svg)
