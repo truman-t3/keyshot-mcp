@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360" role="img" aria-labelledby="title desc">
   <title id="title">Star History for truman-t3/keyshot-mcp</title>
-  <desc id="desc">A simple star history chart for the keyshot-mcp GitHub repository.</desc>
+  <desc id="desc">A star history chart for the keyshot-mcp GitHub repository.</desc>
   <style>
     .bg { fill: #0d1117; }
     .panel { fill: #161b22; stroke: #30363d; stroke-width: 1; }
@@ -17,14 +17,14 @@
   <text class="title" x="64" y="78">Star History</text>
   <text class="muted" x="64" y="104">truman-t3/keyshot-mcp</text>
   <rect class="badge" x="548" y="55" width="92" height="36" rx="18"/>
-  <text class="text" x="571" y="79">★ 1</text>
+  <text class="text" x="571" y="79">★ 4</text>
   <line class="axis" x1="88" y1="258" x2="632" y2="258"/>
   <line class="axis" x1="88" y1="128" x2="88" y2="258"/>
   <text class="muted" x="66" y="263">0</text>
-  <text class="muted" x="66" y="136">1</text>
+  <text class="muted" x="66" y="136">4</text>
   <text class="muted" x="88" y="288">2026-07-06</text>
-  <text class="muted" x="555" y="288">today</text>
+  <text class="muted" x="555" y="288">2026-07-06</text>
   <path class="line" d="M 88 258 L 632 128"/>
   <circle class="dot" cx="632" cy="128" r="7"/>
-  <text class="text" x="486" y="122">First public release</text>
+  <text class="text" x="486" y="122">Current stars: 4</text>
 </svg>
