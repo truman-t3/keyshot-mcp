@@ -11,7 +11,7 @@ export type ServerConfig = {
   bridgeScriptPath: string;
 };
 
-const DEFAULT_KEYSHOT_EXE = "D:\\keyshot2025_183972\\bin\\keyshot_headless.exe";
+const DEFAULT_KEYSHOT_EXE = process.platform === "win32" ? "keyshot_headless.exe" : "keyshot_headless";
 const DEFAULT_TIMEOUT_MS = 600_000;
 
 export function getConfig(): ServerConfig {

@@ -26,7 +26,7 @@ Those files already exist in this folder.
 Upload the contents of this folder:
 
 ```text
-C:\Users\Lenovo\Documents\Codex\2026-07-06\ni\outputs\keyshot-mcp
+C:\path\to\keyshot-mcp
 ```
 
 Do not upload:
@@ -39,13 +39,13 @@ Do not upload:
 
 ### 3. Replace Local Paths In Examples
 
-The file below is only for this computer:
+The example below is a generic template:
 
 ```text
-examples/codex-local.example.json
+examples/codex.example.json
 ```
 
-It is okay to publish as an example, but tell users they must replace paths with their own paths.
+Users must replace the placeholder paths with their own paths.
 
 ### 4. Recommended GitHub Description
 
@@ -93,7 +93,7 @@ keyshot-mcp
 上传这个文件夹里的内容：
 
 ```text
-C:\Users\Lenovo\Documents\Codex\2026-07-06\ni\outputs\keyshot-mcp
+C:\path\to\keyshot-mcp
 ```
 
 不要上传：
@@ -106,13 +106,13 @@ C:\Users\Lenovo\Documents\Codex\2026-07-06\ni\outputs\keyshot-mcp
 
 ### 3. 替换示例里的本机路径
 
-下面这个文件只适合这台电脑：
+下面这个文件是通用模板：
 
 ```text
-examples/codex-local.example.json
+examples/codex.example.json
 ```
 
-可以作为示例发布，但要提醒别人把路径换成自己电脑上的路径。
+用户需要把里面的占位路径换成自己电脑上的路径。
 
 ### 4. 推荐 GitHub 简介
 

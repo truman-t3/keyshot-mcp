@@ -100,7 +100,7 @@ Add a server like this to your MCP client config:
 For this computer, a ready-to-use Codex example is in:
 
 ```text
-examples/codex-local.example.json
+examples/codex.example.json
 ```
 
 ## Codex Configuration
@@ -121,7 +121,21 @@ For Codex, add a `keyshot` MCP server entry to your Codex MCP configuration and 
 }
 ```
 
-Use `examples/codex-local.example.json` only as a local reference. Replace all paths with paths on your own computer.
+Use `examples/codex.example.json` as a starting point and replace all paths with paths on your own computer.
+
+## Prompt Examples
+
+```text
+Render the current KeyShot scene into three views: front, 45-degree perspective, and top-down. Use 1920x1080 resolution and save the outputs to the configured output folder.
+```
+
+```text
+Import the model file at /path/to/model.step, apply a brushed metal material to the main housing, set a 45-degree camera, and render a product hero image.
+```
+
+```text
+Inspect this KeyShot scene and summarize the available objects, cameras, materials, and renderable outputs.
+```
 
 ## Environment Variables
 
@@ -153,6 +167,17 @@ Each tool returns JSON with:
 ## Notes
 
 KeyShot's Python `lux` API changes across versions. This server keeps the MCP interface stable and returns a clear error when an installed KeyShot version does not expose a requested headless function.
+
+## Roadmap
+
+- [ ] Batch render all cameras in a scene
+- [ ] Material preset library
+- [ ] Camera preset templates
+- [ ] Render queue status
+- [ ] Safer output directory restrictions
+- [ ] More tested KeyShot versions
+- [ ] macOS compatibility verification
+- [ ] Claude Desktop / Cursor / Codex config examples
 
 ## License
 
@@ -262,7 +287,7 @@ npm run status
 这台电脑可直接使用的 Codex 示例在：
 
 ```text
-examples/codex-local.example.json
+examples/codex.example.json
 ```
 
 ## Codex 配置
@@ -283,7 +308,21 @@ examples/codex-local.example.json
 }
 ```
 
-`examples/codex-local.example.json` 只是本机配置参考。其他用户需要把里面的路径换成自己电脑上的路径。
+`examples/codex.example.json` 是通用配置模板。使用时请把里面的路径换成自己电脑上的路径。
+
+## 提示词示例
+
+```text
+把当前 KeyShot 场景渲染成三个视角：正视图、45 度透视图和俯视图。分辨率为 1920x1080，并保存到默认输出文件夹。
+```
+
+```text
+导入 /path/to/model.step，给主体外壳应用拉丝金属材质，设置 45 度相机，并渲染一张产品主视觉图。
+```
+
+```text
+检查当前 KeyShot 场景，并总结场景中的对象、相机、材质和可渲染输出。
+```
 
 ## 环境变量
 
@@ -315,6 +354,17 @@ examples/codex-local.example.json
 ## 说明
 
 KeyShot 的 Python `lux` API 会随版本变化。这个 MCP 会尽量保持对外工具名称稳定；如果当前 KeyShot 版本不支持某个无界面功能，会返回明确错误，而不是假装成功。
+
+## 路线图
+
+- [ ] 批量渲染场景中的所有相机
+- [ ] 材质预设库
+- [ ] 相机预设模板
+- [ ] 渲染队列状态
+- [ ] 更安全的输出目录限制
+- [ ] 测试更多 KeyShot 版本
+- [ ] 验证 macOS 兼容性
+- [ ] 补充 Claude Desktop / Cursor / Codex 配置示例
 
 ## 开源协议
 
