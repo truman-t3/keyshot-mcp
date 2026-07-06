@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "keyshot": {
+      "command": "node",
+      "args": [
+        "C:/path/to/keyshot-mcp/dist/index.js"
+      ],
+      "env": {
+        "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
+      }
+    }
+  }
+}

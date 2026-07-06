@@ -1,0 +1,41 @@
+{
+  "name": "keyshot-mcp",
+  "version": "0.1.0",
+  "description": "Local and portable MCP server for KeyShot headless scripting.",
+  "type": "module",
+  "bin": {
+    "keyshot-mcp": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node ./dist/index.js",
+    "check": "tsc -p tsconfig.json --noEmit",
+    "status": "node ./dist/cli/status.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "keyshot",
+    "rendering",
+    "keyshot-studio",
+    "stdio"
+  ],
+  "files": [
+    "dist",
+    "scripts",
+    "examples",
+    "README.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
+    "LICENSE"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.17.2",
+    "typescript": "^5.9.2"
+  }
+}

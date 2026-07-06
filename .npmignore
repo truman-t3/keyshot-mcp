@@ -1,0 +1,6 @@
+src/
+work/
+outputs/*
+!outputs/.gitkeep
+*.log
+.env

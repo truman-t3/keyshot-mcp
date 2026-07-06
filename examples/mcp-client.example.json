@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "keyshot": {
+      "command": "node",
+      "args": [
+        "/absolute/path/to/keyshot-mcp/dist/index.js"
+      ],
+      "env": {
+        "KEYSHOT_HEADLESS_EXE": "/absolute/path/to/keyshot_headless"
+      }
+    }
+  }
+}

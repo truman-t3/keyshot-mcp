@@ -1,0 +1,9 @@
+node_modules/
+dist/
+work/tmp/
+__pycache__/
+*.pyc
+outputs/*
+!outputs/.gitkeep
+.env
+*.log
