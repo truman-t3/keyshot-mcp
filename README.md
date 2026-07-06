@@ -373,3 +373,7 @@ MIT
 ## Star History / 星标趋势
 
 ![Star History Chart](assets/star-history.svg)
+
+This chart is generated from GitHub stargazer data and refreshed by GitHub Actions.
+
+这张图由 GitHub star 数据生成，并通过 GitHub Actions 定时刷新。
