@@ -1,6 +1,6 @@
 # KeyShot MCP
 
-[![LobeHub MCP](https://img.shields.io/badge/LobeHub-MCP%20Marketplace-blue)](https://lobehub.com/mcp/truman-t3-keyshot-mcp)
+[![MCP Badge](https://lobehub.com/badge/mcp/truman-t3-keyshot-mcp)](https://lobehub.com/mcp/truman-t3-keyshot-mcp)
 [![GitHub Release](https://img.shields.io/github/v/release/truman-t3/keyshot-mcp)](https://github.com/truman-t3/keyshot-mcp/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -183,6 +183,11 @@ Inspect this KeyShot scene and summarize the available objects, cameras, materia
 - `keyshot_set_camera`
 - `keyshot_set_environment`
 - `keyshot_save_scene`
+
+## MCP Prompts and Resources
+
+- Prompt: `keyshot_product_render`
+- Resource: `keyshot://workflow`
 
 Each tool returns JSON with:
 
@@ -395,6 +400,11 @@ examples/codex.example.json
 - `keyshot_set_camera`：设置相机。
 - `keyshot_set_environment`：设置环境。
 - `keyshot_save_scene`：保存场景。
+
+## MCP 提示词和资源
+
+- 提示词：`keyshot_product_render`
+- 资源：`keyshot://workflow`
 
 每个工具都会返回 JSON，包含：
 

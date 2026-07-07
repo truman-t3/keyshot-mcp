@@ -23,6 +23,58 @@ const server = new McpServer({
   version: "0.2.0",
 });
 
+server.registerResource(
+  "keyshot-workflow",
+  "keyshot://workflow",
+  {
+    title: "KeyShot MCP Workflow",
+    description: "How this MCP server connects AI agents to KeyShot headless scripting.",
+    mimeType: "text/plain",
+  },
+  async (uri) => ({
+    contents: [
+      {
+        uri: uri.href,
+        text: [
+          "KeyShot MCP workflow:",
+          "1. The user asks an AI agent to inspect, edit, or render a KeyShot scene.",
+          "2. The MCP client sends a structured tool call to this server.",
+          "3. This server runs a temporary Python script through KeyShot headless.",
+          "4. KeyShot writes images or scene files and returns structured JSON results.",
+        ].join("\n"),
+      },
+    ],
+  }),
+);
+
+server.registerPrompt(
+  "keyshot_product_render",
+  {
+    title: "Render a KeyShot product scene",
+    description: "Create a practical prompt for rendering or batch-rendering a KeyShot product scene.",
+    argsSchema: {
+      scenePath: scenePathSchema.shape.scenePath.optional(),
+      goal: scenePathSchema.shape.scenePath.optional(),
+    },
+  },
+  async (args) => ({
+    messages: [
+      {
+        role: "user",
+        content: {
+          type: "text",
+          text: [
+            "Use KeyShot MCP to prepare a product render.",
+            args.scenePath ? `Scene path: ${args.scenePath}` : "Ask me for the KeyShot scene path first.",
+            args.goal ? `Goal: ${args.goal}` : "Inspect the scene, choose a suitable camera, then render a PNG preview.",
+            "Start with keyshot_status, then keyshot_inspect_scene, then render or batch render as needed.",
+          ].join("\n"),
+        },
+      },
+    ],
+  }),
+);
+
 server.tool("keyshot_status", "Check KeyShot headless availability and script startup.", {}, async () =>
   toolResponse(await runKeyShotSerialized(config, { operation: "status" })),
 );
