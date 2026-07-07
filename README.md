@@ -172,7 +172,7 @@ Inspect this KeyShot scene and summarize the available objects, cameras, materia
 
 - `keyshot_status`
 - `keyshot_inspect_scene`
-- `keyshot_render`
+- `keyshot_render`: render a single image
 - `keyshot_batch_render`
 - `keyshot_import_model`
 - `keyshot_apply_material`
@@ -384,7 +384,7 @@ examples/codex.example.json
 
 - `keyshot_status`：检查 KeyShot 是否能启动。
 - `keyshot_inspect_scene`：检查场景内容。
-- `keyshot_render`：渲染图片。
+- `keyshot_render`：渲染单张图片。
 - `keyshot_batch_render`：批量渲染多个相机视角。
 - `keyshot_import_model`：导入模型。
 - `keyshot_apply_material`：替换材质。
