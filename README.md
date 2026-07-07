@@ -1,5 +1,9 @@
 # KeyShot MCP
 
+[![LobeHub MCP](https://img.shields.io/badge/LobeHub-MCP%20Marketplace-blue)](https://lobehub.com/mcp/truman-t3-keyshot-mcp)
+[![GitHub Release](https://img.shields.io/github/v/release/truman-t3/keyshot-mcp)](https://github.com/truman-t3/keyshot-mcp/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
 English | [中文](#中文说明)
 
 A local MCP server for controlling KeyShot Studio through KeyShot headless scripting.
