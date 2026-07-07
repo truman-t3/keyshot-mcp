@@ -20,7 +20,7 @@ const config = getConfig();
 
 const server = new McpServer({
   name: "keyshot-mcp",
-  version: "0.2.0",
+  version: "0.2.1",
 });
 
 server.registerResource(
