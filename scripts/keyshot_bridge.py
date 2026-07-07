@@ -33,6 +33,8 @@ def main():
             data = inspect_scene()
         elif operation == "render":
             data = render(payload, output_files, warnings)
+        elif operation == "batch_render":
+            data = batch_render(payload, output_files, warnings)
         elif operation == "import_model":
             data = import_model(payload, output_files, warnings)
         elif operation == "apply_material":
@@ -124,6 +126,52 @@ def render(payload, output_files, warnings):
 
     output_files.append(output_path)
     return {"rendered": output_path, "width": width, "height": height}
+
+
+def batch_render(payload, output_files, warnings):
+    scene_path = payload.get("scenePath")
+    output_dir = payload.get("outputDir")
+    cameras = payload.get("cameras") or []
+    width = payload.get("width") or 1920
+    height = payload.get("height") or 1080
+    image_format = payload.get("format") or "png"
+    overwrite = bool(payload.get("overwrite", False))
+
+    if not scene_path:
+        raise RuntimeError("scenePath is required")
+    if not output_dir:
+        raise RuntimeError("outputDir is required")
+    if not cameras:
+        raise RuntimeError("cameras must contain at least one camera name")
+
+    os.makedirs(output_dir, exist_ok=True)
+    rendered = []
+
+    for camera in cameras:
+        safe_camera = safe_filename(camera)
+        output_path = os.path.join(output_dir, "%s.%s" % (safe_camera, image_format))
+        if os.path.exists(output_path) and not overwrite:
+            raise RuntimeError("Output already exists and overwrite is false: %s" % output_path)
+
+        render_payload = dict(payload)
+        render_payload["camera"] = camera
+        render_payload["outputPath"] = output_path
+        render_payload["width"] = width
+        render_payload["height"] = height
+        render_payload["format"] = image_format
+
+        result = render(render_payload, output_files, warnings)
+        rendered.append({"camera": camera, "outputPath": result.get("rendered")})
+
+    return {
+        "scenePath": scene_path,
+        "outputDir": output_dir,
+        "cameras": cameras,
+        "rendered": rendered,
+        "width": width,
+        "height": height,
+        "format": image_format,
+    }
 
 
 def import_model(payload, output_files, warnings):
@@ -386,6 +434,11 @@ def ensure_parent(file_path):
     parent = os.path.dirname(os.path.abspath(file_path))
     if parent:
         os.makedirs(parent, exist_ok=True)
+
+
+def safe_filename(value):
+    safe = "".join(ch if ch.isalnum() or ch in ("-", "_", ".") else "_" for ch in str(value))
+    return safe.strip("._") or "camera"
 
 
 def unsupported(message):

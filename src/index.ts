@@ -7,6 +7,7 @@ import { runKeyShotSerialized } from "./runner.js";
 import {
   applyMaterialSchema,
   applyMaterialInputSchema,
+  batchRenderSchema,
   importModelSchema,
   renderSchema,
   saveSceneSchema,
@@ -19,7 +20,7 @@ const config = getConfig();
 
 const server = new McpServer({
   name: "keyshot-mcp",
-  version: "0.1.0",
+  version: "0.2.0",
 });
 
 server.tool("keyshot_status", "Check KeyShot headless availability and script startup.", {}, async () =>
@@ -38,6 +39,13 @@ server.tool(
   "Render a KeyShot scene to an image file.",
   renderSchema.shape,
   async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "render", ...args })),
+);
+
+server.tool(
+  "keyshot_batch_render",
+  "Render multiple named cameras from one KeyShot scene into an output directory.",
+  batchRenderSchema.shape,
+  async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "batch_render", ...args })),
 );
 
 server.tool(

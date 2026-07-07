@@ -1,8 +1,16 @@
 {
   "name": "keyshot-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Local and portable MCP server for KeyShot headless scripting.",
   "type": "module",
+  "homepage": "https://github.com/truman-t3/keyshot-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/truman-t3/keyshot-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/truman-t3/keyshot-mcp/issues"
+  },
   "bin": {
     "keyshot-mcp": "./dist/index.js"
   },
@@ -30,6 +38,9 @@
     "LICENSE"
   ],
   "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.18.1",
     "zod": "^3.25.76"

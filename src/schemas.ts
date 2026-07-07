@@ -17,6 +17,18 @@ export const renderSchema = z.object({
   format: z.enum(["png", "jpg", "jpeg", "tif", "tiff", "exr"]).optional(),
 });
 
+export const batchRenderSchema = z.object({
+  scenePath: z.string().min(1),
+  outputDir: z.string().min(1),
+  cameras: z.array(z.string().min(1)).min(1),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  samples: z.number().int().positive().optional(),
+  maxTimeSeconds: z.number().positive().optional(),
+  format: z.enum(["png", "jpg", "jpeg", "tif", "tiff", "exr"]).optional(),
+  overwrite: z.boolean().optional(),
+});
+
 export const importModelSchema = z.object({
   modelPath: z.string().min(1),
   baseScenePath: optionalPath,
