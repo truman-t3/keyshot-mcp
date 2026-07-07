@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="920" height="260" viewBox="0 0 920 260" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="280" viewBox="0 0 1120 280" role="img" aria-labelledby="title desc">
   <title id="title">KeyShot MCP workflow</title>
-  <desc id="desc">AI prompt goes through MCP, KeyShot headless renders, and image files are returned.</desc>
+  <desc id="desc">AI prompt goes through MCP, KeyShot headless renders, and output files are returned.</desc>
   <style>
     .bg { fill: #0d1117; }
     .box { fill: #161b22; stroke: #30363d; stroke-width: 1.5; }
@@ -15,30 +15,34 @@
       <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
     </marker>
   </defs>
-  <rect class="bg" width="920" height="260" rx="18"/>
-  <text class="title" x="36" y="48">KeyShot MCP Workflow</text>
-  <g transform="translate(36 82)">
-    <rect class="box" width="170" height="112" rx="12"/>
-    <text class="num" x="18" y="34">1</text>
-    <text class="text" x="18" y="62">AI Prompt</text>
-    <text class="muted" x="18" y="86">Render / inspect / edit</text>
+  <rect class="bg" width="1120" height="280" rx="18"/>
+  <text class="title" x="40" y="52">KeyShot MCP Workflow</text>
+  <g transform="translate(40 92)">
+    <rect class="box" width="190" height="118" rx="12"/>
+    <text class="num" x="20" y="36">1</text>
+    <text class="text" x="20" y="66">AI Prompt</text>
+    <text class="muted" x="20" y="92">Render / inspect / edit</text>
   </g>
-  <path class="arrow" d="M 224 138 L 298 138"/>
-  <g transform="translate(316 82)">
-    <rect class="box" width="170" height="112" rx="12"/>
-    <text class="num" x="18" y="34">2</text>
-    <text class="text" x="18" y="62">MCP Server</text>
-    <text class="muted" x="18" y="86">Structured tool call</text>
+  <path class="arrow" d="M 252 151 L 334 151"/>
+  <g transform="translate(356 92)">
+    <rect class="box" width="190" height="118" rx="12"/>
+    <text class="num" x="20" y="36">2</text>
+    <text class="text" x="20" y="66">MCP Server</text>
+    <text class="muted" x="20" y="92">Structured tool call</text>
   </g>
-  <path class="arrow" d="M 504 138 L 578 138"/>
-  <g transform="translate(596 82)">
-    <rect class="box" width="170" height="112" rx="12"/>
-    <text class="num" x="18" y="34">3</text>
-    <text class="text" x="18" y="62">KeyShot Headless</text>
-    <text class="muted" x="18" y="86">Python lux script</text>
+  <path class="arrow" d="M 568 151 L 650 151"/>
+  <g transform="translate(672 92)">
+    <rect class="box" width="190" height="118" rx="12"/>
+    <text class="num" x="20" y="36">3</text>
+    <text class="text" x="20" y="66">KeyShot Headless</text>
+    <text class="muted" x="20" y="92">Python lux script</text>
   </g>
-  <path class="arrow" d="M 766 138 L 838 138"/>
-  <g transform="translate(742 206)">
-    <text class="text" x="0" y="0">Output: images / saved scenes / JSON</text>
+  <path class="arrow" d="M 884 151 L 966 151"/>
+  <g transform="translate(988 92)">
+    <rect class="box" width="110" height="118" rx="12"/>
+    <text class="num" x="16" y="36">4</text>
+    <text class="text" x="16" y="64">Output</text>
+    <text class="muted" x="16" y="88">images</text>
+    <text class="muted" x="16" y="106">scenes / JSON</text>
   </g>
 </svg>

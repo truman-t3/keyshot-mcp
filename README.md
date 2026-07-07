@@ -62,6 +62,25 @@ npm install
 npm run build
 ```
 
+## Copy-Paste Setup Prompt for an Agent
+
+If you use Codex or another coding agent, you can copy this prompt and let the agent install the MCP server for you:
+
+```text
+Install the KeyShot MCP server from https://github.com/truman-t3/keyshot-mcp.
+
+Please:
+1. Clone the repository or use my local copy if it already exists.
+2. Run npm install and npm run build.
+3. Find my KeyShot headless executable path.
+4. Add a keyshot MCP server entry to my MCP client configuration.
+5. Set KEYSHOT_HEADLESS_EXE to the detected keyshot_headless path.
+6. Test the setup by running the keyshot_status tool.
+7. Tell me the exact config that was added and whether the status check passed.
+
+Do not store license keys or account passwords. Use my existing local KeyShot license configuration.
+```
+
 ## Configure
 
 Set the path to your KeyShot headless executable.
@@ -253,6 +272,25 @@ MIT
 ```bash
 npm install
 npm run build
+```
+
+## 复制给 Agent 的安装提示词
+
+如果你使用 Codex 或其他编程 Agent，可以复制下面这段话，让 Agent 帮你安装和配置 MCP：
+
+```text
+请帮我安装 KeyShot MCP Server：https://github.com/truman-t3/keyshot-mcp。
+
+请你：
+1. 克隆这个仓库；如果本地已有，就使用本地版本。
+2. 运行 npm install 和 npm run build。
+3. 查找我电脑上的 KeyShot headless 可执行文件路径。
+4. 把 keyshot MCP server 添加到我的 MCP 客户端配置里。
+5. 把 KEYSHOT_HEADLESS_EXE 设置为检测到的 keyshot_headless 路径。
+6. 用 keyshot_status 工具测试是否配置成功。
+7. 最后告诉我实际添加的配置，以及状态检查是否通过。
+
+不要保存许可证密钥、账号密码或授权信息。直接使用我电脑上已有的 KeyShot 本地授权配置。
 ```
 
 ## 配置
