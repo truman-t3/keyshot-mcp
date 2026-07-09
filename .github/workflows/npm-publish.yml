@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           registry-url: https://registry.npmjs.org
 
       - name: Enable pnpm
@@ -30,5 +30,8 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Check npm version
+        run: npm --version
+
       - name: Publish
-        run: npm publish --provenance --access public
+        run: npm publish --access public
