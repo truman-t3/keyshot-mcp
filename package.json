@@ -16,7 +16,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "prepare": "npm run build",
+    "prepare": "tsc -p tsconfig.json",
     "start": "node ./dist/index.js",
     "check": "tsc -p tsconfig.json --noEmit",
     "status": "node ./dist/cli/status.js"
@@ -31,7 +31,7 @@
   ],
   "files": [
     "dist",
-    "scripts",
+    "scripts/keyshot_bridge.py",
     "examples",
     "README.md",
     "CONTRIBUTING.md",
