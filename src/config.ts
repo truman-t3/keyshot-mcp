@@ -9,6 +9,7 @@ export type ServerConfig = {
   keyshotTimeoutMs: number;
   tmpDir: string;
   bridgeScriptPath: string;
+  materialPresetsPath: string;
 };
 
 const DEFAULT_KEYSHOT_EXE = process.platform === "win32" ? "keyshot_headless.exe" : "keyshot_headless";
@@ -29,6 +30,9 @@ export function getConfig(): ServerConfig {
     keyshotTimeoutMs: parsePositiveInt(process.env.KEYSHOT_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
     tmpDir: path.join(projectRoot, "work", "tmp"),
     bridgeScriptPath: path.join(projectRoot, "scripts", "keyshot_bridge.py"),
+    materialPresetsPath: path.resolve(
+      process.env.KEYSHOT_MATERIAL_PRESETS ?? path.join(projectRoot, "presets", "materials.json"),
+    ),
   };
 }
 

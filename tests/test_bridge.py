@@ -81,6 +81,37 @@ class FakeLux:
         self.set_camera_up.append(args)
 
 
+class NamedCamera:
+    def __init__(self, name):
+        self._name = name
+
+    def getName(self):
+        return self._name
+
+
+class ListCamerasTest(unittest.TestCase):
+    def test_reads_camera_objects(self):
+        lux = FakeLux()
+        lux.getCameras = lambda: [NamedCamera("Front"), NamedCamera("Back")]
+        kb.lux = lux
+        data = kb.list_cameras()
+        self.assertEqual(data["cameras"], ["Front", "Back"])
+        self.assertEqual(data["count"], 2)
+
+    def test_handles_plain_string_camera_names(self):
+        lux = FakeLux()
+        lux.getCameras = lambda: ["Top", "Bottom"]
+        kb.lux = lux
+        data = kb.list_cameras()
+        self.assertEqual(data["cameras"], ["Top", "Bottom"])
+
+    def test_returns_empty_when_no_getCameras(self):
+        kb.lux = FakeLux()  # no getCameras attribute
+        data = kb.list_cameras()
+        self.assertEqual(data["cameras"], [])
+        self.assertEqual(data["count"], 0)
+
+
 class ImportModelTest(unittest.TestCase):
     def test_opens_base_scene_when_provided(self):
         kb.lux = FakeLux()

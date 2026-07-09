@@ -176,13 +176,33 @@ Inspect this KeyShot scene and summarize the available objects, cameras, materia
 
 - `keyshot_status`
 - `keyshot_inspect_scene`
+- `keyshot_list_cameras`: list available camera names in a scene (handy before batch rendering)
 - `keyshot_render`: render a single image
 - `keyshot_batch_render`
+- `keyshot_render_queue`: run several render jobs sequentially (stops at first failure unless `continueOnError`)
 - `keyshot_import_model`
 - `keyshot_apply_material`
+- `keyshot_list_material_presets`: list presets from the material preset library
+- `keyshot_apply_material_preset`: apply a named preset from the library to an object
 - `keyshot_set_camera`
 - `keyshot_set_environment`
 - `keyshot_save_scene`
+
+### Material preset library
+
+`keyshot_apply_material_preset` reads a small JSON registry so you can reuse named
+looks instead of remembering exact KeyShot material names. Default location:
+`presets/materials.json` (override with the `KEYSHOT_MATERIAL_PRESETS` env var).
+
+```json
+{
+  "Brushed Steel": { "materialName": "Steel Brushed", "description": "metal parts" },
+  "Clear Glass": { "materialPath": "C:/materials/glass_clear.mtl" }
+}
+```
+
+Each preset must have a `materialName` or a `materialPath`. Use
+`keyshot_list_material_presets` to see what is available.
 
 ## MCP Prompts and Resources
 
@@ -388,18 +408,38 @@ examples/codex.example.json
 - `KEYSHOT_OUTPUT_DIR`：默认渲染输出文件夹。
 - `KEYSHOT_LICENSE_ARGS`：可选的 KeyShot 无界面许可证参数，默认留空。
 - `KEYSHOT_TIMEOUT_MS`：单次操作超时时间，单位毫秒，默认 `600000`。
+- `KEYSHOT_MATERIAL_PRESETS`：材质预设库 JSON 文件路径，默认 `presets/materials.json`。
 
 ## MCP 工具
 
 - `keyshot_status`：检查 KeyShot 是否能启动。
 - `keyshot_inspect_scene`：检查场景内容。
+- `keyshot_list_cameras`：列出场景中所有相机名称（批量渲染前很有用）。
 - `keyshot_render`：渲染单张图片。
 - `keyshot_batch_render`：批量渲染多个相机视角。
+- `keyshot_render_queue`：顺序执行多个渲染任务（默认遇错即停，设置 `continueOnError` 可继续）。
 - `keyshot_import_model`：导入模型。
 - `keyshot_apply_material`：替换材质。
+- `keyshot_list_material_presets`：列出材质预设库中的预设。
+- `keyshot_apply_material_preset`：把预设库中的某个命名材质应用到物体上。
 - `keyshot_set_camera`：设置相机。
 - `keyshot_set_environment`：设置环境。
 - `keyshot_save_scene`：保存场景。
+
+### 材质预设库
+
+`keyshot_apply_material_preset` 会读取一个小的 JSON 注册表，让你用"好记的名字"复用材质，
+而不必记住 KeyShot 里精确的材质名。默认位置：`presets/materials.json`
+（可用环境变量 `KEYSHOT_MATERIAL_PRESETS` 覆盖）。
+
+```json
+{
+  "拉丝钢": { "materialName": "Steel Brushed", "description": "金属件默认材质" },
+  "透明玻璃": { "materialPath": "C:/materials/glass_clear.mtl" }
+}
+```
+
+每个预设必须包含 `materialName` 或 `materialPath`。用 `keyshot_list_material_presets` 查看有哪些预设。
 
 ## MCP 提示词和资源
 

@@ -1,0 +1,14 @@
+{
+  "Brushed Steel": {
+    "materialName": "Steel Brushed",
+    "description": "Default brushed stainless steel look for metal parts."
+  },
+  "Matte Black Plastic": {
+    "materialName": "Plastic Matte Black",
+    "description": "Soft-touch matte black plastic for housings and enclosures."
+  },
+  "Clear Glass": {
+    "materialName": "Glass Clear",
+    "description": "Transparent glass for covers and lenses."
+  }
+}

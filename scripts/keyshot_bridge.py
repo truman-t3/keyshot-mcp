@@ -31,6 +31,8 @@ def main():
             data = status()
         elif operation == "inspect_scene":
             data = inspect_scene()
+        elif operation == "list_cameras":
+            data = list_cameras()
         elif operation == "render":
             data = render(payload, output_files, warnings)
         elif operation == "batch_render":
@@ -94,6 +96,25 @@ def inspect_scene():
         "environments": environments,
         "externalFiles": serialize_value(first_success(lambda: lux.getExternalFiles(), default=[])),
     }
+
+
+def list_cameras():
+    raw = safe_list_call("getCameras")
+    names = []
+    for camera in raw:
+        if isinstance(camera, str):
+            name = camera
+        else:
+            name = first_success(
+                lambda camera=camera: camera.getName(),
+                lambda camera=camera: camera.name(),
+                lambda camera=camera: camera.name,
+                default=None,
+            )
+        if name is None:
+            name = repr(camera)
+        names.append(name)
+    return {"cameras": names, "count": len(names)}
 
 
 def render(payload, output_files, warnings):

@@ -2,13 +2,20 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { getConfig } from "./config.js";
-import { toolResponse } from "./result.js";
+import { toolResponse, localFailure } from "./result.js";
 import { runKeyShotSerialized } from "./runner.js";
+import { runRenderQueue } from "./queue.js";
+import { loadMaterialPresets, findMaterialPreset } from "./presets.js";
 import {
   applyMaterialSchema,
   applyMaterialInputSchema,
+  applyMaterialPresetInputSchema,
+  applyMaterialPresetSchema,
   batchRenderSchema,
   importModelSchema,
+  listCamerasSchema,
+  listMaterialPresetsSchema,
+  renderQueueSchema,
   renderSchema,
   saveSceneSchema,
   scenePathSchema,
@@ -20,8 +27,12 @@ const config = getConfig();
 
 const server = new McpServer({
   name: "keyshot-mcp",
-  version: "0.2.1",
+  version: "0.4.0",
 });
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
+}
 
 server.registerResource(
   "keyshot-workflow",
@@ -87,10 +98,27 @@ server.tool(
 );
 
 server.tool(
+  "keyshot_list_cameras",
+  "Open a KeyShot scene and return the list of available camera names (useful before batch rendering).",
+  listCamerasSchema.shape,
+  async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "list_cameras", ...args })),
+);
+
+server.tool(
   "keyshot_render",
   "Render a KeyShot scene to an image file.",
   renderSchema.shape,
   async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "render", ...args })),
+);
+
+server.tool(
+  "keyshot_render_queue",
+  "Render several jobs sequentially. Stops at the first failure unless continueOnError is set.",
+  renderQueueSchema.shape,
+  async (args) =>
+    toolResponse(
+      await runRenderQueue(config, args.jobs, { continueOnError: args.continueOnError ?? false }),
+    ),
 );
 
 server.tool(
@@ -120,6 +148,60 @@ server.tool(
   async (args) => {
     const parsed = applyMaterialSchema.parse(args);
     return toolResponse(await runKeyShotSerialized(config, { operation: "apply_material", ...parsed }));
+  },
+);
+
+server.tool(
+  "keyshot_list_material_presets",
+  "List material presets from the local preset library (presets/materials.json or KEYSHOT_MATERIAL_PRESETS).",
+  listMaterialPresetsSchema.shape,
+  async () => {
+    try {
+      const presets = await loadMaterialPresets(config);
+      return toolResponse({
+        ok: true,
+        data: { presets, count: presets.length, source: config.materialPresetsPath },
+        outputFiles: [],
+        warnings: presets.length === 0 ? ["No material presets found. Create presets/materials.json to add some."] : [],
+        keyshotStdoutTail: "",
+        error: null,
+      });
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+  },
+);
+
+server.tool(
+  "keyshot_apply_material_preset",
+  "Apply a named material preset (from the preset library) to a scene object and save the resulting scene.",
+  applyMaterialPresetInputSchema.shape,
+  async (args) => {
+    const parsed = applyMaterialPresetSchema.parse(args);
+    let presets;
+    try {
+      presets = await loadMaterialPresets(config);
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+    const preset = findMaterialPreset(presets, parsed.presetName);
+    if (!preset) {
+      const available = presets.map((entry) => entry.name).join(", ") || "(none)";
+      return toolResponse(
+        localFailure(`Material preset not found: "${parsed.presetName}". Available: ${available}`),
+      );
+    }
+    return toolResponse(
+      await runKeyShotSerialized(config, {
+        operation: "apply_material",
+        scenePath: parsed.scenePath,
+        objectName: parsed.objectName,
+        objectPath: parsed.objectPath,
+        materialName: preset.materialName,
+        materialPath: preset.materialPath,
+        outputScenePath: parsed.outputScenePath,
+      }),
+    );
   },
 );
 

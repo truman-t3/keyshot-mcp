@@ -1,6 +1,7 @@
 export type KeyShotOperation =
   | "status"
   | "inspect_scene"
+  | "list_cameras"
   | "render"
   | "batch_render"
   | "import_model"

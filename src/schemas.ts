@@ -2,7 +2,13 @@ import { z } from "zod";
 
 const optionalPath = z.string().min(1).optional();
 
+const imageFormat = z.enum(["png", "jpg", "jpeg", "tif", "tiff", "exr"]);
+
 export const scenePathSchema = z.object({
+  scenePath: z.string().min(1),
+});
+
+export const listCamerasSchema = z.object({
   scenePath: z.string().min(1),
 });
 
@@ -74,3 +80,36 @@ export const saveSceneSchema = z.object({
   scenePath: z.string().min(1),
   outputScenePath: z.string().min(1),
 });
+
+// --- Render queue ---
+export const renderJobSchema = z.object({
+  scenePath: z.string().min(1),
+  outputPath: optionalPath,
+  camera: z.string().min(1).optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  samples: z.number().int().positive().optional(),
+  maxTimeSeconds: z.number().positive().optional(),
+  format: imageFormat.optional(),
+});
+
+export const renderQueueSchema = z.object({
+  jobs: z.array(renderJobSchema).min(1),
+  continueOnError: z.boolean().optional(),
+});
+
+// --- Material preset library ---
+export const listMaterialPresetsSchema = z.object({});
+
+export const applyMaterialPresetInputSchema = z.object({
+  scenePath: z.string().min(1),
+  presetName: z.string().min(1),
+  objectName: z.string().min(1).optional(),
+  objectPath: z.string().min(1).optional(),
+  outputScenePath: z.string().min(1),
+});
+
+export const applyMaterialPresetSchema = applyMaterialPresetInputSchema.refine(
+  (value) => value.objectName || value.objectPath,
+  { message: "Provide objectName or objectPath." },
+);

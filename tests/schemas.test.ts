@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   applyMaterialInputSchema,
   applyMaterialSchema,
+  applyMaterialPresetSchema,
   batchRenderSchema,
   importModelSchema,
+  listCamerasSchema,
+  renderQueueSchema,
   renderSchema,
   saveSceneSchema,
   setCameraSchema,
@@ -94,5 +97,46 @@ describe("batchRenderSchema", () => {
 describe("saveSceneSchema", () => {
   it("requires scenePath and outputScenePath", () => {
     expect(saveSceneSchema.parse({ scenePath: "a.bip", outputScenePath: "o.bip" }).outputScenePath).toBe("o.bip");
+  });
+});
+
+describe("listCamerasSchema", () => {
+  it("requires a scenePath", () => {
+    expect(() => listCamerasSchema.parse({})).toThrow();
+    expect(listCamerasSchema.parse({ scenePath: "a.bip" }).scenePath).toBe("a.bip");
+  });
+});
+
+describe("renderQueueSchema", () => {
+  it("requires at least one job", () => {
+    expect(() => renderQueueSchema.parse({ jobs: [] })).toThrow();
+  });
+
+  it("accepts jobs and continueOnError", () => {
+    const parsed = renderQueueSchema.parse({
+      jobs: [{ scenePath: "a.bip", camera: "Front" }],
+      continueOnError: true,
+    });
+    expect(parsed.jobs).toHaveLength(1);
+    expect(parsed.continueOnError).toBe(true);
+  });
+
+  it("rejects a job without scenePath", () => {
+    expect(() => renderQueueSchema.parse({ jobs: [{ camera: "Front" }] })).toThrow();
+  });
+});
+
+describe("applyMaterialPresetSchema", () => {
+  it("requires presetName and an object reference", () => {
+    expect(() =>
+      applyMaterialPresetSchema.parse({ scenePath: "a.bip", presetName: "Steel", outputScenePath: "o.bip" }),
+    ).toThrow();
+    const parsed = applyMaterialPresetSchema.parse({
+      scenePath: "a.bip",
+      presetName: "Steel",
+      objectName: "Body",
+      outputScenePath: "o.bip",
+    });
+    expect(parsed.presetName).toBe("Steel");
   });
 });
