@@ -54,53 +54,68 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
     resultPath,
   ];
 
-  const processResult = await spawnWithTimeout(config.keyshotHeadlessExe, args, config.keyshotTimeoutMs);
-  const stdoutTail = tail(processResult.stdout, 6000);
-  const stderrTail = tail(processResult.stderr, 6000);
+  try {
+    const processResult = await spawnWithTimeout(config.keyshotHeadlessExe, args, config.keyshotTimeoutMs);
+    const stdoutTail = tail(processResult.stdout, 6000);
+    const stderrTail = tail(processResult.stderr, 6000);
 
-  let parsed: KeyShotResult | null = null;
-  if (await exists(resultPath)) {
-    try {
-      parsed = JSON.parse(await fs.readFile(resultPath, "utf8")) as KeyShotResult;
-    } catch (error) {
-      return localFailure(`Could not parse KeyShot result JSON: ${errorMessage(error)}`, {
+    let parsed: KeyShotResult | null = null;
+    if (await exists(resultPath)) {
+      try {
+        parsed = JSON.parse(await fs.readFile(resultPath, "utf8")) as KeyShotResult;
+      } catch (error) {
+        return localFailure(`Could not parse KeyShot result JSON: ${errorMessage(error)}`, {
+          keyshotStdoutTail: stdoutTail,
+          warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
+        });
+      }
+    }
+
+    if (processResult.timedOut) {
+      return localFailure(`KeyShot timed out after ${config.keyshotTimeoutMs}ms`, {
+        data: parsed?.data ?? null,
+        outputFiles: parsed?.outputFiles ?? [],
+        warnings: [...(parsed?.warnings ?? []), ...(stderrTail ? [`stderr: ${stderrTail}`] : [])],
         keyshotStdoutTail: stdoutTail,
-        warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
       });
     }
+
+    if (!parsed) {
+      return localFailure(
+        `KeyShot did not produce a result file. Exit code: ${processResult.exitCode ?? "unknown"}`,
+        {
+          keyshotStdoutTail: stdoutTail,
+          warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
+        },
+      );
+    }
+
+    parsed.keyshotStdoutTail = stdoutTail || parsed.keyshotStdoutTail || "";
+    if (stderrTail) parsed.warnings = [...parsed.warnings, `stderr: ${stderrTail}`];
+
+    if (processResult.exitCode !== 0 && parsed.ok) {
+      return {
+        ...parsed,
+        ok: false,
+        error: `KeyShot exited with code ${processResult.exitCode}`,
+      };
+    }
+
+    return parsed;
+  } finally {
+    // Best-effort cleanup so work/tmp does not accumulate args/result files.
+    await cleanupTmp([argsPath, resultPath]).catch(() => undefined);
   }
+}
 
-  if (processResult.timedOut) {
-    return localFailure(`KeyShot timed out after ${config.keyshotTimeoutMs}ms`, {
-      data: parsed?.data ?? null,
-      outputFiles: parsed?.outputFiles ?? [],
-      warnings: [...(parsed?.warnings ?? []), ...(stderrTail ? [`stderr: ${stderrTail}`] : [])],
-      keyshotStdoutTail: stdoutTail,
-    });
-  }
-
-  if (!parsed) {
-    return localFailure(
-      `KeyShot did not produce a result file. Exit code: ${processResult.exitCode ?? "unknown"}`,
-      {
-        keyshotStdoutTail: stdoutTail,
-        warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
-      },
-    );
-  }
-
-  parsed.keyshotStdoutTail = stdoutTail || parsed.keyshotStdoutTail || "";
-  if (stderrTail) parsed.warnings = [...parsed.warnings, `stderr: ${stderrTail}`];
-
-  if (processResult.exitCode !== 0 && parsed.ok) {
-    return {
-      ...parsed,
-      ok: false,
-      error: `KeyShot exited with code ${processResult.exitCode}`,
-    };
-  }
-
-  return parsed;
+async function cleanupTmp(paths: string[]): Promise<void> {
+  await Promise.all(
+    paths.map(async (filePath) => {
+      if (await exists(filePath)) {
+        await fs.rm(filePath, { force: true });
+      }
+    }),
+  );
 }
 
 function spawnWithTimeout(

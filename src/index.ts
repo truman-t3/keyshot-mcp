@@ -108,7 +108,6 @@ server.tool(
     toolResponse(
       await runKeyShotSerialized(config, {
         operation: "import_model",
-        scenePath: args.baseScenePath,
         ...args,
       }),
     ),

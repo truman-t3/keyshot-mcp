@@ -1,6 +1,6 @@
 {
   "name": "keyshot-mcp",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Local and portable MCP server for KeyShot headless scripting.",
   "type": "module",
   "homepage": "https://github.com/truman-t3/keyshot-mcp#readme",
@@ -19,6 +19,7 @@
     "prepare": "tsc -p tsconfig.json",
     "start": "node ./dist/index.js",
     "check": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
     "status": "node ./dist/cli/status.js"
   },
   "keywords": [
@@ -48,6 +49,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.17.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
   }
 }

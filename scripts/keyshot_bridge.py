@@ -177,10 +177,18 @@ def batch_render(payload, output_files, warnings):
 def import_model(payload, output_files, warnings):
     model_path = payload.get("modelPath")
     output_scene_path = payload.get("outputScenePath")
+    base_scene_path = payload.get("baseScenePath")
     if not model_path or not os.path.exists(model_path):
         raise RuntimeError("Model file not found: %s" % model_path)
     if not output_scene_path:
         raise RuntimeError("outputScenePath is required")
+
+    if base_scene_path:
+        if not os.path.exists(base_scene_path):
+            raise RuntimeError("Base scene file not found: %s" % base_scene_path)
+        open_scene(base_scene_path, warnings)
+    else:
+        new_scene(warnings)
 
     call_variants(
         "import model",
@@ -189,7 +197,33 @@ def import_model(payload, output_files, warnings):
     )
     save_to(output_scene_path)
     output_files.append(output_scene_path)
-    return {"importedModel": model_path, "savedScene": output_scene_path}
+    return {
+        "importedModel": model_path,
+        "baseScene": base_scene_path,
+        "savedScene": output_scene_path,
+    }
+
+
+def open_scene(scene_path, warnings):
+    call_variants(
+        "open base scene",
+        lambda: lux.openScene(scene_path),
+        lambda: lux.openFile(scene_path),
+        lambda: lux.loadScene(scene_path),
+        lambda: lux.openProject(scene_path),
+    )
+
+
+def new_scene(warnings):
+    try:
+        call_variants(
+            "create new scene",
+            lambda: lux.newScene(),
+            lambda: lux.createScene(),
+            lambda: lux.newProject(),
+        )
+    except RuntimeError:
+        warnings.append("Started import into the current KeyShot scene (could not create a new scene).")
 
 
 def apply_material(payload, output_files, warnings):
@@ -233,26 +267,35 @@ def set_camera(payload, output_files, warnings):
     )
 
     if camera is None and hasattr(lux, "saveCamera"):
-        camera = call_variants("save camera", lambda: lux.saveCamera(camera_name))
+        try:
+            camera = call_variants("save camera", lambda: lux.saveCamera(camera_name))
+        except RuntimeError:
+            camera = None
 
-    call_variants(
-        "set camera position",
-        lambda: camera.setPosition(tuple(position)),
-        lambda: lux.setCameraPosition(camera_name, tuple(position)),
-        lambda: lux.setCameraPosition(tuple(position)),
-    )
-    call_variants(
-        "set camera look-at",
-        lambda: camera.setLookAt(tuple(look_at)),
-        lambda: lux.setCameraLookAt(camera_name, tuple(look_at)),
-        lambda: lux.setCameraLookAt(tuple(look_at)),
-    )
-    call_variants(
-        "set camera up",
-        lambda: camera.setUp(tuple(up)),
-        lambda: lux.setCameraUp(camera_name, tuple(up)),
-        lambda: lux.setCameraUp(tuple(up)),
-    )
+    if camera is not None:
+        # Object-level API is available: drive the camera object directly.
+        call_variants("set camera position", lambda: camera.setPosition(tuple(position)))
+        call_variants("set camera look-at", lambda: camera.setLookAt(tuple(look_at)))
+        call_variants("set camera up", lambda: camera.setUp(tuple(up)))
+    else:
+        # No camera object could be obtained: fall back to the lux-level setters,
+        # which address the camera by name. This path never dereferences a None
+        # camera object, so it cannot crash when camera creation is unsupported.
+        call_variants(
+            "set camera position",
+            lambda: lux.setCameraPosition(camera_name, tuple(position)),
+            lambda: lux.setCameraPosition(tuple(position)),
+        )
+        call_variants(
+            "set camera look-at",
+            lambda: lux.setCameraLookAt(camera_name, tuple(look_at)),
+            lambda: lux.setCameraLookAt(tuple(look_at)),
+        )
+        call_variants(
+            "set camera up",
+            lambda: lux.setCameraUp(camera_name, tuple(up)),
+            lambda: lux.setCameraUp(tuple(up)),
+        )
 
     save_to(output_scene_path)
     output_files.append(output_scene_path)
@@ -386,13 +429,13 @@ def save_to(output_scene_path):
 
 
 def call_variants(label, *callbacks):
+    """Try each callback in order. The first one that does not raise wins, even
+    if it returns None (KeyShot setters typically return nothing). Only if every
+    callback raises do we report the combined errors."""
     errors = []
     for callback in callbacks:
         try:
-            value = callback()
-            if value is not None:
-                return value
-            return value
+            return callback()
         except Exception as exc:
             errors.append(str(exc))
     raise RuntimeError("%s is unsupported or failed: %s" % (label, " | ".join(errors)))
