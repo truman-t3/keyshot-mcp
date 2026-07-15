@@ -12,11 +12,14 @@ import {
   applyMaterialPresetInputSchema,
   applyMaterialPresetSchema,
   batchRenderSchema,
+  batchRenderInputSchema,
   importModelSchema,
   listCamerasSchema,
   listMaterialPresetsSchema,
   renderQueueSchema,
+  renderQueueInputSchema,
   renderSchema,
+  renderInputSchema,
   saveSceneSchema,
   scenePathSchema,
   setCameraSchema,
@@ -27,7 +30,7 @@ const config = getConfig();
 
 const server = new McpServer({
   name: "keyshot-mcp",
-  version: "0.4.0",
+  version: "0.4.1",
 });
 
 function errorMessage(error: unknown): string {
@@ -108,24 +111,32 @@ server.tool(
   "keyshot_render",
   "Render a KeyShot scene to an image file.",
   renderSchema.shape,
-  async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "render", ...args })),
+  async (args) => {
+    const parsed = renderInputSchema.parse(args);
+    return toolResponse(await runKeyShotSerialized(config, { operation: "render", ...parsed }));
+  },
 );
 
 server.tool(
   "keyshot_render_queue",
   "Render several jobs sequentially. Stops at the first failure unless continueOnError is set.",
   renderQueueSchema.shape,
-  async (args) =>
-    toolResponse(
-      await runRenderQueue(config, args.jobs, { continueOnError: args.continueOnError ?? false }),
-    ),
+  async (args) => {
+    const parsed = renderQueueInputSchema.parse(args);
+    return toolResponse(
+      await runRenderQueue(config, parsed.jobs, { continueOnError: parsed.continueOnError ?? false }),
+    );
+  },
 );
 
 server.tool(
   "keyshot_batch_render",
   "Render multiple named cameras from one KeyShot scene into an output directory.",
   batchRenderSchema.shape,
-  async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "batch_render", ...args })),
+  async (args) => {
+    const parsed = batchRenderInputSchema.parse(args);
+    return toolResponse(await runKeyShotSerialized(config, { operation: "batch_render", ...parsed }));
+  },
 );
 
 server.tool(

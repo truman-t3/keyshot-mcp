@@ -1,6 +1,6 @@
 {
   "name": "keyshot-mcp",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Local and portable MCP server for KeyShot headless scripting.",
   "type": "module",
   "homepage": "https://github.com/truman-t3/keyshot-mcp#readme",

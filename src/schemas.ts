@@ -23,6 +23,14 @@ export const renderSchema = z.object({
   format: z.enum(["png", "jpg", "jpeg", "tif", "tiff", "exr"]).optional(),
 });
 
+export const renderInputSchema = renderSchema.refine(
+  (value) => !(value.samples !== undefined && value.maxTimeSeconds !== undefined),
+  {
+    message: "Choose either samples or maxTimeSeconds, not both.",
+    path: ["maxTimeSeconds"],
+  },
+);
+
 export const batchRenderSchema = z.object({
   scenePath: z.string().min(1),
   outputDir: z.string().min(1),
@@ -34,6 +42,14 @@ export const batchRenderSchema = z.object({
   format: z.enum(["png", "jpg", "jpeg", "tif", "tiff", "exr"]).optional(),
   overwrite: z.boolean().optional(),
 });
+
+export const batchRenderInputSchema = batchRenderSchema.refine(
+  (value) => !(value.samples !== undefined && value.maxTimeSeconds !== undefined),
+  {
+    message: "Choose either samples or maxTimeSeconds, not both.",
+    path: ["maxTimeSeconds"],
+  },
+);
 
 export const importModelSchema = z.object({
   modelPath: z.string().min(1),
@@ -93,8 +109,21 @@ export const renderJobSchema = z.object({
   format: imageFormat.optional(),
 });
 
+export const renderJobInputSchema = renderJobSchema.refine(
+  (value) => !(value.samples !== undefined && value.maxTimeSeconds !== undefined),
+  {
+    message: "Choose either samples or maxTimeSeconds, not both.",
+    path: ["maxTimeSeconds"],
+  },
+);
+
 export const renderQueueSchema = z.object({
   jobs: z.array(renderJobSchema).min(1),
+  continueOnError: z.boolean().optional(),
+});
+
+export const renderQueueInputSchema = z.object({
+  jobs: z.array(renderJobInputSchema).min(1),
   continueOnError: z.boolean().optional(),
 });
 

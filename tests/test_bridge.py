@@ -89,6 +89,51 @@ class NamedCamera:
         return self._name
 
 
+class FakeRenderOptions:
+    def __init__(self):
+        self.max_samples = None
+        self.advanced_samples = None
+        self.max_time = None
+
+    def setMaxSamplesRendering(self, samples):
+        self.max_samples = samples
+
+    def setAdvancedRendering(self, samples):
+        self.advanced_samples = samples
+
+    def setMaxTimeRendering(self, seconds):
+        self.max_time = seconds
+
+
+class RenderLux:
+    def __init__(self):
+        self.options = FakeRenderOptions()
+        self.render_calls = []
+
+    def getRenderOptions(self):
+        return self.options
+
+    def renderImage(self, *args, **kwargs):
+        self.render_calls.append((args, kwargs))
+
+
+class CreateCameraLux(FakeLux):
+    def getCamera(self, name):
+        return None
+
+    def newCamera(self, name):
+        self._camera = FakeCamera()
+        return self._camera
+
+
+class BooleanCreateCameraLux(FakeLux):
+    def getCamera(self, name):
+        return None
+
+    def newCamera(self, name):
+        return True
+
+
 class ListCamerasTest(unittest.TestCase):
     def test_reads_camera_objects(self):
         lux = FakeLux()
@@ -110,6 +155,31 @@ class ListCamerasTest(unittest.TestCase):
         data = kb.list_cameras()
         self.assertEqual(data["cameras"], [])
         self.assertEqual(data["count"], 0)
+
+
+class RenderTest(unittest.TestCase):
+    def test_applies_max_samples_through_render_options(self):
+        lux = RenderLux()
+        kb.lux = lux
+        output_files = []
+        kb.render({"outputPath": "render.png", "samples": 64}, output_files, [])
+
+        self.assertEqual(lux.options.max_samples, 64)
+        self.assertIsNone(lux.options.max_time)
+        self.assertEqual(lux.render_calls[0][1]["opts"], lux.options)
+
+    def test_applies_max_time_through_render_options(self):
+        lux = RenderLux()
+        kb.lux = lux
+        kb.render({"outputPath": "render.png", "maxTimeSeconds": 10}, [], [])
+
+        self.assertEqual(lux.options.max_time, 10)
+        self.assertEqual(lux.render_calls[0][1]["opts"], lux.options)
+
+    def test_rejects_conflicting_render_modes(self):
+        kb.lux = RenderLux()
+        with self.assertRaisesRegex(RuntimeError, "cannot be used together"):
+            kb.render({"outputPath": "render.png", "samples": 64, "maxTimeSeconds": 10}, [], [])
 
 
 class ImportModelTest(unittest.TestCase):
@@ -166,6 +236,33 @@ class SetCameraTest(unittest.TestCase):
             }
             kb.set_camera(payload, [], [])  # must not raise
             self.assertEqual(kb.lux.set_camera_position, [("MCP Camera", (1, 2, 3))])
+
+    def test_creates_camera_when_named_camera_does_not_exist(self):
+        kb.lux = CreateCameraLux()
+        with tempfile.TemporaryDirectory() as d:
+            payload = {
+                "scenePath": "a.bip",
+                "outputScenePath": os.path.join(d, "out.bip"),
+                "cameraName": "New Camera",
+                "position": [1, 2, 3],
+                "lookAt": [0, 0, 0],
+            }
+            kb.set_camera(payload, [], [])
+            self.assertEqual([call[0] for call in kb.lux._camera.calls], ["setPosition", "setLookAt", "setUp"])
+            self.assertEqual(kb.lux.set_camera_position, [])
+
+    def test_uses_lux_api_when_camera_creation_returns_boolean(self):
+        kb.lux = BooleanCreateCameraLux()
+        with tempfile.TemporaryDirectory() as d:
+            payload = {
+                "scenePath": "a.bip",
+                "outputScenePath": os.path.join(d, "out.bip"),
+                "cameraName": "New Camera",
+                "position": [1, 2, 3],
+                "lookAt": [0, 0, 0],
+            }
+            kb.set_camera(payload, [], [])
+            self.assertEqual(kb.lux.set_camera_position, [("New Camera", (1, 2, 3))])
 
     def test_raises_when_position_missing(self):
         kb.lux = FakeLux(camera=FakeCamera())

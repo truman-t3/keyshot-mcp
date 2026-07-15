@@ -137,16 +137,35 @@ def render(payload, output_files, warnings):
     samples = payload.get("samples")
     max_time = payload.get("maxTimeSeconds")
 
-    call_variants(
-        "render image",
-        lambda: lux.renderImage(output_path, width, height),
-        lambda: lux.renderImage(output_path, width, height, samples) if samples else None,
-        lambda: lux.renderImage(output_path, width, height, samples, max_time) if samples and max_time else None,
-        lambda: lux.renderImage(output_path),
-    )
+    if samples is not None and max_time is not None:
+        raise RuntimeError("samples and maxTimeSeconds cannot be used together; choose one render mode.")
+
+    render_options = build_render_options(samples, max_time)
+
+    if render_options is None:
+        call_variants(
+            "render image",
+            lambda: lux.renderImage(output_path, width, height),
+            lambda: lux.renderImage(output_path),
+        )
+    else:
+        # Current KeyShot versions accept a RenderOptions object. Keep positional
+        # and keyword variants for older headless scripting builds.
+        call_variants(
+            "render image with options",
+            lambda: lux.renderImage(output_path, width, height, opts=render_options),
+            lambda: lux.renderImage(output_path, width, height, render_options),
+            lambda: lux.renderImage(output_path, opts=render_options),
+        )
 
     output_files.append(output_path)
-    return {"rendered": output_path, "width": width, "height": height}
+    return {
+        "rendered": output_path,
+        "width": width,
+        "height": height,
+        "samples": samples,
+        "maxTimeSeconds": max_time,
+    }
 
 
 def batch_render(payload, output_files, warnings):
@@ -280,16 +299,18 @@ def set_camera(payload, output_files, warnings):
     if position is None or look_at is None:
         raise RuntimeError("position and lookAt are required")
 
-    camera = first_success(
+    camera = first_camera_object(
         lambda: lux.getCamera(camera_name),
         lambda: lux.newCamera(camera_name),
         lambda: lux.createCamera(camera_name),
-        default=None,
     )
 
     if camera is None and hasattr(lux, "saveCamera"):
         try:
-            camera = call_variants("save camera", lambda: lux.saveCamera(camera_name))
+            camera = first_camera_object(
+                lambda: lux.saveCamera(camera_name),
+                lambda: lux.saveCamera(),
+            )
         except RuntimeError:
             camera = None
 
@@ -469,6 +490,62 @@ def first_success(*callbacks, default=None):
         except Exception:
             pass
     return default
+
+
+def first_non_none(*callbacks, default=None):
+    for callback in callbacks:
+        try:
+            value = callback()
+            if value is not None:
+                return value
+        except Exception:
+            pass
+    return default
+
+
+def first_camera_object(*callbacks):
+    for callback in callbacks:
+        try:
+            value = callback()
+            if is_camera_object(value):
+                return value
+        except Exception:
+            pass
+    return None
+
+
+def is_camera_object(value):
+    if value is None or value is False or value is True:
+        return False
+    return any(hasattr(value, method) for method in ("setPosition", "setLookAt", "setUp"))
+
+
+def build_render_options(samples, max_time):
+    if samples is None and max_time is None:
+        return None
+
+    get_options = getattr(lux, "getRenderOptions", None)
+    if get_options is None:
+        raise RuntimeError("KeyShot lux.getRenderOptions is not available for advanced render settings.")
+
+    options = get_options()
+    if options is None:
+        raise RuntimeError("KeyShot returned no RenderOptions object for advanced render settings.")
+
+    if samples is not None:
+        call_variants(
+            "set render samples",
+            lambda: options.setMaxSamplesRendering(samples),
+            lambda: options.setAdvancedRendering(samples),
+        )
+
+    if max_time is not None:
+        call_variants(
+            "set render max time",
+            lambda: options.setMaxTimeRendering(max_time),
+        )
+
+    return options
 
 
 def serialize_value(value):

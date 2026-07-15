@@ -5,25 +5,94 @@ const repo = "keyshot-mcp";
 const output = "assets/star-history.svg";
 const token = process.env.GITHUB_TOKEN || process.env.GH_TOKEN;
 
-const headers = {
+const baseHeaders = {
   Accept: "application/vnd.github.star+json",
   "User-Agent": "keyshot-mcp-star-history",
 };
 
-if (token) {
-  headers.Authorization = `Bearer ${token}`;
+const authHeaders = token
+  ? { ...baseHeaders, Authorization: `Bearer ${token}` }
+  : baseHeaders;
+
+async function readStargazers() {
+  const stargazers = [];
+
+  for (let page = 1; ; page += 1) {
+    const url = `https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=100&page=${page}`;
+    let response = await fetch(url, { headers: authHeaders });
+
+    // GitHub Actions' automatic token can be rejected for the stargazers
+    // endpoint. Retry anonymously before falling back to repository metadata.
+    if (!response.ok && token && (response.status === 401 || response.status === 403)) {
+      response = await fetch(url, { headers: baseHeaders });
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      return null;
+    }
+
+    if (!response.ok) {
+      throw new Error(`GitHub API failed: ${response.status} ${await response.text()}`);
+    }
+
+    const pageData = await response.json();
+    if (!Array.isArray(pageData)) {
+      throw new Error("GitHub stargazers response was not an array.");
+    }
+
+    stargazers.push(...pageData);
+    if (pageData.length < 100) {
+      return stargazers;
+    }
+  }
 }
 
-const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/stargazers?per_page=100`, { headers });
+async function readRepositoryMetadata() {
+  const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+    headers: {
+      Accept: "application/vnd.github+json",
+      "User-Agent": "keyshot-mcp-star-history",
+    },
+  });
 
-if (!response.ok) {
-  throw new Error(`GitHub API failed: ${response.status} ${await response.text()}`);
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      return null;
+    }
+    throw new Error(`GitHub repository API failed: ${response.status} ${await response.text()}`);
+  }
+
+  return response.json();
 }
 
-const stargazers = await response.json();
-const starCount = Array.isArray(stargazers) ? stargazers.length : 0;
-const firstStarDate = stargazers[0]?.starred_at?.slice(0, 10) || new Date().toISOString().slice(0, 10);
+async function readExistingFirstStarDate() {
+  try {
+    const previous = await fs.readFile(output, "utf8");
+    return previous.match(/x="88" y="288">(\d{4}-\d{2}-\d{2})<\/text>/)?.[1] || null;
+  } catch {
+    return null;
+  }
+}
+
 const today = new Date().toISOString().slice(0, 10);
+const stargazers = await readStargazers();
+let starCount;
+let firstStarDate;
+
+if (stargazers) {
+  const dates = stargazers
+    .map((entry) => entry?.starred_at?.slice(0, 10))
+    .filter(Boolean)
+    .sort();
+  starCount = stargazers.length;
+  firstStarDate = dates[0] || today;
+} else {
+  const repository = await readRepositoryMetadata();
+  starCount = repository?.stargazers_count || 0;
+  firstStarDate = (await readExistingFirstStarDate()) || today;
+  console.warn("Stargazer details were unavailable; using repository star count.");
+}
+
 const y = starCount > 0 ? 128 : 258;
 const line = starCount > 0 ? `M 88 258 L 632 ${y}` : "M 88 258 L 632 258";
 
@@ -46,7 +115,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" vi
   <text class="title" x="64" y="78">Star History</text>
   <text class="muted" x="64" y="104">${owner}/${repo}</text>
   <rect class="badge" x="548" y="55" width="92" height="36" rx="18"/>
-  <text class="text" x="571" y="79">★ ${starCount}</text>
+  <text class="text" x="571" y="79">&#9733; ${starCount}</text>
   <line class="axis" x1="88" y1="258" x2="632" y2="258"/>
   <line class="axis" x1="88" y1="128" x2="88" y2="258"/>
   <text class="muted" x="66" y="263">0</text>

@@ -3,9 +3,12 @@ import {
   applyMaterialInputSchema,
   applyMaterialSchema,
   applyMaterialPresetSchema,
+  batchRenderInputSchema,
   batchRenderSchema,
   importModelSchema,
   listCamerasSchema,
+  renderInputSchema,
+  renderQueueInputSchema,
   renderQueueSchema,
   renderSchema,
   saveSceneSchema,
@@ -22,6 +25,10 @@ describe("renderSchema", () => {
     const parsed = renderSchema.parse({ scenePath: "a.bip", camera: "Front", width: 1920, height: 1080 });
     expect(parsed.camera).toBe("Front");
     expect(parsed.width).toBe(1920);
+  });
+
+  it("rejects conflicting samples and maxTimeSeconds", () => {
+    expect(() => renderInputSchema.parse({ scenePath: "a.bip", samples: 64, maxTimeSeconds: 10 })).toThrow();
   });
 });
 
@@ -92,6 +99,18 @@ describe("batchRenderSchema", () => {
       batchRenderSchema.parse({ scenePath: "a.bip", outputDir: "out", cameras: [] }),
     ).toThrow();
   });
+
+  it("rejects conflicting samples and maxTimeSeconds", () => {
+    expect(() =>
+      batchRenderInputSchema.parse({
+        scenePath: "a.bip",
+        outputDir: "out",
+        cameras: ["Front"],
+        samples: 64,
+        maxTimeSeconds: 10,
+      }),
+    ).toThrow();
+  });
 });
 
 describe("saveSceneSchema", () => {
@@ -119,6 +138,14 @@ describe("renderQueueSchema", () => {
     });
     expect(parsed.jobs).toHaveLength(1);
     expect(parsed.continueOnError).toBe(true);
+  });
+
+  it("rejects a job with conflicting render modes", () => {
+    expect(() =>
+      renderQueueInputSchema.parse({
+        jobs: [{ scenePath: "a.bip", samples: 64, maxTimeSeconds: 10 }],
+      }),
+    ).toThrow();
   });
 
   it("rejects a job without scenePath", () => {
