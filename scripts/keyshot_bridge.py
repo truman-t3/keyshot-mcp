@@ -307,12 +307,17 @@ def set_camera(payload, output_files, warnings):
 
     if camera is None and hasattr(lux, "saveCamera"):
         try:
-            camera = first_camera_object(
+            # Current KeyShot versions expose cameras as names rather than camera
+            # objects. saveCamera creates the named camera and setCamera activates it.
+            call_variants(
+                "create named camera",
                 lambda: lux.saveCamera(camera_name),
                 lambda: lux.saveCamera(),
             )
+            if hasattr(lux, "setCamera"):
+                call_variants("activate camera", lambda: lux.setCamera(camera_name))
         except RuntimeError:
-            camera = None
+            pass
 
     if camera is not None:
         # Object-level API is available: drive the camera object directly.
@@ -325,18 +330,21 @@ def set_camera(payload, output_files, warnings):
         # camera object, so it cannot crash when camera creation is unsupported.
         call_variants(
             "set camera position",
-            lambda: lux.setCameraPosition(camera_name, tuple(position)),
+            lambda: lux.setCameraPosition(pos=tuple(position)),
             lambda: lux.setCameraPosition(tuple(position)),
+            lambda: lux.setCameraPosition(camera_name, tuple(position)),
         )
         call_variants(
             "set camera look-at",
+            lambda: lux.setCameraLookAt(pt=tuple(look_at)),
+            lambda: lux.setCameraLookAt(0, tuple(look_at)),
             lambda: lux.setCameraLookAt(camera_name, tuple(look_at)),
-            lambda: lux.setCameraLookAt(tuple(look_at)),
         )
         call_variants(
             "set camera up",
-            lambda: lux.setCameraUp(camera_name, tuple(up)),
+            lambda: lux.setCameraUp(up=tuple(up)),
             lambda: lux.setCameraUp(tuple(up)),
+            lambda: lux.setCameraUp(camera_name, tuple(up)),
         )
 
     save_to(output_scene_path)

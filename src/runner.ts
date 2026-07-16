@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import type { ServerConfig } from "./config.js";
 import { localFailure } from "./result.js";
+import { normalizeOutputPaths } from "./output-paths.js";
 import type { KeyShotRequest, KeyShotResult } from "./types.js";
 
 let queue: Promise<unknown> = Promise.resolve();
@@ -15,8 +16,7 @@ export function runKeyShotSerialized(config: ServerConfig, request: KeyShotReque
 }
 
 async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promise<KeyShotResult> {
-  const exeExists = await exists(config.keyshotHeadlessExe);
-  if (!exeExists) {
+  if (isPathLike(config.keyshotHeadlessExe) && !(await exists(config.keyshotHeadlessExe))) {
     return localFailure(`KeyShot headless executable not found: ${config.keyshotHeadlessExe}`);
   }
 
@@ -32,11 +32,18 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
   await fs.mkdir(config.tmpDir, { recursive: true });
   await fs.mkdir(config.keyshotOutputDir, { recursive: true });
 
+  let normalizedRequest: KeyShotRequest;
+  try {
+    normalizedRequest = await normalizeOutputPaths(config, request);
+  } catch (error) {
+    return localFailure(errorMessage(error));
+  }
+
   const id = `${Date.now()}-${randomUUID()}`;
   const argsPath = path.join(config.tmpDir, `${id}.args.json`);
   const resultPath = path.join(config.tmpDir, `${id}.result.json`);
   const payload = {
-    ...request,
+    ...normalizedRequest,
     defaults: {
       outputDir: config.keyshotOutputDir,
     },
@@ -47,7 +54,7 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
   const args = [
     ...config.keyshotLicenseArgs,
     "-progress",
-    ...(request.scenePath ? [request.scenePath] : []),
+    ...(normalizedRequest.scenePath ? [normalizedRequest.scenePath] : []),
     "-script",
     config.bridgeScriptPath,
     argsPath,
@@ -69,6 +76,13 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
           warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
         });
       }
+    }
+
+    if (processResult.spawnError) {
+      return localFailure(`Could not start KeyShot headless: ${processResult.spawnError}`, {
+        keyshotStdoutTail: stdoutTail,
+        warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
+      });
     }
 
     if (processResult.timedOut) {
@@ -118,13 +132,22 @@ async function cleanupTmp(paths: string[]): Promise<void> {
   );
 }
 
-function spawnWithTimeout(
+export const MAX_CAPTURE_CHARS = 64 * 1024;
+
+export function spawnWithTimeout(
   command: string,
   args: string[],
   timeoutMs: number,
-): Promise<{ exitCode: number | null; stdout: string; stderr: string; timedOut: boolean }> {
+): Promise<{
+  exitCode: number | null;
+  stdout: string;
+  stderr: string;
+  timedOut: boolean;
+  spawnError: string | null;
+}> {
   return new Promise((resolve) => {
     const child = spawn(command, args, {
+      detached: process.platform !== "win32",
       windowsHide: true,
       stdio: ["ignore", "pipe", "pipe"],
     });
@@ -133,30 +156,64 @@ function spawnWithTimeout(
     let stderr = "";
     let settled = false;
     let timedOut = false;
+    let spawnError: string | null = null;
 
     const timer = setTimeout(() => {
       timedOut = true;
-      child.kill("SIGTERM");
+      terminateProcessTree(child.pid, "SIGTERM");
       setTimeout(() => {
-        if (!settled) child.kill("SIGKILL");
+        if (!settled && process.platform !== "win32") terminateProcessTree(child.pid, "SIGKILL");
       }, 2500).unref();
     }, timeoutMs);
 
     child.stdout?.on("data", (chunk) => {
-      stdout += String(chunk);
+      stdout = appendBounded(stdout, String(chunk));
     });
     child.stderr?.on("data", (chunk) => {
-      stderr += String(chunk);
+      stderr = appendBounded(stderr, String(chunk));
     });
     child.on("error", (error) => {
-      stderr += errorMessage(error);
+      spawnError = errorMessage(error);
+      stderr = appendBounded(stderr, spawnError);
     });
     child.on("close", (exitCode) => {
       settled = true;
       clearTimeout(timer);
-      resolve({ exitCode, stdout, stderr, timedOut });
+      resolve({ exitCode, stdout, stderr, timedOut, spawnError });
     });
   });
+}
+
+function terminateProcessTree(pid: number | undefined, signal: NodeJS.Signals): void {
+  if (!pid) return;
+  if (process.platform === "win32") {
+    const killer = spawn("taskkill", ["/pid", String(pid), "/T", "/F"], {
+      windowsHide: true,
+      stdio: "ignore",
+    });
+    killer.on("error", () => undefined);
+    return;
+  }
+  try {
+    process.kill(-pid, signal);
+  } catch {
+    try {
+      process.kill(pid, signal);
+    } catch {
+      // The process may already have exited.
+    }
+  }
+}
+
+function appendBounded(current: string, addition: string): string {
+  const combined = current + addition;
+  return combined.length <= MAX_CAPTURE_CHARS
+    ? combined
+    : combined.slice(combined.length - MAX_CAPTURE_CHARS);
+}
+
+function isPathLike(command: string): boolean {
+  return path.isAbsolute(command) || command.includes("/") || command.includes("\\");
 }
 
 async function exists(filePath: string): Promise<boolean> {

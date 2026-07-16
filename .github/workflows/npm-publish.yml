@@ -2,6 +2,11 @@ name: Publish to npm
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to publish (for example 0.4.2); tag v<version> must exist"
+        required: true
+        type: string
   push:
     tags:
       - "v*"
@@ -13,13 +18,18 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/v{0}', inputs.version) || github.ref }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
@@ -30,22 +40,94 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm run build
-
-      - name: Check npm version
-        run: npm --version
-
-      - name: Check tag matches package version
-        if: startsWith(github.ref, 'refs/tags/v')
+      - name: Resolve and validate release version
+        id: release
         shell: bash
         run: |
-          package_version="$(node -p "require('./package.json').version")"
-          tag_version="${GITHUB_REF_NAME#v}"
-          test "$package_version" = "$tag_version" || {
-            echo "Tag $tag_version does not match package.json version $package_version"
-            exit 1
-          }
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            version="${GITHUB_REF_NAME#v}"
+          else
+            version="${{ inputs.version }}"
+            git rev-parse "refs/tags/v${version}" >/dev/null 2>&1 || {
+              echo "Tag v${version} does not exist. Create and push it before manual publishing."
+              exit 1
+            }
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          node scripts/check-release.mjs "$version"
 
-      - name: Publish
+      - name: Type check and test
+        run: |
+          pnpm run check
+          pnpm test
+          python -m unittest discover -s tests -p "test_*.py"
+
+      - name: Build and inspect package
+        run: |
+          pnpm run build
+          npm pack --dry-run
+
+      - name: Check whether npm version already exists
+        id: npm
+        shell: bash
+        run: |
+          if npm view "keyshot-mcp@${{ steps.release.outputs.version }}" version >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "keyshot-mcp@${{ steps.release.outputs.version }} is already published; skipping npm publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
+        if: steps.npm.outputs.exists != 'true'
         run: npm publish --access public
+
+      - name: Wait for npm registry visibility
+        shell: bash
+        run: |
+          for attempt in {1..12}; do
+            npm view "keyshot-mcp@${{ steps.release.outputs.version }}" version >/dev/null 2>&1 && exit 0
+            sleep 10
+          done
+          echo "npm package did not become visible in time"
+          exit 1
+
+  registry:
+    name: Publish official MCP Registry (preview)
+    needs: publish
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/v{0}', inputs.version) || github.ref }}
+
+      - name: Install MCP Registry publisher
+        shell: bash
+        run: |
+          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+
+      - name: Check whether MCP Registry version already exists
+        id: registry
+        shell: bash
+        run: |
+          response="$(curl -fsSL 'https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.truman-t3%2Fkeyshot-mcp' || echo '{}')"
+          if echo "$response" | jq -e --arg version "${{ needs.publish.outputs.version }}" '.servers[]? | select(.server.name == "io.github.truman-t3/keyshot-mcp" and .server.version == $version)' >/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "MCP Registry version already exists; skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Authenticate to MCP Registry
+        if: steps.registry.outputs.exists != 'true'
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to MCP Registry
+        if: steps.registry.outputs.exists != 'true'
+        run: ./mcp-publisher publish

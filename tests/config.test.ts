@@ -9,10 +9,12 @@ function makeFakeConfig(overrides: Partial<ServerConfig> = {}): ServerConfig {
     projectRoot: "C:/fake/project",
     keyshotHeadlessExe: "C:/fake/keyshot_headless.exe",
     keyshotOutputDir: "C:/fake/outputs",
+    keyshotAllowExternalOutputs: false,
     keyshotLicenseArgs: [],
     keyshotTimeoutMs: 30000,
     tmpDir: "C:/fake/work/tmp",
     bridgeScriptPath: "C:/fake/scripts/keyshot_bridge.py",
+    materialPresetsPath: "C:/fake/presets/materials.json",
     ...overrides,
   };
 }
@@ -32,8 +34,14 @@ describe("getConfig", () => {
     const config = getConfig();
     expect(config.keyshotHeadlessExe).toBe("keyshot_headless.exe");
     expect(config.keyshotTimeoutMs).toBe(600_000);
+    expect(config.keyshotAllowExternalOutputs).toBe(false);
     expect(config.bridgeScriptPath).toBe(path.join(config.projectRoot, "scripts", "keyshot_bridge.py"));
     expect(config.tmpDir).toBe(path.join(config.projectRoot, "work", "tmp"));
+  });
+
+  it("enables external outputs only for an explicit true value", () => {
+    process.env.KEYSHOT_ALLOW_EXTERNAL_OUTPUTS = "true";
+    expect(getConfig().keyshotAllowExternalOutputs).toBe(true);
   });
 
   it("honors KEYSHOT_OUTPUT_DIR override", () => {

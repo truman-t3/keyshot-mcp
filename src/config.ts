@@ -5,6 +5,7 @@ export type ServerConfig = {
   projectRoot: string;
   keyshotHeadlessExe: string;
   keyshotOutputDir: string;
+  keyshotAllowExternalOutputs: boolean;
   keyshotLicenseArgs: string[];
   keyshotTimeoutMs: number;
   tmpDir: string;
@@ -26,6 +27,7 @@ export function getConfig(): ServerConfig {
     projectRoot,
     keyshotHeadlessExe: process.env.KEYSHOT_HEADLESS_EXE ?? DEFAULT_KEYSHOT_EXE,
     keyshotOutputDir,
+    keyshotAllowExternalOutputs: parseBoolean(process.env.KEYSHOT_ALLOW_EXTERNAL_OUTPUTS),
     keyshotLicenseArgs: splitWindowsArgs(process.env.KEYSHOT_LICENSE_ARGS ?? ""),
     keyshotTimeoutMs: parsePositiveInt(process.env.KEYSHOT_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
     tmpDir: path.join(projectRoot, "work", "tmp"),
@@ -34,6 +36,10 @@ export function getConfig(): ServerConfig {
       process.env.KEYSHOT_MATERIAL_PRESETS ?? path.join(projectRoot, "presets", "materials.json"),
     ),
   };
+}
+
+function parseBoolean(value: string | undefined): boolean {
+  return ["1", "true", "yes", "on"].includes((value ?? "").trim().toLowerCase());
 }
 
 function parsePositiveInt(value: string | undefined, fallback: number): number {

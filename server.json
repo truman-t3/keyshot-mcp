@@ -1,0 +1,31 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.truman-t3/keyshot-mcp",
+  "title": "KeyShot MCP",
+  "description": "Control KeyShot Studio through local headless scripting with MCP.",
+  "websiteUrl": "https://github.com/truman-t3/keyshot-mcp",
+  "repository": {
+    "id": "1290741614",
+    "url": "https://github.com/truman-t3/keyshot-mcp",
+    "source": "github"
+  },
+  "version": "0.4.2",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "keyshot-mcp",
+      "version": "0.4.2",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "KEYSHOT_HEADLESS_EXE",
+          "description": "Absolute path to KeyShot headless, or a command available on PATH.",
+          "isRequired": true,
+          "isSecret": false
+        }
+      ]
+    }
+  ]
+}

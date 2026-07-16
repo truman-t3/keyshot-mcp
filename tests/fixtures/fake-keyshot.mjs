@@ -7,6 +7,10 @@ const resultPath = process.argv[process.argv.length - 1];
 const argsPath = process.argv[process.argv.length - 2];
 const payload = JSON.parse(fs.readFileSync(argsPath, "utf8"));
 
+if (payload.delayMs) {
+  await new Promise((resolve) => setTimeout(resolve, payload.delayMs));
+}
+
 fs.writeFileSync(
   resultPath,
   JSON.stringify({

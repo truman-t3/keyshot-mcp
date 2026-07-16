@@ -235,7 +235,7 @@ class SetCameraTest(unittest.TestCase):
                 "lookAt": [0, 0, 0],
             }
             kb.set_camera(payload, [], [])  # must not raise
-            self.assertEqual(kb.lux.set_camera_position, [("MCP Camera", (1, 2, 3))])
+            self.assertEqual(kb.lux.set_camera_position, [((1, 2, 3),)])
 
     def test_creates_camera_when_named_camera_does_not_exist(self):
         kb.lux = CreateCameraLux()
@@ -262,7 +262,7 @@ class SetCameraTest(unittest.TestCase):
                 "lookAt": [0, 0, 0],
             }
             kb.set_camera(payload, [], [])
-            self.assertEqual(kb.lux.set_camera_position, [("New Camera", (1, 2, 3))])
+            self.assertEqual(kb.lux.set_camera_position, [((1, 2, 3),)])
 
     def test_raises_when_position_missing(self):
         kb.lux = FakeLux(camera=FakeCamera())

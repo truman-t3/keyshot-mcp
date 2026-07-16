@@ -6,6 +6,7 @@ import { toolResponse, localFailure } from "./result.js";
 import { runKeyShotSerialized } from "./runner.js";
 import { runRenderQueue } from "./queue.js";
 import { loadMaterialPresets, findMaterialPreset } from "./presets.js";
+import { VERSION } from "./version.js";
 import {
   applyMaterialSchema,
   applyMaterialInputSchema,
@@ -30,7 +31,7 @@ const config = getConfig();
 
 const server = new McpServer({
   name: "keyshot-mcp",
-  version: "0.4.1",
+  version: VERSION,
 });
 
 function errorMessage(error: unknown): string {
