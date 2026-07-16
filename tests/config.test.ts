@@ -32,7 +32,9 @@ describe("getConfig", () => {
 
   it("uses sensible defaults when no env vars are set", () => {
     const config = getConfig();
-    expect(config.keyshotHeadlessExe).toBe("keyshot_headless.exe");
+    expect(config.keyshotHeadlessExe).toBe(
+      process.platform === "win32" ? "keyshot_headless.exe" : "keyshot_headless",
+    );
     expect(config.keyshotTimeoutMs).toBe(600_000);
     expect(config.keyshotAllowExternalOutputs).toBe(false);
     expect(config.bridgeScriptPath).toBe(path.join(config.projectRoot, "scripts", "keyshot_bridge.py"));
