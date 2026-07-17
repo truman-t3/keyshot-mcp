@@ -4,6 +4,7 @@ export type KeyShotOperation =
   | "list_cameras"
   | "render"
   | "batch_render"
+  | "render_all_cameras"
   | "import_model"
   | "apply_material"
   | "set_camera"

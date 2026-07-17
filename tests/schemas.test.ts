@@ -8,6 +8,8 @@ import {
   importModelSchema,
   listCamerasSchema,
   renderInputSchema,
+  renderAllCamerasInputSchema,
+  renderAllCamerasSchema,
   renderQueueInputSchema,
   renderQueueSchema,
   renderSchema,
@@ -110,6 +112,23 @@ describe("batchRenderSchema", () => {
         maxTimeSeconds: 10,
       }),
     ).toThrow();
+  });
+});
+
+describe("renderAllCamerasSchema", () => {
+  it("requires a scene and output directory and defaults to continuing on errors", () => {
+    const parsed = renderAllCamerasSchema.parse({ scenePath: "a.bip", outputDir: "all-cameras" });
+    expect(parsed.continueOnError).toBe(true);
+    expect(() => renderAllCamerasSchema.parse({ scenePath: "a.bip" })).toThrow();
+  });
+
+  it("rejects conflicting render modes", () => {
+    expect(() => renderAllCamerasInputSchema.parse({
+      scenePath: "a.bip",
+      outputDir: "all-cameras",
+      samples: 64,
+      maxTimeSeconds: 10,
+    })).toThrow();
   });
 });
 

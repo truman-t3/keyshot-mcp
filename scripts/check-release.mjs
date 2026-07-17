@@ -4,6 +4,8 @@ const expected = process.argv[2] || process.env.RELEASE_VERSION;
 const pkg = JSON.parse(fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"));
 const server = JSON.parse(fs.readFileSync(new URL("../server.json", import.meta.url), "utf8"));
 const versionSource = fs.readFileSync(new URL("../src/version.ts", import.meta.url), "utf8");
+const serverSource = fs.readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
+const bridgeSource = fs.readFileSync(new URL("./keyshot_bridge.py", import.meta.url), "utf8");
 const runtimeVersion = versionSource.match(/VERSION\s*=\s*["']([^"']+)["']/)?.[1];
 const versions = [pkg.version, server.version, server.packages?.[0]?.version, runtimeVersion];
 
@@ -18,6 +20,9 @@ if (pkg.mcpName !== server.name) {
 }
 if (server.packages?.[0]?.identifier !== pkg.name) {
   throw new Error("server.json npm package identifier must match package.json name.");
+}
+if (!serverSource.includes('"keyshot_render_all_cameras"') || !bridgeSource.includes('"render_all_cameras"')) {
+  throw new Error("The render-all-cameras MCP tool and bridge operation must be included in the release.");
 }
 
 console.log(`Release metadata is consistent for ${pkg.name}@${pkg.version}.`);

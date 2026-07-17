@@ -51,6 +51,26 @@ export const batchRenderInputSchema = batchRenderSchema.refine(
   },
 );
 
+export const renderAllCamerasSchema = z.object({
+  scenePath: z.string().min(1),
+  outputDir: z.string().min(1),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  samples: z.number().int().positive().optional(),
+  maxTimeSeconds: z.number().positive().optional(),
+  format: imageFormat.optional(),
+  overwrite: z.boolean().optional(),
+  continueOnError: z.boolean().default(true),
+});
+
+export const renderAllCamerasInputSchema = renderAllCamerasSchema.refine(
+  (value) => !(value.samples !== undefined && value.maxTimeSeconds !== undefined),
+  {
+    message: "Choose either samples or maxTimeSeconds, not both.",
+    path: ["maxTimeSeconds"],
+  },
+);
+
 export const importModelSchema = z.object({
   modelPath: z.string().min(1),
   baseScenePath: optionalPath,

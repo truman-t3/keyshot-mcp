@@ -37,6 +37,8 @@ def main():
             data = render(payload, output_files, warnings)
         elif operation == "batch_render":
             data = batch_render(payload, output_files, warnings)
+        elif operation == "render_all_cameras":
+            data = render_all_cameras(payload, output_files, warnings)
         elif operation == "import_model":
             data = import_model(payload, output_files, warnings)
         elif operation == "apply_material":
@@ -50,7 +52,10 @@ def main():
         else:
             raise RuntimeError("Unsupported operation: %s" % operation)
 
-        write_result(result_path, True, data, output_files, warnings, None)
+        operation_error = None
+        if operation == "render_all_cameras" and data.get("failed", 0) > 0:
+            operation_error = "%s of %s camera render(s) failed." % (data["failed"], data["total"])
+        write_result(result_path, operation_error is None, data, output_files, warnings, operation_error)
     except Exception as exc:
         warnings.append(traceback.format_exc())
         write_result(result_path, False, None, output_files, warnings, str(exc))
@@ -99,6 +104,11 @@ def inspect_scene():
 
 
 def list_cameras():
+    names = camera_names()
+    return {"cameras": names, "count": len(names)}
+
+
+def camera_names():
     raw = safe_list_call("getCameras")
     names = []
     for camera in raw:
@@ -113,8 +123,8 @@ def list_cameras():
             )
         if name is None:
             name = repr(camera)
-        names.append(name)
-    return {"cameras": names, "count": len(names)}
+        names.append(str(name))
+    return names
 
 
 def render(payload, output_files, warnings):
@@ -214,6 +224,100 @@ def batch_render(payload, output_files, warnings):
     }
 
 
+def render_all_cameras(payload, output_files, warnings):
+    scene_path = payload.get("scenePath")
+    output_dir = payload.get("outputDir")
+    discovered_cameras = camera_names()
+    excluded_cameras = [name for name in discovered_cameras if name.lower() == "last_active"]
+    cameras = [name for name in discovered_cameras if name.lower() != "last_active"]
+    width = payload.get("width") or 1920
+    height = payload.get("height") or 1080
+    image_format = payload.get("format") or "png"
+    overwrite = bool(payload.get("overwrite", False))
+    continue_on_error = payload.get("continueOnError", True) is not False
+
+    if not scene_path:
+        raise RuntimeError("scenePath is required")
+    if not output_dir:
+        raise RuntimeError("outputDir is required")
+    if not cameras:
+        raise RuntimeError("No cameras were found in the scene.")
+
+    if excluded_cameras:
+        warnings.append("Skipped KeyShot internal camera placeholder(s): %s" % ", ".join(excluded_cameras))
+
+    os.makedirs(output_dir, exist_ok=True)
+    results = []
+    used_stems = set()
+    stopped = False
+
+    for index, camera in enumerate(cameras):
+        output_path = unique_camera_output_path(output_dir, camera, image_format, used_stems)
+        if stopped:
+            results.append(camera_render_result(index, camera, output_path, False, None, True))
+            continue
+
+        try:
+            if os.path.exists(output_path) and not overwrite:
+                raise RuntimeError("Output already exists and overwrite is false: %s" % output_path)
+
+            render_payload = dict(payload)
+            render_payload["camera"] = camera
+            render_payload["outputPath"] = output_path
+            render_payload["width"] = width
+            render_payload["height"] = height
+            render_payload["format"] = image_format
+            rendered = render(render_payload, output_files, warnings)
+            results.append(camera_render_result(index, camera, rendered.get("rendered"), True, None, False))
+        except Exception as exc:
+            error = str(exc)
+            warnings.append("Camera %s (%s) failed: %s" % (index, camera, error))
+            results.append(camera_render_result(index, camera, output_path, False, error, False))
+            if not continue_on_error:
+                stopped = True
+
+    succeeded = len([item for item in results if item["ok"]])
+    failed = len([item for item in results if not item["ok"] and not item["skipped"]])
+    skipped = len([item for item in results if item["skipped"]])
+    return {
+        "scenePath": scene_path,
+        "outputDir": output_dir,
+        "cameras": cameras,
+        "excludedCameras": excluded_cameras,
+        "total": len(cameras),
+        "succeeded": succeeded,
+        "failed": failed,
+        "skipped": skipped,
+        "continueOnError": continue_on_error,
+        "results": results,
+        "width": width,
+        "height": height,
+        "format": image_format,
+    }
+
+
+def camera_render_result(index, camera, output_path, ok, error, skipped):
+    return {
+        "index": index,
+        "camera": camera,
+        "outputPath": output_path,
+        "ok": ok,
+        "error": error,
+        "skipped": skipped,
+    }
+
+
+def unique_camera_output_path(output_dir, camera, image_format, used_stems):
+    base = safe_filename(camera)
+    stem = base
+    suffix = 2
+    while stem.lower() in used_stems:
+        stem = "%s-%s" % (base, suffix)
+        suffix += 1
+    used_stems.add(stem.lower())
+    return os.path.join(output_dir, "%s.%s" % (stem, image_format))
+
+
 def import_model(payload, output_files, warnings):
     model_path = payload.get("modelPath")
     output_scene_path = payload.get("outputScenePath")
@@ -298,6 +402,7 @@ def set_camera(payload, output_files, warnings):
 
     if position is None or look_at is None:
         raise RuntimeError("position and lookAt are required")
+    direction = tuple(look_at[index] - position[index] for index in range(3))
 
     camera = first_camera_object(
         lambda: lux.getCamera(camera_name),
@@ -305,35 +410,20 @@ def set_camera(payload, output_files, warnings):
         lambda: lux.createCamera(camera_name),
     )
 
-    if camera is None and hasattr(lux, "saveCamera"):
-        try:
-            # Current KeyShot versions expose cameras as names rather than camera
-            # objects. saveCamera creates the named camera and setCamera activates it.
-            call_variants(
-                "create named camera",
-                lambda: lux.saveCamera(camera_name),
-                lambda: lux.saveCamera(),
-            )
-            if hasattr(lux, "setCamera"):
-                call_variants("activate camera", lambda: lux.setCamera(camera_name))
-        except RuntimeError:
-            pass
-
     if camera is not None:
         # Object-level API is available: drive the camera object directly.
-        call_variants("set camera position", lambda: camera.setPosition(tuple(position)))
         call_variants("set camera look-at", lambda: camera.setLookAt(tuple(look_at)))
+        call_variants("set camera position", lambda: camera.setPosition(tuple(position)))
+        if hasattr(camera, "setDirection"):
+            call_variants("set camera direction", lambda: camera.setDirection(direction))
         call_variants("set camera up", lambda: camera.setUp(tuple(up)))
     else:
         # No camera object could be obtained: fall back to the lux-level setters,
-        # which address the camera by name. This path never dereferences a None
-        # camera object, so it cannot crash when camera creation is unsupported.
-        call_variants(
-            "set camera position",
-            lambda: lux.setCameraPosition(pos=tuple(position)),
-            lambda: lux.setCameraPosition(tuple(position)),
-            lambda: lux.setCameraPosition(camera_name, tuple(position)),
-        )
+        # which operate on the active camera. Existing named cameras are activated
+        # first. Missing cameras are saved under their new name after the transform
+        # is set; saveCamera is a snapshot operation, not a camera constructor.
+        if camera_name in camera_names() and hasattr(lux, "setCamera"):
+            call_variants("activate camera", lambda: lux.setCamera(camera_name))
         call_variants(
             "set camera look-at",
             lambda: lux.setCameraLookAt(pt=tuple(look_at)),
@@ -341,11 +431,32 @@ def set_camera(payload, output_files, warnings):
             lambda: lux.setCameraLookAt(camera_name, tuple(look_at)),
         )
         call_variants(
+            "set camera position",
+            lambda: lux.setCameraPosition(pos=tuple(position)),
+            lambda: lux.setCameraPosition(tuple(position)),
+            lambda: lux.setCameraPosition(camera_name, tuple(position)),
+        )
+        if hasattr(lux, "setCameraDirection"):
+            call_variants(
+                "set camera direction",
+                lambda: lux.setCameraDirection(dir=direction),
+                lambda: lux.setCameraDirection(direction),
+            )
+        call_variants(
             "set camera up",
             lambda: lux.setCameraUp(up=tuple(up)),
             lambda: lux.setCameraUp(tuple(up)),
             lambda: lux.setCameraUp(camera_name, tuple(up)),
         )
+        if hasattr(lux, "saveCamera"):
+            try:
+                call_variants(
+                    "save named camera",
+                    lambda: lux.saveCamera(),
+                    lambda: lux.saveCamera(camera_name),
+                )
+            except RuntimeError:
+                warnings.append("The active camera was updated, but this KeyShot version could not save the named view.")
 
     save_to(output_scene_path)
     output_files.append(output_scene_path)

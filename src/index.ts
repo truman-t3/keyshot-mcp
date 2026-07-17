@@ -19,6 +19,8 @@ import {
   listMaterialPresetsSchema,
   renderQueueSchema,
   renderQueueInputSchema,
+  renderAllCamerasSchema,
+  renderAllCamerasInputSchema,
   renderSchema,
   renderInputSchema,
   saveSceneSchema,
@@ -137,6 +139,16 @@ server.tool(
   async (args) => {
     const parsed = batchRenderInputSchema.parse(args);
     return toolResponse(await runKeyShotSerialized(config, { operation: "batch_render", ...parsed }));
+  },
+);
+
+server.tool(
+  "keyshot_render_all_cameras",
+  "Discover every camera in one KeyShot scene and render each view into an output directory.",
+  renderAllCamerasSchema.shape,
+  async (args) => {
+    const parsed = renderAllCamerasInputSchema.parse(args);
+    return toolResponse(await runKeyShotSerialized(config, { operation: "render_all_cameras", ...parsed }));
   },
 );
 

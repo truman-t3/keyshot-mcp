@@ -24,6 +24,9 @@ class FakeCamera:
     def setUp(self, up):
         self.calls.append(("setUp", up))
 
+    def setDirection(self, direction):
+        self.calls.append(("setDirection", direction))
+
 
 class FakeLux:
     def __init__(self, camera=None, has_save_camera=False):
@@ -33,6 +36,8 @@ class FakeLux:
         self.set_camera_position = []
         self.set_camera_lookat = []
         self.set_camera_up = []
+        self.set_camera_direction = []
+        self.save_camera_called = []
         self._camera = camera
         self._has_save_camera = has_save_camera
 
@@ -67,6 +72,7 @@ class FakeLux:
         return self._camera
 
     def saveCamera(self, name):
+        self.save_camera_called.append(name)
         if self._has_save_camera:
             return self._camera
         raise RuntimeError("saveCamera unsupported")
@@ -79,6 +85,9 @@ class FakeLux:
 
     def setCameraUp(self, *args):
         self.set_camera_up.append(args)
+
+    def setCameraDirection(self, *args, **kwargs):
+        self.set_camera_direction.append((args, kwargs))
 
 
 class NamedCamera:
@@ -115,6 +124,25 @@ class RenderLux:
 
     def renderImage(self, *args, **kwargs):
         self.render_calls.append((args, kwargs))
+
+
+class AllCameraRenderLux(RenderLux):
+    def __init__(self, cameras, failing=None):
+        super().__init__()
+        self.cameras = cameras
+        self.failing = set(failing or [])
+        self.current_camera = None
+
+    def getCameras(self):
+        return self.cameras
+
+    def setCamera(self, camera):
+        self.current_camera = camera
+
+    def renderImage(self, *args, **kwargs):
+        if self.current_camera in self.failing:
+            raise RuntimeError("simulated render failure")
+        super().renderImage(*args, **kwargs)
 
 
 class CreateCameraLux(FakeLux):
@@ -182,6 +210,73 @@ class RenderTest(unittest.TestCase):
             kb.render({"outputPath": "render.png", "samples": 64, "maxTimeSeconds": 10}, [], [])
 
 
+class RenderAllCamerasTest(unittest.TestCase):
+    def test_discovers_and_renders_every_camera(self):
+        kb.lux = AllCameraRenderLux(["Front", "Back"])
+        with tempfile.TemporaryDirectory() as d:
+            output_files = []
+            data = kb.render_all_cameras(
+                {"scenePath": "scene.bip", "outputDir": d, "width": 320, "height": 240},
+                output_files,
+                [],
+            )
+            self.assertEqual(data["succeeded"], 2)
+            self.assertEqual(data["failed"], 0)
+            self.assertEqual(len(output_files), 2)
+            self.assertEqual([item["camera"] for item in data["results"]], ["Front", "Back"])
+
+    def test_rejects_a_scene_without_cameras(self):
+        kb.lux = AllCameraRenderLux([])
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaisesRegex(RuntimeError, "No cameras"):
+                kb.render_all_cameras({"scenePath": "scene.bip", "outputDir": d}, [], [])
+
+    def test_skips_keyshot_internal_last_active_placeholder(self):
+        kb.lux = AllCameraRenderLux(["last_active", "Front"])
+        with tempfile.TemporaryDirectory() as d:
+            warnings = []
+            data = kb.render_all_cameras({"scenePath": "scene.bip", "outputDir": d}, [], warnings)
+            self.assertEqual(data["cameras"], ["Front"])
+            self.assertEqual(data["excludedCameras"], ["last_active"])
+            self.assertIn("internal camera placeholder", warnings[0])
+
+    def test_continues_after_a_camera_failure_by_default(self):
+        kb.lux = AllCameraRenderLux(["Front", "Broken", "Back"], failing=["Broken"])
+        with tempfile.TemporaryDirectory() as d:
+            data = kb.render_all_cameras({"scenePath": "scene.bip", "outputDir": d}, [], [])
+            self.assertEqual(data["succeeded"], 2)
+            self.assertEqual(data["failed"], 1)
+            self.assertEqual(data["skipped"], 0)
+            self.assertFalse(data["results"][1]["ok"])
+
+    def test_stops_and_marks_remaining_cameras_when_requested(self):
+        kb.lux = AllCameraRenderLux(["Front", "Broken", "Back"], failing=["Broken"])
+        with tempfile.TemporaryDirectory() as d:
+            data = kb.render_all_cameras(
+                {"scenePath": "scene.bip", "outputDir": d, "continueOnError": False}, [], []
+            )
+            self.assertEqual(data["succeeded"], 1)
+            self.assertEqual(data["failed"], 1)
+            self.assertEqual(data["skipped"], 1)
+            self.assertTrue(data["results"][2]["skipped"])
+
+    def test_existing_output_is_a_per_camera_failure(self):
+        kb.lux = AllCameraRenderLux(["Front", "Back"])
+        with tempfile.TemporaryDirectory() as d:
+            open(os.path.join(d, "Front.png"), "w").close()
+            data = kb.render_all_cameras({"scenePath": "scene.bip", "outputDir": d}, [], [])
+            self.assertEqual(data["failed"], 1)
+            self.assertEqual(data["succeeded"], 1)
+            self.assertIn("already exists", data["results"][0]["error"])
+
+    def test_special_and_duplicate_names_get_unique_safe_files(self):
+        kb.lux = AllCameraRenderLux(["Hero / Front", "Hero ? Front", "Hero / Front"])
+        with tempfile.TemporaryDirectory() as d:
+            data = kb.render_all_cameras({"scenePath": "scene.bip", "outputDir": d}, [], [])
+            names = [os.path.basename(item["outputPath"]) for item in data["results"]]
+            self.assertEqual(names, ["Hero___Front.png", "Hero___Front-2.png", "Hero___Front-3.png"])
+
+
 class ImportModelTest(unittest.TestCase):
     def test_opens_base_scene_when_provided(self):
         kb.lux = FakeLux()
@@ -220,8 +315,11 @@ class SetCameraTest(unittest.TestCase):
                 "lookAt": [0, 0, 0],
             }
             kb.set_camera(payload, [], [])
-            self.assertEqual(len(cam.calls), 3)
-            self.assertEqual(cam.calls[0][0], "setPosition")
+            self.assertEqual(len(cam.calls), 4)
+            self.assertEqual(
+                [call[0] for call in cam.calls],
+                ["setLookAt", "setPosition", "setDirection", "setUp"],
+            )
             self.assertEqual(kb.lux.set_camera_position, [])
 
     def test_falls_back_to_lux_api_when_camera_is_none(self):
@@ -236,6 +334,7 @@ class SetCameraTest(unittest.TestCase):
             }
             kb.set_camera(payload, [], [])  # must not raise
             self.assertEqual(kb.lux.set_camera_position, [((1, 2, 3),)])
+            self.assertEqual(kb.lux.set_camera_direction, [((), {"dir": (-1, -2, -3)})])
 
     def test_creates_camera_when_named_camera_does_not_exist(self):
         kb.lux = CreateCameraLux()
@@ -248,7 +347,10 @@ class SetCameraTest(unittest.TestCase):
                 "lookAt": [0, 0, 0],
             }
             kb.set_camera(payload, [], [])
-            self.assertEqual([call[0] for call in kb.lux._camera.calls], ["setPosition", "setLookAt", "setUp"])
+            self.assertEqual(
+                [call[0] for call in kb.lux._camera.calls],
+                ["setLookAt", "setPosition", "setDirection", "setUp"],
+            )
             self.assertEqual(kb.lux.set_camera_position, [])
 
     def test_uses_lux_api_when_camera_creation_returns_boolean(self):
@@ -263,6 +365,19 @@ class SetCameraTest(unittest.TestCase):
             }
             kb.set_camera(payload, [], [])
             self.assertEqual(kb.lux.set_camera_position, [((1, 2, 3),)])
+
+    def test_saves_a_named_camera_after_setting_its_transform(self):
+        kb.lux = FakeLux(camera=None, has_save_camera=True)
+        with tempfile.TemporaryDirectory() as d:
+            payload = {
+                "scenePath": "a.bip",
+                "outputScenePath": os.path.join(d, "out.bip"),
+                "cameraName": "Saved Camera",
+                "position": [1, 2, 3],
+                "lookAt": [0, 0, 0],
+            }
+            kb.set_camera(payload, [], [])
+            self.assertEqual(kb.lux.save_camera_called, ["Saved Camera"])
 
     def test_raises_when_position_missing(self):
         kb.lux = FakeLux(camera=FakeCamera())
