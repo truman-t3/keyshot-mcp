@@ -8,5 +8,8 @@ describe("MCP tool registration", () => {
     expect(indexSource).toContain('"keyshot_render_all_cameras"');
     expect(indexSource).toContain('operation: "render_all_cameras"');
     expect(bridgeSource).toContain('operation == "render_all_cameras"');
+    expect(indexSource).toContain('"keyshot_list_camera_presets"');
+    expect(indexSource).toContain('"keyshot_apply_camera_preset"');
+    expect(bridgeSource).toContain('operation == "set_standard_camera"');
   });
 });

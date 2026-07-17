@@ -8,6 +8,7 @@ export type KeyShotOperation =
   | "import_model"
   | "apply_material"
   | "set_camera"
+  | "set_standard_camera"
   | "set_environment"
   | "save_scene";
 

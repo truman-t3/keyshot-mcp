@@ -6,17 +6,20 @@ import { toolResponse, localFailure } from "./result.js";
 import { runKeyShotSerialized } from "./runner.js";
 import { runRenderQueue } from "./queue.js";
 import { loadMaterialPresets, findMaterialPreset } from "./presets.js";
+import { loadCameraPresets, findCameraPreset } from "./camera-presets.js";
 import { VERSION } from "./version.js";
 import {
   applyMaterialSchema,
   applyMaterialInputSchema,
   applyMaterialPresetInputSchema,
   applyMaterialPresetSchema,
+  applyCameraPresetSchema,
   batchRenderSchema,
   batchRenderInputSchema,
   importModelSchema,
   listCamerasSchema,
   listMaterialPresetsSchema,
+  listCameraPresetsSchema,
   renderQueueSchema,
   renderQueueInputSchema,
   renderAllCamerasSchema,
@@ -234,6 +237,73 @@ server.tool(
   "Create or update a camera from position/look-at vectors and save the resulting scene.",
   setCameraSchema.shape,
   async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "set_camera", ...args })),
+);
+
+server.tool(
+  "keyshot_list_camera_presets",
+  "List standard and custom camera presets from presets/cameras.json or KEYSHOT_CAMERA_PRESETS.",
+  listCameraPresetsSchema.shape,
+  async () => {
+    try {
+      const presets = await loadCameraPresets(config);
+      return toolResponse({
+        ok: true,
+        data: { presets, count: presets.length, source: config.cameraPresetsPath },
+        outputFiles: [],
+        warnings: presets.length === 0 ? ["No valid camera presets found."] : [],
+        keyshotStdoutTail: "",
+        error: null,
+      });
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+  },
+);
+
+server.tool(
+  "keyshot_apply_camera_preset",
+  "Create or update a named camera from a standard or custom camera preset and save the scene.",
+  applyCameraPresetSchema.shape,
+  async (args) => {
+    let presets;
+    try {
+      presets = await loadCameraPresets(config);
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+
+    const preset = findCameraPreset(presets, args.presetName);
+    if (!preset) {
+      const available = presets.map((entry) => entry.name).join(", ") || "(none)";
+      return toolResponse(
+        localFailure(`Camera preset not found: "${args.presetName}". Available: ${available}`),
+      );
+    }
+
+    const request = preset.type === "standard"
+      ? {
+          operation: "set_standard_camera" as const,
+          scenePath: args.scenePath,
+          standardView: preset.standardView,
+          cameraName: args.cameraName ?? preset.name,
+          outputScenePath: args.outputScenePath,
+        }
+      : {
+          operation: "set_camera" as const,
+          scenePath: args.scenePath,
+          cameraName: args.cameraName ?? preset.name,
+          position: preset.position,
+          lookAt: preset.lookAt,
+          up: preset.up,
+          outputScenePath: args.outputScenePath,
+        };
+
+    const result = await runKeyShotSerialized(config, request);
+    if (result.data && typeof result.data === "object") {
+      result.data = { presetName: preset.name, presetType: preset.type, ...result.data };
+    }
+    return toolResponse(result);
+  },
 );
 
 server.tool(

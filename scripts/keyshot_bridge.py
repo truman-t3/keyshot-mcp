@@ -45,6 +45,8 @@ def main():
             data = apply_material(payload, output_files, warnings)
         elif operation == "set_camera":
             data = set_camera(payload, output_files, warnings)
+        elif operation == "set_standard_camera":
+            data = set_standard_camera(payload, output_files, warnings)
         elif operation == "set_environment":
             data = set_environment(payload, output_files, warnings)
         elif operation == "save_scene":
@@ -469,6 +471,54 @@ def set_camera(payload, output_files, warnings):
     }
 
 
+def set_standard_camera(payload, output_files, warnings):
+    output_scene_path = payload.get("outputScenePath")
+    camera_name = payload.get("cameraName") or "MCP Camera"
+    standard_view = str(payload.get("standardView") or "").lower()
+    view_constants = {
+        "front": "VIEW_FRONT",
+        "back": "VIEW_BACK",
+        "left": "VIEW_LEFT",
+        "right": "VIEW_RIGHT",
+        "top": "VIEW_TOP",
+        "bottom": "VIEW_BOTTOM",
+        "isometric": "VIEW_ISOMETRIC",
+    }
+
+    constant_name = view_constants.get(standard_view)
+    if constant_name is None:
+        raise RuntimeError("Unsupported standard camera view: %s" % standard_view)
+    if not hasattr(lux, "setStandardView"):
+        raise RuntimeError("KeyShot lux.setStandardView is not available.")
+    if not hasattr(lux, constant_name):
+        raise RuntimeError("KeyShot camera constant is not available: %s" % constant_name)
+
+    if camera_name in camera_names():
+        if not hasattr(lux, "setCamera"):
+            raise RuntimeError("KeyShot cannot activate the existing camera: %s" % camera_name)
+        call_non_false_variants("activate camera", lambda: lux.setCamera(camera_name))
+    else:
+        call_non_false_variants(
+            "create camera",
+            lambda: lux.newCamera(camera_name),
+            lambda: lux.createCamera(camera_name),
+        )
+
+    call_variants("set standard camera view", lambda: lux.setStandardView(getattr(lux, constant_name)))
+    call_variants(
+        "save standard camera",
+        lambda: lux.saveCamera(),
+        lambda: lux.saveCamera(camera_name),
+    )
+    save_to(output_scene_path)
+    output_files.append(output_scene_path)
+    return {
+        "cameraName": camera_name,
+        "standardView": standard_view,
+        "savedScene": output_scene_path,
+    }
+
+
 def set_environment(payload, output_files, warnings):
     output_scene_path = payload.get("outputScenePath")
     environment_name = payload.get("environmentName")
@@ -597,6 +647,19 @@ def call_variants(label, *callbacks):
     for callback in callbacks:
         try:
             return callback()
+        except Exception as exc:
+            errors.append(str(exc))
+    raise RuntimeError("%s is unsupported or failed: %s" % (label, " | ".join(errors)))
+
+
+def call_non_false_variants(label, *callbacks):
+    errors = []
+    for callback in callbacks:
+        try:
+            value = callback()
+            if value is not False:
+                return value
+            errors.append("returned false")
         except Exception as exc:
             errors.append(str(exc))
     raise RuntimeError("%s is unsupported or failed: %s" % (label, " | ".join(errors)))

@@ -104,6 +104,15 @@ export const setCameraSchema = z.object({
   outputScenePath: z.string().min(1),
 });
 
+export const listCameraPresetsSchema = z.object({});
+
+export const applyCameraPresetSchema = z.object({
+  scenePath: z.string().min(1),
+  presetName: z.string().min(1),
+  cameraName: z.string().min(1).optional(),
+  outputScenePath: z.string().min(1),
+});
+
 export const setEnvironmentSchema = z.object({
   scenePath: z.string().min(1),
   environmentName: z.string().min(1).optional(),

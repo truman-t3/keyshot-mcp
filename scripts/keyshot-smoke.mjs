@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { findCameraPreset, loadCameraPresets } from "../dist/camera-presets.js";
 import { getConfig } from "../dist/config.js";
 import { runKeyShotSerialized } from "../dist/runner.js";
 
@@ -18,6 +19,21 @@ async function run(label, request) {
   }
   process.stdout.write("ok\n");
   return result;
+}
+
+async function applyStandardPreset(label, scenePath, presetName, outputScenePath) {
+  const presets = await loadCameraPresets(config);
+  const preset = findCameraPreset(presets, presetName);
+  if (!preset || preset.type !== "standard") {
+    throw new Error(`Standard camera preset not found: ${presetName}`);
+  }
+  return run(label, {
+    operation: "set_standard_camera",
+    scenePath,
+    cameraName: preset.name,
+    standardView: preset.standardView,
+    outputScenePath,
+  });
 }
 
 const status = await run("1/7 KeyShot status", { operation: "status" });
@@ -38,29 +54,23 @@ if (!Array.isArray(objects) || objects.length === 0) {
   throw new Error("Imported scene did not contain any inspectable objects.");
 }
 
-const firstCameraResult = await run("4/7 Create first camera and save scene", {
-  operation: "set_camera",
-  scenePath: importedScene,
-  cameraName: "MCP Front",
-  position: [4.5, 3.5, 4.5],
-  lookAt: [0, 0, 0],
-  up: [0, 1, 0],
-  outputScenePath: "demo/keyshot-mcp-demo-camera-front.bip",
-});
+const firstCameraResult = await applyStandardPreset(
+  "4/7 Apply Front camera preset",
+  importedScene,
+  "Front",
+  "demo/keyshot-mcp-demo-preset-front.bip",
+);
 const firstCameraScene = firstCameraResult.outputFiles[0];
-if (!firstCameraScene) throw new Error("First camera operation did not return a saved scene path.");
+if (!firstCameraScene) throw new Error("Front preset did not return a saved scene path.");
 
-const secondCameraResult = await run("5/7 Create second camera and save scene", {
-  operation: "set_camera",
-  scenePath: firstCameraScene,
-  cameraName: "MCP Angle",
-  position: [6.0, 2.5, 3.0],
-  lookAt: [0, 0, 0],
-  up: [0, 1, 0],
-  outputScenePath: "demo/keyshot-mcp-demo-camera-all.bip",
-});
+const secondCameraResult = await applyStandardPreset(
+  "5/7 Apply Isometric camera preset",
+  firstCameraScene,
+  "Isometric",
+  "demo/keyshot-mcp-demo-presets.bip",
+);
 const cameraScene = secondCameraResult.outputFiles[0];
-if (!cameraScene) throw new Error("Second camera operation did not return a saved scene path.");
+if (!cameraScene) throw new Error("Isometric preset did not return a saved scene path.");
 
 const rendered = await run("6/7 Discover and render every camera", {
   operation: "render_all_cameras",
@@ -80,10 +90,10 @@ if (!renderData || renderData.failed !== 0 || renderData.succeeded < 2) {
 }
 
 const namedResults = renderData.results.filter(
-  (entry) => entry.camera === "MCP Front" || entry.camera === "MCP Angle",
+  (entry) => entry.camera === "Front" || entry.camera === "Isometric",
 );
 if (namedResults.length !== 2 || namedResults.some((entry) => !entry.ok)) {
-  throw new Error("The two MCP demo cameras were not both rendered successfully.");
+  throw new Error("The Front and Isometric preset cameras were not both rendered successfully.");
 }
 const hashes = await Promise.all(namedResults.map(async (entry) =>
   crypto.createHash("sha256").update(await fs.readFile(entry.outputPath)).digest("hex")
@@ -103,5 +113,5 @@ console.log(JSON.stringify({
   scenePath: cameraScene,
   cameraCount: renderData.total,
   renderedImages: rendered.outputFiles,
-  verifiedCameras: namedResults.map((entry) => entry.camera),
+  verifiedPresets: namedResults.map((entry) => entry.camera),
 }, null, 2));

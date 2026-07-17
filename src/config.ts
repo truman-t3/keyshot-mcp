@@ -11,6 +11,7 @@ export type ServerConfig = {
   tmpDir: string;
   bridgeScriptPath: string;
   materialPresetsPath: string;
+  cameraPresetsPath: string;
 };
 
 const DEFAULT_KEYSHOT_EXE = process.platform === "win32" ? "keyshot_headless.exe" : "keyshot_headless";
@@ -34,6 +35,9 @@ export function getConfig(): ServerConfig {
     bridgeScriptPath: path.join(projectRoot, "scripts", "keyshot_bridge.py"),
     materialPresetsPath: path.resolve(
       process.env.KEYSHOT_MATERIAL_PRESETS ?? path.join(projectRoot, "presets", "materials.json"),
+    ),
+    cameraPresetsPath: path.resolve(
+      process.env.KEYSHOT_CAMERA_PRESETS ?? path.join(projectRoot, "presets", "cameras.json"),
     ),
   };
 }

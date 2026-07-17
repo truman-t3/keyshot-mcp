@@ -15,6 +15,7 @@ function makeFakeConfig(overrides: Partial<ServerConfig> = {}): ServerConfig {
     tmpDir: "C:/fake/work/tmp",
     bridgeScriptPath: "C:/fake/scripts/keyshot_bridge.py",
     materialPresetsPath: "C:/fake/presets/materials.json",
+    cameraPresetsPath: "C:/fake/presets/cameras.json",
     ...overrides,
   };
 }
@@ -39,6 +40,7 @@ describe("getConfig", () => {
     expect(config.keyshotAllowExternalOutputs).toBe(false);
     expect(config.bridgeScriptPath).toBe(path.join(config.projectRoot, "scripts", "keyshot_bridge.py"));
     expect(config.tmpDir).toBe(path.join(config.projectRoot, "work", "tmp"));
+    expect(config.cameraPresetsPath).toBe(path.join(config.projectRoot, "presets", "cameras.json"));
   });
 
   it("enables external outputs only for an explicit true value", () => {
@@ -54,6 +56,11 @@ describe("getConfig", () => {
   it("honors KEYSHOT_HEADLESS_EXE override", () => {
     process.env.KEYSHOT_HEADLESS_EXE = "D:/apps/keyshot_headless.exe";
     expect(getConfig().keyshotHeadlessExe).toBe("D:/apps/keyshot_headless.exe");
+  });
+
+  it("honors KEYSHOT_CAMERA_PRESETS override", () => {
+    process.env.KEYSHOT_CAMERA_PRESETS = "D:/presets/my-cameras.json";
+    expect(getConfig().cameraPresetsPath).toBe(path.resolve("D:/presets/my-cameras.json"));
   });
 
   it("parses KEYSHOT_TIMEOUT_MS as a positive integer", () => {

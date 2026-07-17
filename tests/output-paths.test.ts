@@ -19,6 +19,7 @@ function config(overrides: Partial<ServerConfig> = {}): ServerConfig {
     tmpDir: path.join(root, "tmp"),
     bridgeScriptPath: path.join(root, "bridge.py"),
     materialPresetsPath: path.join(root, "presets.json"),
+    cameraPresetsPath: path.join(root, "camera-presets.json"),
     ...overrides,
   };
 }

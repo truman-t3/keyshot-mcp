@@ -24,5 +24,12 @@ if (server.packages?.[0]?.identifier !== pkg.name) {
 if (!serverSource.includes('"keyshot_render_all_cameras"') || !bridgeSource.includes('"render_all_cameras"')) {
   throw new Error("The render-all-cameras MCP tool and bridge operation must be included in the release.");
 }
+if (
+  !serverSource.includes('"keyshot_list_camera_presets"') ||
+  !serverSource.includes('"keyshot_apply_camera_preset"') ||
+  !bridgeSource.includes('"set_standard_camera"')
+) {
+  throw new Error("Camera preset MCP tools and the standard-camera bridge operation must be included.");
+}
 
 console.log(`Release metadata is consistent for ${pkg.name}@${pkg.version}.`);

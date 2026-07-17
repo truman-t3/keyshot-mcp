@@ -162,6 +162,49 @@ class BooleanCreateCameraLux(FakeLux):
         return True
 
 
+class StandardCameraLux(FakeLux):
+    VIEW_FRONT = 1
+    VIEW_BACK = 2
+    VIEW_LEFT = 3
+    VIEW_RIGHT = 4
+    VIEW_TOP = 5
+    VIEW_BOTTOM = 6
+    VIEW_ISOMETRIC = 7
+
+    def __init__(self, cameras=None):
+        super().__init__()
+        self.cameras = list(cameras or [])
+        self.active_camera = None
+        self.new_camera_calls = []
+        self.standard_view_calls = []
+
+    def getCameras(self):
+        return self.cameras
+
+    def setCamera(self, name):
+        if name not in self.cameras:
+            return False
+        self.active_camera = name
+        return True
+
+    def newCamera(self, name):
+        self.cameras.append(name)
+        self.active_camera = name
+        self.new_camera_calls.append(name)
+        return True
+
+    def setStandardView(self, view):
+        self.standard_view_calls.append(view)
+
+    def saveCamera(self, *args):
+        self.save_camera_called.append(args)
+
+
+class StandardCameraWithoutConstantLux(FakeLux):
+    def setStandardView(self, view):
+        pass
+
+
 class ListCamerasTest(unittest.TestCase):
     def test_reads_camera_objects(self):
         lux = FakeLux()
@@ -389,6 +432,73 @@ class SetCameraTest(unittest.TestCase):
             }
             with self.assertRaises(RuntimeError):
                 kb.set_camera(payload, [], [])
+
+
+class SetStandardCameraTest(unittest.TestCase):
+    def test_creates_and_saves_every_standard_view(self):
+        expected = {
+            "front": 1,
+            "back": 2,
+            "left": 3,
+            "right": 4,
+            "top": 5,
+            "bottom": 6,
+            "isometric": 7,
+        }
+        for view, constant in expected.items():
+            with self.subTest(view=view), tempfile.TemporaryDirectory() as d:
+                kb.lux = StandardCameraLux()
+                output = os.path.join(d, "%s.bip" % view)
+                result = kb.set_standard_camera(
+                    {
+                        "standardView": view,
+                        "cameraName": view.title(),
+                        "outputScenePath": output,
+                    },
+                    [],
+                    [],
+                )
+                self.assertEqual(kb.lux.new_camera_calls, [view.title()])
+                self.assertEqual(kb.lux.standard_view_calls, [constant])
+                self.assertEqual(kb.lux.save_camera_called, [()])
+                self.assertTrue(os.path.exists(output))
+                self.assertEqual(result["standardView"], view)
+
+    def test_updates_an_existing_named_camera(self):
+        kb.lux = StandardCameraLux(cameras=["Front"])
+        with tempfile.TemporaryDirectory() as d:
+            kb.set_standard_camera(
+                {
+                    "standardView": "front",
+                    "cameraName": "Front",
+                    "outputScenePath": os.path.join(d, "out.bip"),
+                },
+                [],
+                [],
+            )
+            self.assertEqual(kb.lux.active_camera, "Front")
+            self.assertEqual(kb.lux.new_camera_calls, [])
+
+    def test_rejects_an_unknown_standard_view(self):
+        kb.lux = StandardCameraLux()
+        with self.assertRaisesRegex(RuntimeError, "Unsupported standard camera view"):
+            kb.set_standard_camera(
+                {"standardView": "diagonal", "outputScenePath": "out.bip"}, [], []
+            )
+
+    def test_reports_missing_standard_view_api(self):
+        kb.lux = FakeLux()
+        with self.assertRaisesRegex(RuntimeError, "setStandardView"):
+            kb.set_standard_camera(
+                {"standardView": "front", "outputScenePath": "out.bip"}, [], []
+            )
+
+    def test_reports_missing_view_constant(self):
+        kb.lux = StandardCameraWithoutConstantLux()
+        with self.assertRaisesRegex(RuntimeError, "VIEW_FRONT"):
+            kb.set_standard_camera(
+                {"standardView": "front", "outputScenePath": "out.bip"}, [], []
+            )
 
 
 if __name__ == "__main__":

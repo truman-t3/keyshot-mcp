@@ -25,6 +25,7 @@ function makeConfig(overrides: Partial<ServerConfig> = {}): ServerConfig {
     tmpDir: join(tmpRoot, "work", "tmp"),
     bridgeScriptPath: mjsPath,
     materialPresetsPath: join(tmpRoot, "presets", "materials.json"),
+    cameraPresetsPath: join(tmpRoot, "presets", "cameras.json"),
     ...overrides,
   };
 }

@@ -1,0 +1,30 @@
+{
+  "Front": {
+    "standardView": "front",
+    "description": "Front standard view / 正视图"
+  },
+  "Back": {
+    "standardView": "back",
+    "description": "Back standard view / 后视图"
+  },
+  "Left": {
+    "standardView": "left",
+    "description": "Left standard view / 左视图"
+  },
+  "Right": {
+    "standardView": "right",
+    "description": "Right standard view / 右视图"
+  },
+  "Top": {
+    "standardView": "top",
+    "description": "Top standard view / 顶视图"
+  },
+  "Bottom": {
+    "standardView": "bottom",
+    "description": "Bottom standard view / 底视图"
+  },
+  "Isometric": {
+    "standardView": "isometric",
+    "description": "Isometric standard view / 等距视图"
+  }
+}

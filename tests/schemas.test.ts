@@ -3,6 +3,7 @@ import {
   applyMaterialInputSchema,
   applyMaterialSchema,
   applyMaterialPresetSchema,
+  applyCameraPresetSchema,
   batchRenderInputSchema,
   batchRenderSchema,
   importModelSchema,
@@ -112,6 +113,19 @@ describe("batchRenderSchema", () => {
         maxTimeSeconds: 10,
       }),
     ).toThrow();
+  });
+});
+
+describe("applyCameraPresetSchema", () => {
+  it("requires scene, preset, and output scene while allowing a camera name override", () => {
+    const parsed = applyCameraPresetSchema.parse({
+      scenePath: "a.bip",
+      presetName: "Isometric",
+      cameraName: "Hero View",
+      outputScenePath: "out.bip",
+    });
+    expect(parsed.cameraName).toBe("Hero View");
+    expect(() => applyCameraPresetSchema.parse({ scenePath: "a.bip", presetName: "Front" })).toThrow();
   });
 });
 
