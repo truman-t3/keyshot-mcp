@@ -254,18 +254,6 @@ Linux.
 - Add depth-of-field and additional lens controls when stable headless APIs are
   available.
 
-### Star history
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/star-history-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/star-history-light.svg">
-  <img alt="GitHub star history for truman-t3/keyshot-mcp" src="assets/star-history-light.svg">
-</picture>
-
-The chart uses the actual `starred_at` date for each GitHub star and displays a
-cumulative step line. A weekly GitHub Action updates it only when detailed
-stargazer dates are available.
-
 ### License and security
 
 Released under the [MIT License](LICENSE). See [SECURITY.md](SECURITY.md) for
@@ -502,17 +490,6 @@ CI 在 Windows 和 Ubuntu 上使用 Node.js 20、24 运行。Linux CI 验证 MCP
 - 在更多 KeyShot 正式版本上完成实机验证。
 - 验证 macOS 安装和 headless 行为。
 - 在 headless API 稳定支持后增加景深和更多镜头控制。
-
-### 星标趋势
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/star-history-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/star-history-light.svg">
-  <img alt="truman-t3/keyshot-mcp 的 GitHub 星标趋势" src="assets/star-history-light.svg">
-</picture>
-
-趋势图使用每颗 GitHub Star 的真实 `starred_at` 日期绘制累计阶梯线。GitHub Actions
-每周检查一次，并且只在能够取得逐星日期时更新。
 
 ### 许可证与安全
 

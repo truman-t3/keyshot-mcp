@@ -6,7 +6,6 @@ const server = JSON.parse(fs.readFileSync(new URL("../server.json", import.meta.
 const versionSource = fs.readFileSync(new URL("../src/version.ts", import.meta.url), "utf8");
 const serverSource = fs.readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
 const bridgeSource = fs.readFileSync(new URL("./keyshot_bridge.py", import.meta.url), "utf8");
-const readmeSource = fs.readFileSync(new URL("../README.md", import.meta.url), "utf8");
 const runtimeVersion = versionSource.match(/VERSION\s*=\s*["']([^"']+)["']/)?.[1];
 const versions = [pkg.version, server.version, server.packages?.[0]?.version, runtimeVersion];
 
@@ -45,13 +44,4 @@ for (const capability of [
     throw new Error(`The ${capability} capability must be included in the release.`);
   }
 }
-for (const asset of ["assets/star-history-light.svg", "assets/star-history-dark.svg"]) {
-  if (!fs.existsSync(new URL(`../${asset}`, import.meta.url))) {
-    throw new Error(`Missing release asset: ${asset}.`);
-  }
-  if (!readmeSource.includes(asset)) {
-    throw new Error(`README must reference ${asset}.`);
-  }
-}
-
 console.log(`Release metadata is consistent for ${pkg.name}@${pkg.version}.`);
