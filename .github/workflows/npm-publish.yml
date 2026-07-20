@@ -7,6 +7,11 @@ on:
         description: "Version to publish (for example 0.7.0); tag v<version> must exist"
         required: true
         type: string
+      registry_metadata_ref:
+        description: "Optional branch or ref containing a metadata-only Registry correction"
+        required: false
+        default: ""
+        type: string
   push:
     tags:
       - "v*"
@@ -107,7 +112,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
-          ref: ${{ github.event_name == 'workflow_dispatch' && format('refs/tags/v{0}', inputs.version) || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.registry_metadata_ref != '' && inputs.registry_metadata_ref || (github.event_name == 'workflow_dispatch' && format('refs/tags/v{0}', inputs.version) || github.ref) }}
 
       - name: Install MCP Registry publisher
         shell: bash
