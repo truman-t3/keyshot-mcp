@@ -16,6 +16,7 @@ import {
   renderSchema,
   saveSceneSchema,
   setCameraSchema,
+  setEnvironmentSchema,
 } from "../src/schemas.js";
 
 describe("renderSchema", () => {
@@ -51,6 +52,19 @@ describe("importModelSchema", () => {
     });
     expect(withBase.baseScenePath).toBe("base.bip");
   });
+
+  it("accepts optional product-placement import controls", () => {
+    const parsed = importModelSchema.parse({
+      modelPath: "m.obj",
+      outputScenePath: "out.bip",
+      centerGeometry: true,
+      snapToGround: true,
+      adjustCameraLookAt: true,
+      adjustEnvironment: true,
+    });
+    expect(parsed.centerGeometry).toBe(true);
+    expect(parsed.snapToGround).toBe(true);
+  });
 });
 
 describe("setCameraSchema", () => {
@@ -61,7 +75,7 @@ describe("setCameraSchema", () => {
     outputScenePath: "out.bip",
   };
 
-  it("requires position and lookAt", () => {
+  it("requires position and lookAt as a pair", () => {
     expect(() => setCameraSchema.parse({ ...valid, lookAt: undefined } as object)).toThrow();
     expect(() => setCameraSchema.parse({ ...valid, position: undefined } as object)).toThrow();
   });
@@ -69,6 +83,37 @@ describe("setCameraSchema", () => {
   it("accepts an optional up vector", () => {
     const parsed = setCameraSchema.parse({ ...valid, up: [0, 1, 0] });
     expect(parsed.up).toEqual([0, 1, 0]);
+  });
+
+  it("allows lens-only and distance-only camera updates", () => {
+    expect(setCameraSchema.parse({
+      scenePath: "a.bip",
+      cameraName: "Hero",
+      focalLength: 85,
+      outputScenePath: "out.bip",
+    }).focalLength).toBe(85);
+    expect(setCameraSchema.parse({
+      scenePath: "a.bip",
+      distance: 4,
+      outputScenePath: "out.bip",
+    }).distance).toBe(4);
+  });
+
+  it("rejects conflicting or out-of-range lens controls", () => {
+    const base = { scenePath: "a.bip", outputScenePath: "out.bip" };
+    expect(() => setCameraSchema.parse({ ...base, fieldOfView: 45, focalLength: 50 })).toThrow();
+    expect(() => setCameraSchema.parse({ ...base, fieldOfView: 180 })).toThrow();
+    expect(() => setCameraSchema.parse({ ...base, focalLength: 4 })).toThrow();
+    expect(() => setCameraSchema.parse(base)).toThrow();
+  });
+});
+
+describe("setEnvironmentSchema", () => {
+  it("accepts rotations from 0 up to but not including 360 degrees", () => {
+    const base = { scenePath: "a.bip", outputScenePath: "out.bip" };
+    expect(setEnvironmentSchema.parse({ ...base, rotation: 0 }).rotation).toBe(0);
+    expect(setEnvironmentSchema.parse({ ...base, rotation: 359.9 }).rotation).toBe(359.9);
+    expect(() => setEnvironmentSchema.parse({ ...base, rotation: 360 })).toThrow();
   });
 });
 

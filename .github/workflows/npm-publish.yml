@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to publish (for example 0.6.0); tag v<version> must exist"
+        description: "Version to publish (for example 0.7.0); tag v<version> must exist"
         required: true
         type: string
   push:

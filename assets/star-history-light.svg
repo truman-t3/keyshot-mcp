@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="360" viewBox="0 0 720 360" role="img" aria-labelledby="title desc">
+  <title id="title">Star History for truman-t3/keyshot-mcp</title>
+  <desc id="desc">5 GitHub stars through 2026-07-20, plotted by the date each star was added.</desc>
+  <style>
+    .text { fill: #24292f; font: 16px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .title { fill: #1f2328; font: 700 26px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .muted { fill: #57606a; font: 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+  </style>
+  <rect fill="#ffffff" width="720" height="360" rx="16"/>
+  <rect fill="#f6f8fa" stroke="#d0d7de" x="32" y="32" width="656" height="296" rx="12"/>
+  <text class="title" x="64" y="78">Star History</text>
+  <text class="muted" x="64" y="104">truman-t3/keyshot-mcp</text>
+  <rect fill="#ffffff" stroke="#d0d7de" x="548" y="55" width="92" height="36" rx="18"/>
+  <text class="text" x="571" y="79">&#9733; 5</text>
+  <line stroke="#d0d7de" x1="88" y1="258" x2="632" y2="258"/>
+  <line stroke="#d0d7de" x1="88" y1="128" x2="88" y2="258"/>
+  <text class="muted" x="66" y="263">0</text>
+  <text class="muted" x="66" y="136">5</text>
+  <text class="muted" x="88" y="288">2026-07-06</text>
+  <text class="muted" x="555" y="288">2026-07-20</text>
+  <path fill="none" stroke="#0969da" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" d="M 88 258 H 88.00 V 128.00 H 632"/>
+  <circle fill="#0969da" stroke="#ffffff" stroke-width="3" cx="88.00" cy="128.00" r="6"/>
+  <circle fill="#0969da" stroke="#ffffff" stroke-width="3" cx="632" cy="128.00" r="7"/>
+  <text class="text" x="486" y="122">Current stars: 5</text>
+</svg>

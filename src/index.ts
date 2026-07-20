@@ -28,6 +28,7 @@ import {
   renderInputSchema,
   saveSceneSchema,
   scenePathSchema,
+  setCameraInputSchema,
   setCameraSchema,
   setEnvironmentSchema,
 } from "./schemas.js";
@@ -157,7 +158,7 @@ server.tool(
 
 server.tool(
   "keyshot_import_model",
-  "Import a model into an optional base scene and save the resulting scene.",
+  "Import a model into an optional base scene, optionally center and ground it, adjust the camera or environment, and save the resulting scene.",
   importModelSchema.shape,
   async (args) =>
     toolResponse(
@@ -234,9 +235,12 @@ server.tool(
 
 server.tool(
   "keyshot_set_camera",
-  "Create or update a camera from position/look-at vectors and save the resulting scene.",
-  setCameraSchema.shape,
-  async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "set_camera", ...args })),
+  "Create or update a camera transform, distance, field of view, or focal length and save the resulting scene.",
+  setCameraInputSchema.shape,
+  async (args) => {
+    const parsed = setCameraSchema.parse(args);
+    return toolResponse(await runKeyShotSerialized(config, { operation: "set_camera", ...parsed }));
+  },
 );
 
 server.tool(
@@ -308,7 +312,7 @@ server.tool(
 
 server.tool(
   "keyshot_set_environment",
-  "Set a scene environment by name or file when supported by KeyShot headless scripting.",
+  "Set a scene environment by name or file, brightness, or rotation when supported by KeyShot headless scripting.",
   setEnvironmentSchema.shape,
   async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "set_environment", ...args })),
 );

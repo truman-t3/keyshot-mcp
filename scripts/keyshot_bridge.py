@@ -336,16 +336,50 @@ def import_model(payload, output_files, warnings):
     else:
         new_scene(warnings)
 
-    call_variants(
-        "import model",
-        lambda: lux.importFile(model_path),
-        lambda: lux.importFile(str(model_path)),
-    )
+    import_option_names = {
+        "centerGeometry": "center_geometry",
+        "snapToGround": "snap_to_ground",
+        "adjustCameraLookAt": "adjust_camera_look_at",
+        "adjustEnvironment": "adjust_environment",
+    }
+    requested_options = {
+        option_name: payload[payload_name]
+        for payload_name, option_name in import_option_names.items()
+        if payload_name in payload and payload[payload_name] is not None
+    }
+
+    if requested_options:
+        get_import_options = getattr(lux, "getImportOptions", None)
+        if not callable(get_import_options):
+            raise RuntimeError(
+                "Advanced import options are unsupported because KeyShot lux.getImportOptions is not available."
+            )
+        options = call_variants(
+            "read import options",
+            lambda: get_import_options(ext=os.path.splitext(model_path)[1], getDefaults=True),
+            lambda: get_import_options(os.path.splitext(model_path)[1], True),
+            lambda: get_import_options(),
+        )
+        if not isinstance(options, dict):
+            raise RuntimeError("KeyShot did not return a usable import options dictionary.")
+        options.update(requested_options)
+        call_variants(
+            "import model with options",
+            lambda: lux.importFile(model_path, opts=options),
+            lambda: lux.importFile(model_path, False, True, options),
+        )
+    else:
+        call_variants(
+            "import model",
+            lambda: lux.importFile(model_path),
+            lambda: lux.importFile(str(model_path)),
+        )
     save_to(output_scene_path)
     output_files.append(output_scene_path)
     return {
         "importedModel": model_path,
         "baseScene": base_scene_path,
+        "importOptions": requested_options,
         "savedScene": output_scene_path,
     }
 
@@ -401,31 +435,51 @@ def set_camera(payload, output_files, warnings):
     position = payload.get("position")
     look_at = payload.get("lookAt")
     up = payload.get("up") or [0, 1, 0]
+    distance = payload.get("distance")
+    field_of_view = payload.get("fieldOfView")
+    focal_length = payload.get("focalLength")
 
-    if position is None or look_at is None:
-        raise RuntimeError("position and lookAt are required")
-    direction = tuple(look_at[index] - position[index] for index in range(3))
-
-    camera = first_camera_object(
-        lambda: lux.getCamera(camera_name),
-        lambda: lux.newCamera(camera_name),
-        lambda: lux.createCamera(camera_name),
+    if (position is None) != (look_at is None):
+        raise RuntimeError("position and lookAt must be provided together")
+    if field_of_view is not None and focal_length is not None:
+        raise RuntimeError("fieldOfView and focalLength cannot be used together")
+    if position is None and distance is None and field_of_view is None and focal_length is None:
+        raise RuntimeError("No supported camera change was requested.")
+    direction = (
+        tuple(look_at[index] - position[index] for index in range(3))
+        if position is not None
+        else None
     )
 
-    if camera is not None:
+    existing_camera = camera_name in camera_names()
+    if existing_camera and hasattr(lux, "setCamera"):
+        call_non_false_variants("activate camera", lambda: lux.setCamera(camera_name))
+
+    if existing_camera:
+        camera = first_camera_object(
+            lambda: lux.getCamera(camera_name),
+            lambda: lux.getCamera(),
+        )
+    else:
+        camera = first_camera_object(
+            lambda: lux.newCamera(camera_name),
+            lambda: lux.createCamera(camera_name),
+            lambda: lux.getCamera(camera_name),
+            lambda: lux.getCamera(),
+        )
+
+    if camera is not None and position is not None:
         # Object-level API is available: drive the camera object directly.
         call_variants("set camera look-at", lambda: camera.setLookAt(tuple(look_at)))
         call_variants("set camera position", lambda: camera.setPosition(tuple(position)))
         if hasattr(camera, "setDirection"):
             call_variants("set camera direction", lambda: camera.setDirection(direction))
         call_variants("set camera up", lambda: camera.setUp(tuple(up)))
-    else:
+    elif position is not None:
         # No camera object could be obtained: fall back to the lux-level setters,
         # which operate on the active camera. Existing named cameras are activated
         # first. Missing cameras are saved under their new name after the transform
         # is set; saveCamera is a snapshot operation, not a camera constructor.
-        if camera_name in camera_names() and hasattr(lux, "setCamera"):
-            call_variants("activate camera", lambda: lux.setCamera(camera_name))
         call_variants(
             "set camera look-at",
             lambda: lux.setCameraLookAt(pt=tuple(look_at)),
@@ -450,15 +504,34 @@ def set_camera(payload, output_files, warnings):
             lambda: lux.setCameraUp(tuple(up)),
             lambda: lux.setCameraUp(camera_name, tuple(up)),
         )
-        if hasattr(lux, "saveCamera"):
-            try:
-                call_variants(
-                    "save named camera",
-                    lambda: lux.saveCamera(),
-                    lambda: lux.saveCamera(camera_name),
-                )
-            except RuntimeError:
-                warnings.append("The active camera was updated, but this KeyShot version could not save the named view.")
+    if distance is not None:
+        call_variants(
+            "set camera distance",
+            lambda: lux.setCameraDistance(dist=distance),
+            lambda: lux.setCameraDistance(distance),
+        )
+    if field_of_view is not None:
+        call_variants(
+            "set camera field of view",
+            lambda: lux.setCameraFieldOfView(deg=field_of_view),
+            lambda: lux.setCameraFieldOfView(field_of_view),
+        )
+    if focal_length is not None:
+        call_variants(
+            "set camera focal length",
+            lambda: lux.setCameraFocalLength(length=focal_length),
+            lambda: lux.setCameraFocalLength(focal_length),
+        )
+
+    if hasattr(lux, "saveCamera"):
+        try:
+            call_variants(
+                "save named camera",
+                lambda: lux.saveCamera(),
+                lambda: lux.saveCamera(camera_name),
+            )
+        except RuntimeError:
+            warnings.append("The camera was updated, but this KeyShot version could not save the named view.")
 
     save_to(output_scene_path)
     output_files.append(output_scene_path)
@@ -467,6 +540,9 @@ def set_camera(payload, output_files, warnings):
         "position": position,
         "lookAt": look_at,
         "up": up,
+        "distance": distance,
+        "fieldOfView": field_of_view,
+        "focalLength": focal_length,
         "savedScene": output_scene_path,
     }
 
@@ -524,6 +600,7 @@ def set_environment(payload, output_files, warnings):
     environment_name = payload.get("environmentName")
     environment_path = payload.get("environmentPath")
     brightness = payload.get("brightness")
+    rotation = payload.get("rotation")
 
     changed = False
     if environment_path:
@@ -545,11 +622,27 @@ def set_environment(payload, output_files, warnings):
         changed = True
 
     if brightness is not None:
-        call_variants(
-            "set environment brightness",
-            lambda: lux.setEnvironmentBrightness(brightness),
-            lambda: lux.setEnvironmentPower(brightness),
-        )
+        environment = active_environment()
+        if environment is not None and hasattr(environment, "setBrightness"):
+            call_variants("set environment brightness", lambda: environment.setBrightness(brightness))
+        else:
+            call_variants(
+                "set environment brightness",
+                lambda: lux.setEnvironmentBrightness(brightness),
+                lambda: lux.setEnvironmentPower(brightness),
+            )
+        changed = True
+
+    if rotation is not None:
+        environment = active_environment()
+        if environment is not None and hasattr(environment, "setRotation"):
+            call_variants("set environment rotation", lambda: environment.setRotation(rotation))
+        else:
+            call_variants(
+                "set environment rotation",
+                lambda: lux.setEnvironmentRotation(rotation),
+                lambda: lux.rotateEnvironment(rotation),
+            )
         changed = True
 
     if not changed:
@@ -561,8 +654,19 @@ def set_environment(payload, output_files, warnings):
         "environmentName": environment_name,
         "environmentPath": environment_path,
         "brightness": brightness,
+        "rotation": rotation,
         "savedScene": output_scene_path,
     }
+
+
+def active_environment():
+    fn = getattr(lux, "getActiveEnvironment", None)
+    if not callable(fn):
+        return None
+    try:
+        return fn()
+    except Exception:
+        return None
 
 
 def save_scene(payload, output_files, warnings):

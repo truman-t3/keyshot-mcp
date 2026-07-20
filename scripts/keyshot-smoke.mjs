@@ -36,16 +36,20 @@ async function applyStandardPreset(label, scenePath, presetName, outputScenePath
   });
 }
 
-const status = await run("1/7 KeyShot status", { operation: "status" });
-const imported = await run("2/7 Import and save generated OBJ", {
+const status = await run("1/11 KeyShot status", { operation: "status" });
+const imported = await run("2/11 Import, center, and ground generated OBJ", {
   operation: "import_model",
   modelPath,
   outputScenePath: "demo/keyshot-mcp-demo-import.bip",
+  centerGeometry: true,
+  snapToGround: true,
+  adjustCameraLookAt: true,
+  adjustEnvironment: true,
 });
 const importedScene = imported.outputFiles[0];
 if (!importedScene) throw new Error("Import did not return a saved scene path.");
 
-const inspected = await run("3/7 Inspect imported scene", {
+const inspected = await run("3/11 Inspect imported scene", {
   operation: "inspect_scene",
   scenePath: importedScene,
 });
@@ -55,7 +59,7 @@ if (!Array.isArray(objects) || objects.length === 0) {
 }
 
 const firstCameraResult = await applyStandardPreset(
-  "4/7 Apply Front camera preset",
+  "4/11 Apply Front camera preset",
   importedScene,
   "Front",
   "demo/keyshot-mcp-demo-preset-front.bip",
@@ -63,18 +67,48 @@ const firstCameraResult = await applyStandardPreset(
 const firstCameraScene = firstCameraResult.outputFiles[0];
 if (!firstCameraScene) throw new Error("Front preset did not return a saved scene path.");
 
+const focalLengthResult = await run("5/11 Set Front camera focal length", {
+  operation: "set_camera",
+  scenePath: firstCameraScene,
+  cameraName: "Front",
+  focalLength: 55,
+  outputScenePath: "demo/keyshot-mcp-demo-front-lens.bip",
+});
+const focalLengthScene = focalLengthResult.outputFiles[0];
+if (!focalLengthScene) throw new Error("Focal-length update did not return a saved scene path.");
+
+const environmentResult = await run("6/11 Rotate the active environment", {
+  operation: "set_environment",
+  scenePath: focalLengthScene,
+  rotation: 45,
+  outputScenePath: "demo/keyshot-mcp-demo-environment.bip",
+});
+const environmentScene = environmentResult.outputFiles[0];
+if (!environmentScene) throw new Error("Environment update did not return a saved scene path.");
+
 const secondCameraResult = await applyStandardPreset(
-  "5/7 Apply Isometric camera preset",
-  firstCameraScene,
+  "7/11 Apply Isometric camera preset",
+  environmentScene,
   "Isometric",
   "demo/keyshot-mcp-demo-presets.bip",
 );
 const cameraScene = secondCameraResult.outputFiles[0];
 if (!cameraScene) throw new Error("Isometric preset did not return a saved scene path.");
 
-const rendered = await run("6/7 Discover and render every camera", {
-  operation: "render_all_cameras",
+const fieldOfViewResult = await run("8/11 Set Isometric camera field of view and distance", {
+  operation: "set_camera",
   scenePath: cameraScene,
+  cameraName: "Isometric",
+  fieldOfView: 35,
+  distance: 6,
+  outputScenePath: "demo/keyshot-mcp-demo-product-camera.bip",
+});
+const productCameraScene = fieldOfViewResult.outputFiles[0];
+if (!productCameraScene) throw new Error("Field-of-view update did not return a saved scene path.");
+
+const rendered = await run("9/11 Discover and render every camera", {
+  operation: "render_all_cameras",
+  scenePath: productCameraScene,
   outputDir: "demo/all-cameras",
   width: 640,
   height: 480,
@@ -105,13 +139,21 @@ const minimumSizes = await Promise.all(namedResults.map(async (entry) => (await 
 if (minimumSizes.some((size) => size < 10000)) {
   throw new Error("A demo camera render is unexpectedly small and may be blank.");
 }
-process.stdout.write("7/7 Verify two different camera images... ok\n");
+process.stdout.write("10/11 Verify two different camera images... ok\n");
+process.stdout.write("11/11 Verify composition, lens, and environment operations... ok\n");
 
 console.log(JSON.stringify({
   keyshotVersion: status.data?.version ?? null,
   objectCount: objects.length,
-  scenePath: cameraScene,
+  scenePath: productCameraScene,
   cameraCount: renderData.total,
   renderedImages: rendered.outputFiles,
   verifiedPresets: namedResults.map((entry) => entry.camera),
+  verifiedControls: {
+    importOptions: ["centerGeometry", "snapToGround", "adjustCameraLookAt", "adjustEnvironment"],
+    focalLength: 55,
+    fieldOfView: 35,
+    distance: 6,
+    environmentRotation: 45,
+  },
 }, null, 2));

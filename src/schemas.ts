@@ -75,6 +75,10 @@ export const importModelSchema = z.object({
   modelPath: z.string().min(1),
   baseScenePath: optionalPath,
   outputScenePath: z.string().min(1),
+  centerGeometry: z.boolean().optional(),
+  snapToGround: z.boolean().optional(),
+  adjustCameraLookAt: z.boolean().optional(),
+  adjustEnvironment: z.boolean().optional(),
 });
 
 export const applyMaterialInputSchema = z.object({
@@ -94,15 +98,39 @@ export const applyMaterialSchema = applyMaterialInputSchema.refine((value) => va
 
 const vector3 = z.tuple([z.number(), z.number(), z.number()]);
 
-export const setCameraSchema = z.object({
+const setCameraBaseSchema = z.object({
   scenePath: z.string().min(1),
   cameraName: z.string().min(1).optional(),
-  position: vector3,
-  lookAt: vector3,
+  position: vector3.optional(),
+  lookAt: vector3.optional(),
   up: vector3.optional(),
   distance: z.number().positive().optional(),
+  fieldOfView: z.number().gt(0).lt(180).optional(),
+  focalLength: z.number().min(5).max(200).optional(),
   outputScenePath: z.string().min(1),
 });
+
+export const setCameraSchema = setCameraBaseSchema
+  .refine((value) => (value.position === undefined) === (value.lookAt === undefined), {
+    message: "Provide position and lookAt together.",
+    path: ["lookAt"],
+  })
+  .refine((value) => !(value.fieldOfView !== undefined && value.focalLength !== undefined), {
+    message: "Choose either fieldOfView or focalLength, not both.",
+    path: ["focalLength"],
+  })
+  .refine(
+    (value) =>
+      value.position !== undefined ||
+      value.distance !== undefined ||
+      value.fieldOfView !== undefined ||
+      value.focalLength !== undefined,
+    {
+      message: "Provide a camera transform, distance, fieldOfView, or focalLength.",
+    },
+  );
+
+export const setCameraInputSchema = setCameraBaseSchema;
 
 export const listCameraPresetsSchema = z.object({});
 
@@ -118,6 +146,7 @@ export const setEnvironmentSchema = z.object({
   environmentName: z.string().min(1).optional(),
   environmentPath: z.string().min(1).optional(),
   brightness: z.number().positive().optional(),
+  rotation: z.number().min(0).lt(360).optional(),
   outputScenePath: z.string().min(1),
 });
 

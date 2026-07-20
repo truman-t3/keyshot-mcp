@@ -1,8 +1,8 @@
 {
   "name": "keyshot-mcp",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "mcpName": "io.github.truman-t3/keyshot-mcp",
-  "description": "Local and portable MCP server for KeyShot headless scripting.",
+  "description": "Local MCP server for KeyShot product visualization, scene editing, camera control, and rendering.",
   "type": "module",
   "homepage": "https://github.com/truman-t3/keyshot-mcp#readme",
   "repository": {
@@ -30,6 +30,8 @@
     "keyshot",
     "rendering",
     "keyshot-studio",
+    "product-visualization",
+    "camera-control",
     "stdio"
   ],
   "files": [
@@ -37,7 +39,7 @@
     "scripts/keyshot_bridge.py",
     "scripts/keyshot-smoke.mjs",
     "examples",
-    "assets/demo",
+    "assets",
     "presets",
     "server.json",
     "README.md",

@@ -38,11 +38,14 @@ class FakeLux:
         self.set_camera_up = []
         self.set_camera_direction = []
         self.save_camera_called = []
+        self.set_camera_distance = []
+        self.set_camera_field_of_view = []
+        self.set_camera_focal_length = []
         self._camera = camera
         self._has_save_camera = has_save_camera
 
-    def importFile(self, path):
-        self.import_file_called.append(path)
+    def importFile(self, path, *args, **kwargs):
+        self.import_file_called.append((path, args, kwargs))
 
     def openScene(self, path):
         self.open_scene_called.append(path)
@@ -88,6 +91,15 @@ class FakeLux:
 
     def setCameraDirection(self, *args, **kwargs):
         self.set_camera_direction.append((args, kwargs))
+
+    def setCameraDistance(self, *args, **kwargs):
+        self.set_camera_distance.append((args, kwargs))
+
+    def setCameraFieldOfView(self, *args, **kwargs):
+        self.set_camera_field_of_view.append((args, kwargs))
+
+    def setCameraFocalLength(self, *args, **kwargs):
+        self.set_camera_focal_length.append((args, kwargs))
 
 
 class NamedCamera:
@@ -203,6 +215,52 @@ class StandardCameraLux(FakeLux):
 class StandardCameraWithoutConstantLux(FakeLux):
     def setStandardView(self, view):
         pass
+
+
+class ImportOptionsLux(FakeLux):
+    def __init__(self):
+        super().__init__()
+        self.options = {
+            "center_geometry": False,
+            "snap_to_ground": False,
+            "adjust_camera_look_at": False,
+            "adjust_environment": False,
+            "keep_existing": True,
+        }
+        self.get_import_options_called = []
+
+    def getImportOptions(self, *args, **kwargs):
+        self.get_import_options_called.append((args, kwargs))
+        return dict(self.options)
+
+
+class FakeEnvironment:
+    def __init__(self):
+        self.brightness = []
+        self.rotation = []
+
+    def setBrightness(self, value):
+        self.brightness.append(value)
+
+    def setRotation(self, value):
+        self.rotation.append(value)
+
+
+class EnvironmentLux(FakeLux):
+    def __init__(self, environment=None):
+        super().__init__()
+        self.environment = environment
+        self.fallback_brightness = []
+        self.fallback_rotation = []
+
+    def getActiveEnvironment(self):
+        return self.environment
+
+    def setEnvironmentBrightness(self, value):
+        self.fallback_brightness.append(value)
+
+    def setEnvironmentRotation(self, value):
+        self.fallback_rotation.append(value)
 
 
 class ListCamerasTest(unittest.TestCase):
@@ -342,7 +400,55 @@ class ImportModelTest(unittest.TestCase):
             out = os.path.join(d, "out.bip")
             open(model, "w").close()
             kb.import_model({"modelPath": model, "outputScenePath": out}, [], [])
-            self.assertEqual(kb.lux.import_file_called, [model])
+            self.assertEqual(kb.lux.import_file_called, [(model, (), {})])
+
+    def test_applies_only_explicit_advanced_import_options(self):
+        kb.lux = ImportOptionsLux()
+        with tempfile.TemporaryDirectory() as d:
+            model = os.path.join(d, "m.obj")
+            out = os.path.join(d, "out.bip")
+            open(model, "w").close()
+            result = kb.import_model(
+                {
+                    "modelPath": model,
+                    "outputScenePath": out,
+                    "centerGeometry": True,
+                    "snapToGround": True,
+                    "adjustCameraLookAt": False,
+                },
+                [],
+                [],
+            )
+            options = kb.lux.import_file_called[0][2]["opts"]
+            self.assertTrue(options["center_geometry"])
+            self.assertTrue(options["snap_to_ground"])
+            self.assertFalse(options["adjust_camera_look_at"])
+            self.assertFalse(options["adjust_environment"])
+            self.assertTrue(options["keep_existing"])
+            self.assertEqual(
+                result["importOptions"],
+                {
+                    "center_geometry": True,
+                    "snap_to_ground": True,
+                    "adjust_camera_look_at": False,
+                },
+            )
+
+    def test_reports_unsupported_advanced_import_options(self):
+        kb.lux = FakeLux()
+        with tempfile.TemporaryDirectory() as d:
+            model = os.path.join(d, "m.obj")
+            open(model, "w").close()
+            with self.assertRaisesRegex(RuntimeError, "getImportOptions"):
+                kb.import_model(
+                    {
+                        "modelPath": model,
+                        "outputScenePath": os.path.join(d, "out.bip"),
+                        "centerGeometry": True,
+                    },
+                    [],
+                    [],
+                )
 
 
 class SetCameraTest(unittest.TestCase):
@@ -433,6 +539,53 @@ class SetCameraTest(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 kb.set_camera(payload, [], [])
 
+    def test_applies_distance_and_field_of_view(self):
+        kb.lux = BooleanCreateCameraLux()
+        with tempfile.TemporaryDirectory() as d:
+            result = kb.set_camera(
+                {
+                    "scenePath": "a.bip",
+                    "outputScenePath": os.path.join(d, "out.bip"),
+                    "cameraName": "Hero",
+                    "distance": 4.5,
+                    "fieldOfView": 38,
+                },
+                [],
+                [],
+            )
+            self.assertEqual(kb.lux.set_camera_distance, [((), {"dist": 4.5})])
+            self.assertEqual(kb.lux.set_camera_field_of_view, [((), {"deg": 38})])
+            self.assertEqual(result["distance"], 4.5)
+            self.assertEqual(result["fieldOfView"], 38)
+
+    def test_applies_focal_length_without_a_transform(self):
+        kb.lux = BooleanCreateCameraLux()
+        with tempfile.TemporaryDirectory() as d:
+            kb.set_camera(
+                {
+                    "scenePath": "a.bip",
+                    "outputScenePath": os.path.join(d, "out.bip"),
+                    "cameraName": "Hero",
+                    "focalLength": 85,
+                },
+                [],
+                [],
+            )
+            self.assertEqual(kb.lux.set_camera_focal_length, [((), {"length": 85})])
+
+    def test_rejects_conflicting_lens_controls(self):
+        kb.lux = FakeLux()
+        with self.assertRaisesRegex(RuntimeError, "cannot be used together"):
+            kb.set_camera(
+                {
+                    "outputScenePath": "out.bip",
+                    "fieldOfView": 45,
+                    "focalLength": 50,
+                },
+                [],
+                [],
+            )
+
 
 class SetStandardCameraTest(unittest.TestCase):
     def test_creates_and_saves_every_standard_view(self):
@@ -492,6 +645,53 @@ class SetStandardCameraTest(unittest.TestCase):
             kb.set_standard_camera(
                 {"standardView": "front", "outputScenePath": "out.bip"}, [], []
             )
+
+
+class SetEnvironmentTest(unittest.TestCase):
+    def test_uses_active_environment_object_for_brightness_and_rotation(self):
+        environment = FakeEnvironment()
+        kb.lux = EnvironmentLux(environment)
+        with tempfile.TemporaryDirectory() as d:
+            result = kb.set_environment(
+                {
+                    "outputScenePath": os.path.join(d, "out.bip"),
+                    "brightness": 1.5,
+                    "rotation": 270,
+                },
+                [],
+                [],
+            )
+            self.assertEqual(environment.brightness, [1.5])
+            self.assertEqual(environment.rotation, [270])
+            self.assertEqual(result["rotation"], 270)
+
+    def test_falls_back_to_lux_environment_setters(self):
+        kb.lux = EnvironmentLux(None)
+        with tempfile.TemporaryDirectory() as d:
+            kb.set_environment(
+                {
+                    "outputScenePath": os.path.join(d, "out.bip"),
+                    "brightness": 2,
+                    "rotation": 0,
+                },
+                [],
+                [],
+            )
+            self.assertEqual(kb.lux.fallback_brightness, [2])
+            self.assertEqual(kb.lux.fallback_rotation, [0])
+
+    def test_reports_unsupported_rotation(self):
+        kb.lux = FakeLux()
+        with tempfile.TemporaryDirectory() as d:
+            with self.assertRaisesRegex(RuntimeError, "environment rotation"):
+                kb.set_environment(
+                    {
+                        "outputScenePath": os.path.join(d, "out.bip"),
+                        "rotation": 45,
+                    },
+                    [],
+                    [],
+                )
 
     def test_reports_missing_view_constant(self):
         kb.lux = StandardCameraWithoutConstantLux()
