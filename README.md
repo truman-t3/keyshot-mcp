@@ -261,6 +261,18 @@ security guidance and [CONTRIBUTING.md](CONTRIBUTING.md) for development notes.
 Do not commit KeyShot licenses, private scenes, customer assets, or unpublished
 renders.
 
+### Trademark and project status
+
+KeyShot is a trademark of KeyShot ApS and/or KeyShot Inc. This is an independent,
+open-source community project and is not affiliated with, endorsed by, or
+sponsored by KeyShot.
+
+This project provides only an MCP integration. It does not include KeyShot
+Studio, KeyShot assets, or a KeyShot license. Users must install and license
+KeyShot Studio separately and comply with the applicable KeyShot terms. Do not
+use this project to bypass licensing, share credentials, or redistribute KeyShot
+software or proprietary resources.
+
 ---
 
 ## 中文
@@ -496,3 +508,12 @@ CI 在 Windows 和 Ubuntu 上使用 Node.js 20、24 运行。Linux CI 验证 MCP
 项目采用 [MIT License](LICENSE)。安全说明见 [SECURITY.md](SECURITY.md)，开发说明
 见 [CONTRIBUTING.md](CONTRIBUTING.md)。请勿提交 KeyShot 许可证、私有场景、客户素材
 或未公开渲染图。
+
+### 商标与项目性质
+
+KeyShot 是 KeyShot ApS 和/或 KeyShot Inc. 的商标。本项目是独立的开源社区项目，
+与 KeyShot 官方无隶属、认可、赞助或其他合作关系。
+
+本项目仅提供 MCP 集成功能，不包含 KeyShot Studio、KeyShot 官方素材或 KeyShot
+许可证。用户必须自行安装并合法授权 KeyShot Studio，同时遵守适用的 KeyShot 条款。
+不得使用本项目绕过许可证、共享账号凭据，或重新分发 KeyShot 软件及其专有资源。
