@@ -1,4 +1,4 @@
-import { mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -83,6 +83,23 @@ describe("runner", () => {
     );
     expect(result.ok).toBe(false);
     expect(result.error).toContain("Could not start KeyShot headless");
+  });
+
+  it("rejects existing product outputs unless overwrite is enabled", async () => {
+    const outputDir = join(tmpRoot, "protected-outputs");
+    mkdirSync(outputDir, { recursive: true });
+    writeFileSync(join(outputDir, "product.bip"), "existing");
+    const sourcePath = join(tmpRoot, "source.bip");
+    writeFileSync(sourcePath, "scene");
+    const result = await runKeyShotSerialized(makeConfig({ keyshotOutputDir: outputDir }), {
+      operation: "product_render",
+      scenePath: sourcePath,
+      outputScenePath: "product.bip",
+      outputPath: "product.png",
+      overwrite: false,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("Output already exists");
   });
 
   it("serializes concurrent KeyShot requests", async () => {

@@ -39,6 +39,8 @@ def main():
             data = batch_render(payload, output_files, warnings)
         elif operation == "render_all_cameras":
             data = render_all_cameras(payload, output_files, warnings)
+        elif operation == "product_render":
+            data = product_render(payload, output_files, warnings)
         elif operation == "import_model":
             data = import_model(payload, output_files, warnings)
         elif operation == "apply_material":
@@ -57,6 +59,8 @@ def main():
         operation_error = None
         if operation == "render_all_cameras" and data.get("failed", 0) > 0:
             operation_error = "%s of %s camera render(s) failed." % (data["failed"], data["total"])
+        elif operation == "product_render":
+            operation_error = data.get("operationError")
         write_result(result_path, operation_error is None, data, output_files, warnings, operation_error)
     except Exception as exc:
         warnings.append(traceback.format_exc())
@@ -228,6 +232,13 @@ def batch_render(payload, output_files, warnings):
 
 def render_all_cameras(payload, output_files, warnings):
     scene_path = payload.get("scenePath")
+    if not scene_path:
+        raise RuntimeError("scenePath is required")
+    return render_all_cameras_current(payload, output_files, warnings)
+
+
+def render_all_cameras_current(payload, output_files, warnings):
+    scene_path = payload.get("scenePath")
     output_dir = payload.get("outputDir")
     discovered_cameras = camera_names()
     excluded_cameras = [name for name in discovered_cameras if name.lower() == "last_active"]
@@ -238,8 +249,6 @@ def render_all_cameras(payload, output_files, warnings):
     overwrite = bool(payload.get("overwrite", False))
     continue_on_error = payload.get("continueOnError", True) is not False
 
-    if not scene_path:
-        raise RuntimeError("scenePath is required")
     if not output_dir:
         raise RuntimeError("outputDir is required")
     if not cameras:
@@ -320,14 +329,168 @@ def unique_camera_output_path(output_dir, camera, image_format, used_stems):
     return os.path.join(output_dir, "%s.%s" % (stem, image_format))
 
 
-def import_model(payload, output_files, warnings):
-    model_path = payload.get("modelPath")
+def product_render(payload, output_files, warnings):
+    stages = []
+    source_type = "model" if payload.get("modelPath") else "scene"
+    source_path = payload.get("modelPath") or payload.get("scenePath")
+    result = {
+        "sourceType": source_type,
+        "sourcePath": source_path,
+        "savedScene": None,
+        "renderMode": payload.get("renderMode") or "single",
+        "renders": [],
+        "materialAssignments": [],
+        "camera": None,
+        "environment": None,
+        "stages": stages,
+        "operationError": None,
+    }
+
+    try:
+        if source_type == "model":
+            source_data = import_model_current(payload, warnings)
+        else:
+            if not source_path:
+                raise RuntimeError("scenePath is required")
+            source_data = {"openedScene": source_path}
+        stages.append(product_stage("source", True, source_data))
+    except Exception as exc:
+        return product_failure(result, stages, "source", exc, warnings)
+
+    assignments = payload.get("materialAssignments") or []
+    try:
+        applied_materials = [apply_material_current(assignment, warnings) for assignment in assignments]
+        result["materialAssignments"] = applied_materials
+        stages.append(product_stage("materials", True, applied_materials, len(assignments) == 0))
+    except Exception as exc:
+        return product_failure(result, stages, "materials", exc, warnings)
+
+    try:
+        camera_data = configure_product_camera(payload, output_files, warnings)
+        result["camera"] = camera_data
+        stages.append(product_stage("camera", True, camera_data, camera_data is None))
+    except Exception as exc:
+        return product_failure(result, stages, "camera", exc, warnings)
+
+    environment_requested = any(
+        payload.get(name) is not None
+        for name in ("environmentName", "environmentPath", "brightness", "rotation")
+    )
+    try:
+        environment_data = set_environment(payload, output_files, warnings, persist=False) if environment_requested else None
+        result["environment"] = environment_data
+        stages.append(product_stage("environment", True, environment_data, not environment_requested))
+    except Exception as exc:
+        return product_failure(result, stages, "environment", exc, warnings)
+
     output_scene_path = payload.get("outputScenePath")
+    try:
+        if not output_scene_path:
+            raise RuntimeError("outputScenePath is required")
+        save_to(output_scene_path)
+        output_files.append(output_scene_path)
+        result["savedScene"] = output_scene_path
+        stages.append(product_stage("save", True, {"savedScene": output_scene_path}))
+    except Exception as exc:
+        return product_failure(result, stages, "save", exc, warnings)
+
+    try:
+        if result["renderMode"] == "allCameras":
+            render_payload = dict(payload)
+            render_payload["scenePath"] = output_scene_path
+            render_data = render_all_cameras_current(render_payload, output_files, warnings)
+            result["renders"] = render_data.get("results", [])
+            render_ok = render_data.get("failed", 0) == 0
+            stages.append(product_stage("render", render_ok, render_data))
+            if not render_ok:
+                result["operationError"] = "%s of %s camera render(s) failed." % (
+                    render_data.get("failed", 0),
+                    render_data.get("total", 0),
+                )
+        else:
+            output_path = payload.get("outputPath")
+            if not output_path:
+                raise RuntimeError("outputPath is required for single render mode")
+            if os.path.exists(output_path) and not payload.get("overwrite", False):
+                raise RuntimeError("Output already exists and overwrite is false: %s" % output_path)
+            render_payload = dict(payload)
+            if payload.get("cameraName"):
+                render_payload["camera"] = payload.get("cameraName")
+            render_data = render(render_payload, output_files, warnings)
+            result["renders"] = [{"camera": render_payload.get("camera"), "outputPath": render_data["rendered"], "ok": True}]
+            stages.append(product_stage("render", True, render_data))
+    except Exception as exc:
+        return product_failure(result, stages, "render", exc, warnings)
+
+    return result
+
+
+def configure_product_camera(payload, output_files, warnings):
+    camera_name = payload.get("cameraName")
+    standard_view = payload.get("standardView")
+    transform_requested = payload.get("position") is not None
+    lens_requested = any(payload.get(name) is not None for name in ("distance", "fieldOfView", "focalLength"))
+
+    if standard_view:
+        standard_data = set_standard_camera(payload, output_files, warnings, persist=False)
+        if lens_requested:
+            lens_payload = {
+                "cameraName": camera_name,
+                "distance": payload.get("distance"),
+                "fieldOfView": payload.get("fieldOfView"),
+                "focalLength": payload.get("focalLength"),
+            }
+            lens_data = set_camera(lens_payload, output_files, warnings, persist=False)
+            standard_data.update({
+                "distance": lens_data.get("distance"),
+                "fieldOfView": lens_data.get("fieldOfView"),
+                "focalLength": lens_data.get("focalLength"),
+            })
+        standard_data["presetName"] = payload.get("cameraPresetName")
+        return standard_data
+
+    if transform_requested or lens_requested:
+        camera_data = set_camera(payload, output_files, warnings, persist=False)
+        camera_data["presetName"] = payload.get("cameraPresetName")
+        return camera_data
+
+    if camera_name:
+        if camera_name not in camera_names():
+            raise RuntimeError("Camera not found: %s" % camera_name)
+        call_non_false_variants("activate camera", lambda: lux.setCamera(camera_name))
+        return {"cameraName": camera_name, "selected": True}
+
+    return None
+
+
+def product_stage(name, ok, data=None, skipped=False, error=None):
+    return {"name": name, "ok": ok, "skipped": skipped, "data": data, "error": error}
+
+
+def product_failure(result, stages, stage_name, error, warnings):
+    message = "Product render stage '%s' failed: %s" % (stage_name, error)
+    stages.append(product_stage(stage_name, False, error=str(error)))
+    warnings.append(message)
+    result["operationError"] = message
+    return result
+
+
+def import_model(payload, output_files, warnings):
+    data = import_model_current(payload, warnings)
+    output_scene_path = payload.get("outputScenePath")
+    if not output_scene_path:
+        raise RuntimeError("outputScenePath is required")
+    save_to(output_scene_path)
+    output_files.append(output_scene_path)
+    data["savedScene"] = output_scene_path
+    return data
+
+
+def import_model_current(payload, warnings):
+    model_path = payload.get("modelPath")
     base_scene_path = payload.get("baseScenePath")
     if not model_path or not os.path.exists(model_path):
         raise RuntimeError("Model file not found: %s" % model_path)
-    if not output_scene_path:
-        raise RuntimeError("outputScenePath is required")
 
     if base_scene_path:
         if not os.path.exists(base_scene_path):
@@ -374,13 +537,10 @@ def import_model(payload, output_files, warnings):
             lambda: lux.importFile(model_path),
             lambda: lux.importFile(str(model_path)),
         )
-    save_to(output_scene_path)
-    output_files.append(output_scene_path)
     return {
         "importedModel": model_path,
         "baseScene": base_scene_path,
         "importOptions": requested_options,
-        "savedScene": output_scene_path,
     }
 
 
@@ -407,7 +567,17 @@ def new_scene(warnings):
 
 
 def apply_material(payload, output_files, warnings):
+    data = apply_material_current(payload, warnings)
     output_scene_path = payload.get("outputScenePath")
+    if not output_scene_path:
+        raise RuntimeError("outputScenePath is required")
+    save_to(output_scene_path)
+    output_files.append(output_scene_path)
+    data["savedScene"] = output_scene_path
+    return data
+
+
+def apply_material_current(payload, warnings):
     target = find_object(payload.get("objectName"), payload.get("objectPath"))
     if target is None:
         raise RuntimeError("Object not found. Provide a valid objectName or objectPath.")
@@ -420,16 +590,14 @@ def apply_material(payload, output_files, warnings):
         lambda: lux.setObjectMaterial(target, payload.get("materialPath")),
     )
 
-    save_to(output_scene_path)
-    output_files.append(output_scene_path)
     return {
         "object": describe_object(target),
         "material": serialize_value(material),
-        "savedScene": output_scene_path,
+        "presetName": payload.get("presetName"),
     }
 
 
-def set_camera(payload, output_files, warnings):
+def set_camera(payload, output_files, warnings, persist=True):
     output_scene_path = payload.get("outputScenePath")
     camera_name = payload.get("cameraName") or "MCP Camera"
     position = payload.get("position")
@@ -533,9 +701,7 @@ def set_camera(payload, output_files, warnings):
         except RuntimeError:
             warnings.append("The camera was updated, but this KeyShot version could not save the named view.")
 
-    save_to(output_scene_path)
-    output_files.append(output_scene_path)
-    return {
+    data = {
         "cameraName": camera_name,
         "position": position,
         "lookAt": look_at,
@@ -543,11 +709,17 @@ def set_camera(payload, output_files, warnings):
         "distance": distance,
         "fieldOfView": field_of_view,
         "focalLength": focal_length,
-        "savedScene": output_scene_path,
     }
+    if persist:
+        if not output_scene_path:
+            raise RuntimeError("outputScenePath is required")
+        save_to(output_scene_path)
+        output_files.append(output_scene_path)
+        data["savedScene"] = output_scene_path
+    return data
 
 
-def set_standard_camera(payload, output_files, warnings):
+def set_standard_camera(payload, output_files, warnings, persist=True):
     output_scene_path = payload.get("outputScenePath")
     camera_name = payload.get("cameraName") or "MCP Camera"
     standard_view = str(payload.get("standardView") or "").lower()
@@ -586,16 +758,20 @@ def set_standard_camera(payload, output_files, warnings):
         lambda: lux.saveCamera(),
         lambda: lux.saveCamera(camera_name),
     )
-    save_to(output_scene_path)
-    output_files.append(output_scene_path)
-    return {
+    data = {
         "cameraName": camera_name,
         "standardView": standard_view,
-        "savedScene": output_scene_path,
     }
+    if persist:
+        if not output_scene_path:
+            raise RuntimeError("outputScenePath is required")
+        save_to(output_scene_path)
+        output_files.append(output_scene_path)
+        data["savedScene"] = output_scene_path
+    return data
 
 
-def set_environment(payload, output_files, warnings):
+def set_environment(payload, output_files, warnings, persist=True):
     output_scene_path = payload.get("outputScenePath")
     environment_name = payload.get("environmentName")
     environment_path = payload.get("environmentPath")
@@ -616,6 +792,7 @@ def set_environment(payload, output_files, warnings):
     elif environment_name:
         call_variants(
             "set environment name",
+            lambda: lux.setActiveEnvironment(environment_name),
             lambda: lux.setEnvironment(environment_name),
             lambda: lux.setEnvironmentByName(environment_name),
         )
@@ -648,15 +825,19 @@ def set_environment(payload, output_files, warnings):
     if not changed:
         raise RuntimeError("No supported environment change was requested.")
 
-    save_to(output_scene_path)
-    output_files.append(output_scene_path)
-    return {
+    data = {
         "environmentName": environment_name,
         "environmentPath": environment_path,
         "brightness": brightness,
         "rotation": rotation,
-        "savedScene": output_scene_path,
     }
+    if persist:
+        if not output_scene_path:
+            raise RuntimeError("outputScenePath is required")
+        save_to(output_scene_path)
+        output_files.append(output_scene_path)
+        data["savedScene"] = output_scene_path
+    return data
 
 
 def active_environment():

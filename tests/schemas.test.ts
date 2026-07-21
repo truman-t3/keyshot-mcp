@@ -8,6 +8,7 @@ import {
   batchRenderSchema,
   importModelSchema,
   listCamerasSchema,
+  productRenderSchema,
   renderInputSchema,
   renderAllCamerasInputSchema,
   renderAllCamerasSchema,
@@ -18,6 +19,44 @@ import {
   setCameraSchema,
   setEnvironmentSchema,
 } from "../src/schemas.js";
+
+describe("productRenderSchema", () => {
+  it("requires exactly one model or scene source and applies safe defaults", () => {
+    expect(() => productRenderSchema.parse({})).toThrow();
+    expect(() => productRenderSchema.parse({ modelPath: "m.obj", scenePath: "s.bip" })).toThrow();
+    const parsed = productRenderSchema.parse({ modelPath: "m.obj" });
+    expect(parsed.renderMode).toBe("single");
+    expect(parsed.overwrite).toBe(false);
+    expect(parsed.continueOnError).toBe(true);
+  });
+
+  it("keeps import controls model-only and output fields mode-specific", () => {
+    expect(() => productRenderSchema.parse({ scenePath: "s.bip", centerGeometry: true })).toThrow();
+    expect(() => productRenderSchema.parse({ scenePath: "s.bip", outputDir: "renders" })).toThrow();
+    expect(() => productRenderSchema.parse({
+      scenePath: "s.bip",
+      renderMode: "allCameras",
+      outputPath: "hero.png",
+    })).toThrow();
+  });
+
+  it("validates camera, environment, render, and material conflicts", () => {
+    const source = { modelPath: "m.obj" };
+    expect(() => productRenderSchema.parse({ ...source, position: [1, 2, 3] })).toThrow();
+    expect(() => productRenderSchema.parse({ ...source, cameraPresetName: "Front", position: [1, 2, 3], lookAt: [0, 0, 0] })).toThrow();
+    expect(() => productRenderSchema.parse({ ...source, fieldOfView: 45, focalLength: 50 })).toThrow();
+    expect(() => productRenderSchema.parse({ ...source, environmentName: "Studio", environmentPath: "studio.hdr" })).toThrow();
+    expect(() => productRenderSchema.parse({ ...source, samples: 64, maxTimeSeconds: 10 })).toThrow();
+    expect(() => productRenderSchema.parse({
+      ...source,
+      materialAssignments: [{ objectName: "Body", materialName: "Metal", materialPath: "metal.mtl" }],
+    })).toThrow();
+    expect(productRenderSchema.parse({
+      ...source,
+      materialAssignments: [{ objectName: "Body", presetName: "Steel" }],
+    }).materialAssignments).toHaveLength(1);
+  });
+});
 
 describe("renderSchema", () => {
   it("requires a scenePath", () => {

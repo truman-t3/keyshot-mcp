@@ -39,6 +39,23 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
     return localFailure(errorMessage(error));
   }
 
+  if (normalizedRequest.operation === "product_render") {
+    for (const field of ["modelPath", "baseScenePath"] as const) {
+      const value = normalizedRequest[field];
+      if (typeof value === "string" && !(await exists(value))) {
+        return localFailure(`${field === "modelPath" ? "Model" : "Base scene"} file not found: ${value}`);
+      }
+    }
+    if (normalizedRequest.overwrite !== true) {
+      const protectedOutputs = [normalizedRequest.outputScenePath, normalizedRequest.outputPath];
+      for (const output of protectedOutputs) {
+        if (typeof output === "string" && await exists(output)) {
+          return localFailure(`Output already exists and overwrite is false: ${output}`);
+        }
+      }
+    }
+  }
+
   const id = `${Date.now()}-${randomUUID()}`;
   const argsPath = path.join(config.tmpDir, `${id}.args.json`);
   const resultPath = path.join(config.tmpDir, `${id}.result.json`);

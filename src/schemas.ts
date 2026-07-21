@@ -98,6 +98,97 @@ export const applyMaterialSchema = applyMaterialInputSchema.refine((value) => va
 
 const vector3 = z.tuple([z.number(), z.number(), z.number()]);
 
+export const productMaterialAssignmentSchema = z.object({
+  objectName: z.string().min(1).optional(),
+  objectPath: z.string().min(1).optional(),
+  presetName: z.string().min(1).optional(),
+  materialName: z.string().min(1).optional(),
+  materialPath: z.string().min(1).optional(),
+}).superRefine((value, context) => {
+  const targets = [value.objectName, value.objectPath].filter((item) => item !== undefined);
+  const materials = [value.presetName, value.materialName, value.materialPath].filter((item) => item !== undefined);
+  if (targets.length !== 1) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Choose exactly one objectName or objectPath." });
+  }
+  if (materials.length !== 1) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Choose exactly one presetName, materialName, or materialPath.",
+    });
+  }
+});
+
+export const productRenderInputSchema = z.object({
+  modelPath: optionalPath,
+  scenePath: optionalPath,
+  baseScenePath: optionalPath,
+  outputScenePath: optionalPath,
+  renderMode: z.enum(["single", "allCameras"]).default("single"),
+  outputPath: optionalPath,
+  outputDir: optionalPath,
+  centerGeometry: z.boolean().optional(),
+  snapToGround: z.boolean().optional(),
+  adjustCameraLookAt: z.boolean().optional(),
+  adjustEnvironment: z.boolean().optional(),
+  materialAssignments: z.array(productMaterialAssignmentSchema).optional(),
+  cameraPresetName: z.string().min(1).optional(),
+  cameraName: z.string().min(1).optional(),
+  position: vector3.optional(),
+  lookAt: vector3.optional(),
+  up: vector3.optional(),
+  distance: z.number().positive().optional(),
+  fieldOfView: z.number().gt(0).lt(180).optional(),
+  focalLength: z.number().min(5).max(200).optional(),
+  environmentName: z.string().min(1).optional(),
+  environmentPath: z.string().min(1).optional(),
+  brightness: z.number().positive().optional(),
+  rotation: z.number().min(0).lt(360).optional(),
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  samples: z.number().int().positive().optional(),
+  maxTimeSeconds: z.number().positive().optional(),
+  format: imageFormat.optional(),
+  overwrite: z.boolean().default(false),
+  continueOnError: z.boolean().default(true),
+});
+
+export const productRenderSchema = productRenderInputSchema.superRefine((value, context) => {
+  if ((value.modelPath === undefined) === (value.scenePath === undefined)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Provide exactly one modelPath or scenePath." });
+  }
+  if (value.baseScenePath !== undefined && value.modelPath === undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "baseScenePath requires modelPath.", path: ["baseScenePath"] });
+  }
+  const importFields = ["centerGeometry", "snapToGround", "adjustCameraLookAt", "adjustEnvironment"] as const;
+  if (value.scenePath !== undefined && importFields.some((field) => value[field] !== undefined)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Import options can only be used with modelPath." });
+  }
+  if (value.renderMode === "single" && value.outputDir !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "outputDir is only valid for allCameras mode.", path: ["outputDir"] });
+  }
+  if (value.renderMode === "allCameras" && value.outputPath !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "outputPath is only valid for single mode.", path: ["outputPath"] });
+  }
+  if ((value.position === undefined) !== (value.lookAt === undefined)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Provide position and lookAt together.", path: ["lookAt"] });
+  }
+  if (value.up !== undefined && value.position === undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "up requires position and lookAt.", path: ["up"] });
+  }
+  if (value.cameraPresetName !== undefined && value.position !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "cameraPresetName cannot be combined with a custom position." });
+  }
+  if (value.fieldOfView !== undefined && value.focalLength !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Choose either fieldOfView or focalLength, not both.", path: ["focalLength"] });
+  }
+  if (value.environmentName !== undefined && value.environmentPath !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Choose either environmentName or environmentPath, not both." });
+  }
+  if (value.samples !== undefined && value.maxTimeSeconds !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Choose either samples or maxTimeSeconds, not both.", path: ["maxTimeSeconds"] });
+  }
+});
+
 const setCameraBaseSchema = z.object({
   scenePath: z.string().min(1),
   cameraName: z.string().min(1).optional(),

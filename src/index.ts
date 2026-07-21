@@ -7,6 +7,7 @@ import { runKeyShotSerialized } from "./runner.js";
 import { runRenderQueue } from "./queue.js";
 import { loadMaterialPresets, findMaterialPreset } from "./presets.js";
 import { loadCameraPresets, findCameraPreset } from "./camera-presets.js";
+import { prepareProductRenderRequest } from "./product-render.js";
 import { VERSION } from "./version.js";
 import {
   applyMaterialSchema,
@@ -20,6 +21,8 @@ import {
   listCamerasSchema,
   listMaterialPresetsSchema,
   listCameraPresetsSchema,
+  productRenderInputSchema,
+  productRenderSchema,
   renderQueueSchema,
   renderQueueInputSchema,
   renderAllCamerasSchema,
@@ -74,6 +77,7 @@ server.registerPrompt(
     title: "Render a KeyShot product scene",
     description: "Create a practical prompt for rendering or batch-rendering a KeyShot product scene.",
     argsSchema: {
+      modelPath: scenePathSchema.shape.scenePath.optional(),
       scenePath: scenePathSchema.shape.scenePath.optional(),
       goal: scenePathSchema.shape.scenePath.optional(),
     },
@@ -86,9 +90,13 @@ server.registerPrompt(
           type: "text",
           text: [
             "Use KeyShot MCP to prepare a product render.",
-            args.scenePath ? `Scene path: ${args.scenePath}` : "Ask me for the KeyShot scene path first.",
+            args.modelPath
+              ? `Model path: ${args.modelPath}`
+              : args.scenePath
+                ? `Scene path: ${args.scenePath}`
+                : "Ask me for either a model path or a KeyShot scene path first.",
             args.goal ? `Goal: ${args.goal}` : "Inspect the scene, choose a suitable camera, then render a PNG preview.",
-            "Start with keyshot_status, then keyshot_inspect_scene, then render or batch render as needed.",
+            "Call the keyshot_product_render tool for the complete workflow. Use the lower-level tools only when individual steps need manual control.",
           ].join("\n"),
         },
       },
@@ -98,6 +106,21 @@ server.registerPrompt(
 
 server.tool("keyshot_status", "Check KeyShot headless availability and script startup.", {}, async () =>
   toolResponse(await runKeyShotSerialized(config, { operation: "status" })),
+);
+
+server.tool(
+  "keyshot_product_render",
+  "Prepare and render a product from either a model file or an existing KeyShot scene in one headless process.",
+  productRenderInputSchema.shape,
+  async (args) => {
+    try {
+      const parsed = productRenderSchema.parse(args);
+      const request = await prepareProductRenderRequest(config, parsed);
+      return toolResponse(await runKeyShotSerialized(config, request));
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+  },
 );
 
 server.tool(

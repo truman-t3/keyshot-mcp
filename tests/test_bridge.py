@@ -252,6 +252,7 @@ class EnvironmentLux(FakeLux):
         self.environment = environment
         self.fallback_brightness = []
         self.fallback_rotation = []
+        self.active_environment_names = []
 
     def getActiveEnvironment(self):
         return self.environment
@@ -261,6 +262,73 @@ class EnvironmentLux(FakeLux):
 
     def setEnvironmentRotation(self, value):
         self.fallback_rotation.append(value)
+
+    def setActiveEnvironment(self, name):
+        self.active_environment_names.append(name)
+
+
+class FakeObject:
+    def __init__(self, name, path):
+        self._name = name
+        self._path = path
+
+    def getName(self):
+        return self._name
+
+    def getPath(self):
+        return self._path
+
+    def getType(self):
+        return "object"
+
+    def getMaterial(self):
+        return None
+
+    def getChildren(self):
+        return []
+
+
+class ProductRenderLux(StandardCameraLux):
+    def __init__(self, cameras=None, failing=None):
+        super().__init__(cameras=cameras)
+        self.options = FakeRenderOptions()
+        self.render_calls = []
+        self.failing = set(failing or [])
+        self.environment = FakeEnvironment()
+        self.objects = [FakeObject("Body", "/Body"), FakeObject("Trim", "/Trim")]
+        self.material_calls = []
+        self.import_options = {
+            "center_geometry": False,
+            "snap_to_ground": False,
+            "adjust_camera_look_at": False,
+            "adjust_environment": False,
+        }
+
+    def newScene(self):
+        return True
+
+    def getImportOptions(self, *args, **kwargs):
+        return dict(self.import_options)
+
+    def getRenderOptions(self):
+        return self.options
+
+    def getActiveEnvironment(self):
+        return self.environment
+
+    def getObjects(self):
+        return self.objects
+
+    def getMaterial(self, name):
+        return name
+
+    def setObjectMaterial(self, target, material):
+        self.material_calls.append((target.getName(), material))
+
+    def renderImage(self, *args, **kwargs):
+        if self.active_camera in self.failing:
+            raise RuntimeError("simulated render failure")
+        self.render_calls.append((args, kwargs))
 
 
 class ListCamerasTest(unittest.TestCase):
@@ -648,6 +716,16 @@ class SetStandardCameraTest(unittest.TestCase):
 
 
 class SetEnvironmentTest(unittest.TestCase):
+    def test_selects_an_environment_by_name_with_the_official_api(self):
+        kb.lux = EnvironmentLux(FakeEnvironment())
+        with tempfile.TemporaryDirectory() as d:
+            kb.set_environment(
+                {"outputScenePath": os.path.join(d, "out.bip"), "environmentName": "Studio HDRI"},
+                [],
+                [],
+            )
+            self.assertEqual(kb.lux.active_environment_names, ["Studio HDRI"])
+
     def test_uses_active_environment_object_for_brightness_and_rotation(self):
         environment = FakeEnvironment()
         kb.lux = EnvironmentLux(environment)
@@ -699,6 +777,112 @@ class SetEnvironmentTest(unittest.TestCase):
             kb.set_standard_camera(
                 {"standardView": "front", "outputScenePath": "out.bip"}, [], []
             )
+
+
+class ProductRenderTest(unittest.TestCase):
+    def test_runs_model_to_single_render_in_one_workflow(self):
+        kb.lux = ProductRenderLux()
+        with tempfile.TemporaryDirectory() as d:
+            model = os.path.join(d, "cube.obj")
+            scene = os.path.join(d, "cube-product.bip")
+            image = os.path.join(d, "cube-product.png")
+            open(model, "w").close()
+            output_files = []
+            data = kb.product_render(
+                {
+                    "modelPath": model,
+                    "outputScenePath": scene,
+                    "outputPath": image,
+                    "renderMode": "single",
+                    "standardView": "isometric",
+                    "cameraPresetName": "Isometric",
+                    "cameraName": "Product Hero",
+                    "centerGeometry": True,
+                    "snapToGround": True,
+                    "adjustCameraLookAt": True,
+                    "adjustEnvironment": True,
+                    "brightness": 1.25,
+                },
+                output_files,
+                [],
+            )
+            self.assertIsNone(data["operationError"])
+            self.assertEqual([stage["name"] for stage in data["stages"]], [
+                "source", "materials", "camera", "environment", "save", "render"
+            ])
+            self.assertTrue(os.path.exists(scene))
+            self.assertEqual(output_files, [scene, image])
+            self.assertEqual(kb.lux.standard_view_calls, [kb.lux.VIEW_ISOMETRIC])
+            self.assertEqual(kb.lux.environment.brightness, [1.25])
+            options = kb.lux.import_file_called[0][2]["opts"]
+            self.assertTrue(all(options.values()))
+
+    def test_preserves_scene_camera_environment_and_applies_object_materials(self):
+        kb.lux = ProductRenderLux(cameras=["Existing"])
+        with tempfile.TemporaryDirectory() as d:
+            scene = os.path.join(d, "saved.bip")
+            image = os.path.join(d, "saved.png")
+            data = kb.product_render(
+                {
+                    "scenePath": "source.bip",
+                    "outputScenePath": scene,
+                    "outputPath": image,
+                    "materialAssignments": [
+                        {"objectName": "Body", "materialName": "Steel"},
+                        {"objectPath": "/Trim", "materialName": "Rubber"},
+                    ],
+                },
+                [],
+                [],
+            )
+            self.assertIsNone(data["camera"])
+            self.assertIsNone(data["environment"])
+            self.assertTrue(data["stages"][2]["skipped"])
+            self.assertTrue(data["stages"][3]["skipped"])
+            self.assertEqual(kb.lux.material_calls, [("Body", "Steel"), ("Trim", "Rubber")])
+
+    def test_all_camera_failures_return_details_and_keep_saved_scene(self):
+        kb.lux = ProductRenderLux(cameras=["Front", "Broken", "Back"], failing=["Broken"])
+        with tempfile.TemporaryDirectory() as d:
+            scene = os.path.join(d, "saved.bip")
+            renders = os.path.join(d, "renders")
+            output_files = []
+            data = kb.product_render(
+                {
+                    "scenePath": "source.bip",
+                    "outputScenePath": scene,
+                    "outputDir": renders,
+                    "renderMode": "allCameras",
+                    "continueOnError": True,
+                },
+                output_files,
+                [],
+            )
+            self.assertIn("1 of 3", data["operationError"])
+            self.assertTrue(os.path.exists(scene))
+            self.assertEqual(len([item for item in data["renders"] if item["ok"]]), 2)
+            self.assertEqual(output_files[0], scene)
+
+    def test_render_failure_reports_stage_and_keeps_scene_output(self):
+        kb.lux = ProductRenderLux(cameras=["Hero"], failing=["Hero"])
+        with tempfile.TemporaryDirectory() as d:
+            scene = os.path.join(d, "saved.bip")
+            image = os.path.join(d, "saved.png")
+            output_files = []
+            data = kb.product_render(
+                {
+                    "scenePath": "source.bip",
+                    "outputScenePath": scene,
+                    "outputPath": image,
+                    "cameraName": "Hero",
+                },
+                output_files,
+                [],
+            )
+            self.assertIn("stage 'render' failed", data["operationError"])
+            self.assertTrue(os.path.exists(scene))
+            self.assertEqual(output_files, [scene])
+            self.assertFalse(data["stages"][-1]["ok"])
 
 
 if __name__ == "__main__":
