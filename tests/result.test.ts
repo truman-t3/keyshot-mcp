@@ -8,6 +8,14 @@ describe("localFailure", () => {
     expect(result.error).toBe("boom");
     expect(result.outputFiles).toEqual([]);
     expect(result.warnings).toEqual([]);
+    expect(result.errorCode).toBe("KEYSHOT_OPERATION_FAILED");
+    expect(result.suggestions).toHaveLength(1);
+  });
+
+  it("classifies common failures with actionable suggestions", () => {
+    expect(localFailure("KeyShot headless executable not found: x").errorCode).toBe("KEYSHOT_NOT_FOUND");
+    expect(localFailure("Output already exists and overwrite is false").errorCode).toBe("OUTPUT_EXISTS");
+    expect(localFailure("KeyShot timed out after 100ms").errorCode).toBe("KEYSHOT_TIMEOUT");
   });
 
   it("merges extra fields", () => {

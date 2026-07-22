@@ -27,6 +27,9 @@ if (!serverSource.includes('"keyshot_render_all_cameras"') || !bridgeSource.incl
 if (!/server\.tool\(\s*"keyshot_product_render"/.test(serverSource) || !bridgeSource.includes('operation == "product_render"')) {
   throw new Error("The one-process product-render MCP tool and bridge operation must be included in the release.");
 }
+if (!serverSource.includes("runKeyShotDiagnostics") || !serverSource.includes("applyRenderQuality")) {
+  throw new Error("The enhanced status diagnostics and render quality presets must be included in the release.");
+}
 if (
   !serverSource.includes('"keyshot_list_camera_presets"') ||
   !serverSource.includes('"keyshot_apply_camera_preset"') ||

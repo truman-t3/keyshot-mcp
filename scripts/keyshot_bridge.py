@@ -181,6 +181,7 @@ def render(payload, output_files, warnings):
         "height": height,
         "samples": samples,
         "maxTimeSeconds": max_time,
+        "qualityPreset": payload.get("qualityPreset"),
     }
 
 

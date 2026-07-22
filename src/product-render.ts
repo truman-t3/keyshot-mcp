@@ -4,6 +4,7 @@ import type { ServerConfig } from "./config.js";
 import { findMaterialPreset, loadMaterialPresets } from "./presets.js";
 import type { productRenderInputSchema } from "./schemas.js";
 import type { KeyShotRequest } from "./types.js";
+import { applyRenderQuality } from "./quality.js";
 import type { z } from "zod";
 
 type ProductRenderInput = z.infer<typeof productRenderInputSchema>;
@@ -17,7 +18,12 @@ export async function prepareProductRenderRequest(
   const format = input.format ?? "png";
   const renderMode = input.renderMode ?? "single";
 
-  const request: KeyShotRequest = {
+  const automaticOutputFields: string[] = [];
+  if (!input.outputScenePath) automaticOutputFields.push("outputScenePath");
+  if (renderMode === "single" && !input.outputPath) automaticOutputFields.push("outputPath");
+  if (renderMode === "allCameras" && !input.outputDir) automaticOutputFields.push("outputDir");
+
+  const request: KeyShotRequest = applyRenderQuality({
     ...input,
     operation: "product_render",
     renderMode,
@@ -25,7 +31,8 @@ export async function prepareProductRenderRequest(
     outputScenePath: input.outputScenePath ?? `${stem}-product.bip`,
     overwrite: input.overwrite ?? false,
     continueOnError: input.continueOnError ?? true,
-  };
+    _automaticOutputFields: automaticOutputFields,
+  }, "standard");
 
   if (renderMode === "single") {
     request.outputPath = input.outputPath ?? `${stem}-product.${format}`;

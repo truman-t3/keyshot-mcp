@@ -44,6 +44,11 @@ describe("product render request preparation", () => {
     expect(request.cameraName).toBe("Product Hero");
     expect(request.centerGeometry).toBe(true);
     expect(request.overwrite).toBe(false);
+    expect(request.qualityPreset).toBe("standard");
+    expect(request.width).toBe(1920);
+    expect(request.height).toBe(1080);
+    expect(request.samples).toBe(64);
+    expect(request._automaticOutputFields).toEqual(["outputScenePath", "outputPath"]);
   });
 
   it("preserves an existing scene unless controls are requested", async () => {
@@ -53,6 +58,7 @@ describe("product render request preparation", () => {
     expect(request.outputDir).toBe("watch-renders");
     expect(request.cameraName).toBeUndefined();
     expect(request.centerGeometry).toBeUndefined();
+    expect(request._automaticOutputFields).toEqual(["outputScenePath", "outputDir"]);
   });
 
   it("resolves material and absolute camera presets while retaining lens overrides", async () => {

@@ -26,4 +26,6 @@ export type KeyShotResult = {
   warnings: string[];
   keyshotStdoutTail: string;
   error: string | null;
+  errorCode?: string | null;
+  suggestions?: string[];
 };

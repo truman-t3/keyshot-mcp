@@ -1,6 +1,6 @@
 {
   "name": "keyshot-mcp",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "mcpName": "io.github.truman-t3/keyshot-mcp",
   "description": "Local MCP server for KeyShot product visualization, scene editing, camera control, and rendering.",
   "type": "module",
@@ -22,7 +22,7 @@
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "status": "node ./dist/cli/status.js",
-    "smoke:keyshot": "npm run build && node ./scripts/keyshot-smoke.mjs"
+    "smoke:keyshot": "tsc -p tsconfig.json && node ./scripts/keyshot-smoke.mjs"
   },
   "keywords": [
     "mcp",

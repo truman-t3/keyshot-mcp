@@ -9,6 +9,8 @@ import { loadMaterialPresets, findMaterialPreset } from "./presets.js";
 import { loadCameraPresets, findCameraPreset } from "./camera-presets.js";
 import { prepareProductRenderRequest } from "./product-render.js";
 import { VERSION } from "./version.js";
+import { applyRenderQuality } from "./quality.js";
+import { runKeyShotDiagnostics } from "./diagnostics.js";
 import {
   applyMaterialSchema,
   applyMaterialInputSchema,
@@ -104,8 +106,8 @@ server.registerPrompt(
   }),
 );
 
-server.tool("keyshot_status", "Check KeyShot headless availability and script startup.", {}, async () =>
-  toolResponse(await runKeyShotSerialized(config, { operation: "status" })),
+server.tool("keyshot_status", "Diagnose the local KeyShot MCP installation and verify headless startup.", {}, async () =>
+  toolResponse(await runKeyShotDiagnostics(config)),
 );
 
 server.tool(
@@ -143,7 +145,7 @@ server.tool(
   renderSchema.shape,
   async (args) => {
     const parsed = renderInputSchema.parse(args);
-    return toolResponse(await runKeyShotSerialized(config, { operation: "render", ...parsed }));
+    return toolResponse(await runKeyShotSerialized(config, { operation: "render", ...applyRenderQuality(parsed) }));
   },
 );
 
@@ -154,7 +156,11 @@ server.tool(
   async (args) => {
     const parsed = renderQueueInputSchema.parse(args);
     return toolResponse(
-      await runRenderQueue(config, parsed.jobs, { continueOnError: parsed.continueOnError ?? false }),
+      await runRenderQueue(
+        config,
+        parsed.jobs.map((job) => applyRenderQuality(job)),
+        { continueOnError: parsed.continueOnError ?? false },
+      ),
     );
   },
 );
@@ -165,7 +171,9 @@ server.tool(
   batchRenderSchema.shape,
   async (args) => {
     const parsed = batchRenderInputSchema.parse(args);
-    return toolResponse(await runKeyShotSerialized(config, { operation: "batch_render", ...parsed }));
+    return toolResponse(
+      await runKeyShotSerialized(config, { operation: "batch_render", ...applyRenderQuality(parsed) }),
+    );
   },
 );
 
@@ -175,7 +183,9 @@ server.tool(
   renderAllCamerasSchema.shape,
   async (args) => {
     const parsed = renderAllCamerasInputSchema.parse(args);
-    return toolResponse(await runKeyShotSerialized(config, { operation: "render_all_cameras", ...parsed }));
+    return toolResponse(
+      await runKeyShotSerialized(config, { operation: "render_all_cameras", ...applyRenderQuality(parsed) }),
+    );
   },
 );
 

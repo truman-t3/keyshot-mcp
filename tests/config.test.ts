@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import path from "node:path";
-import { getConfig, type ServerConfig } from "../src/config.js";
+import { defaultOutputDir, getConfig, type ServerConfig } from "../src/config.js";
 
 const PRESERVED = { ...process.env };
 
@@ -38,6 +38,7 @@ describe("getConfig", () => {
     );
     expect(config.keyshotTimeoutMs).toBe(600_000);
     expect(config.keyshotAllowExternalOutputs).toBe(false);
+    expect(config.keyshotOutputDir).toBe(path.resolve(defaultOutputDir()));
     expect(config.bridgeScriptPath).toBe(path.join(config.projectRoot, "scripts", "keyshot_bridge.py"));
     expect(config.tmpDir).toBe(path.join(config.projectRoot, "work", "tmp"));
     expect(config.cameraPresetsPath).toBe(path.join(config.projectRoot, "presets", "cameras.json"));

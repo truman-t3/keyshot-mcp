@@ -65,9 +65,11 @@ describe("renderSchema", () => {
   });
 
   it("accepts optional camera and dimensions", () => {
-    const parsed = renderSchema.parse({ scenePath: "a.bip", camera: "Front", width: 1920, height: 1080 });
+    const parsed = renderSchema.parse({ scenePath: "a.bip", camera: "Front", width: 1920, height: 1080, qualityPreset: "preview" });
     expect(parsed.camera).toBe("Front");
     expect(parsed.width).toBe(1920);
+    expect(parsed.qualityPreset).toBe("preview");
+    expect(() => renderSchema.parse({ scenePath: "a.bip", qualityPreset: "ultra" })).toThrow();
   });
 
   it("rejects conflicting samples and maxTimeSeconds", () => {

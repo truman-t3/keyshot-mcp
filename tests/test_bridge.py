@@ -365,6 +365,26 @@ class RenderTest(unittest.TestCase):
         self.assertIsNone(lux.options.max_time)
         self.assertEqual(lux.render_calls[0][1]["opts"], lux.options)
 
+    def test_reports_the_resolved_quality_preset_and_dimensions(self):
+        lux = RenderLux()
+        kb.lux = lux
+        data = kb.render(
+            {
+                "outputPath": "render.png",
+                "qualityPreset": "preview",
+                "width": 960,
+                "height": 540,
+                "samples": 16,
+            },
+            [],
+            [],
+        )
+
+        self.assertEqual(data["qualityPreset"], "preview")
+        self.assertEqual(data["width"], 960)
+        self.assertEqual(data["height"], 540)
+        self.assertEqual(lux.options.max_samples, 16)
+
     def test_applies_max_time_through_render_options(self):
         lux = RenderLux()
         kb.lux = lux

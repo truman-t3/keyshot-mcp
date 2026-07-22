@@ -1,4 +1,5 @@
 import path from "node:path";
+import os from "node:os";
 import { fileURLToPath } from "node:url";
 
 export type ServerConfig = {
@@ -20,9 +21,7 @@ const DEFAULT_TIMEOUT_MS = 600_000;
 export function getConfig(): ServerConfig {
   const projectRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 
-  const keyshotOutputDir = path.resolve(
-    process.env.KEYSHOT_OUTPUT_DIR ?? path.join(projectRoot, "outputs"),
-  );
+  const keyshotOutputDir = path.resolve(process.env.KEYSHOT_OUTPUT_DIR ?? defaultOutputDir());
 
   return {
     projectRoot,
@@ -40,6 +39,10 @@ export function getConfig(): ServerConfig {
       process.env.KEYSHOT_CAMERA_PRESETS ?? path.join(projectRoot, "presets", "cameras.json"),
     ),
   };
+}
+
+export function defaultOutputDir(): string {
+  return path.join(os.homedir(), "Documents", "KeyShot MCP Outputs");
 }
 
 function parseBoolean(value: string | undefined): boolean {

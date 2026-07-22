@@ -3,6 +3,7 @@ import { z } from "zod";
 const optionalPath = z.string().min(1).optional();
 
 const imageFormat = z.enum(["png", "jpg", "jpeg", "tif", "tiff", "exr"]);
+export const qualityPresetSchema = z.enum(["preview", "standard", "final"]);
 
 export const scenePathSchema = z.object({
   scenePath: z.string().min(1),
@@ -21,6 +22,7 @@ export const renderSchema = z.object({
   maxTimeSeconds: z.number().positive().optional(),
   camera: z.string().min(1).optional(),
   format: z.enum(["png", "jpg", "jpeg", "tif", "tiff", "exr"]).optional(),
+  qualityPreset: qualityPresetSchema.optional(),
 });
 
 export const renderInputSchema = renderSchema.refine(
@@ -40,6 +42,7 @@ export const batchRenderSchema = z.object({
   samples: z.number().int().positive().optional(),
   maxTimeSeconds: z.number().positive().optional(),
   format: z.enum(["png", "jpg", "jpeg", "tif", "tiff", "exr"]).optional(),
+  qualityPreset: qualityPresetSchema.optional(),
   overwrite: z.boolean().optional(),
 });
 
@@ -59,6 +62,7 @@ export const renderAllCamerasSchema = z.object({
   samples: z.number().int().positive().optional(),
   maxTimeSeconds: z.number().positive().optional(),
   format: imageFormat.optional(),
+  qualityPreset: qualityPresetSchema.optional(),
   overwrite: z.boolean().optional(),
   continueOnError: z.boolean().default(true),
 });
@@ -148,6 +152,7 @@ export const productRenderInputSchema = z.object({
   samples: z.number().int().positive().optional(),
   maxTimeSeconds: z.number().positive().optional(),
   format: imageFormat.optional(),
+  qualityPreset: qualityPresetSchema.optional(),
   overwrite: z.boolean().default(false),
   continueOnError: z.boolean().default(true),
 });
@@ -256,6 +261,7 @@ export const renderJobSchema = z.object({
   samples: z.number().int().positive().optional(),
   maxTimeSeconds: z.number().positive().optional(),
   format: imageFormat.optional(),
+  qualityPreset: qualityPresetSchema.optional(),
 });
 
 export const renderJobInputSchema = renderJobSchema.refine(

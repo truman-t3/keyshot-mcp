@@ -3,8 +3,9 @@ import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { ServerConfig } from "./config.js";
-import { localFailure } from "./result.js";
+import { localFailure, withErrorGuidance } from "./result.js";
 import { normalizeOutputPaths } from "./output-paths.js";
+import { allocateAutomaticProductOutputs } from "./output-collisions.js";
 import type { KeyShotRequest, KeyShotResult } from "./types.js";
 
 let queue: Promise<unknown> = Promise.resolve();
@@ -35,6 +36,9 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
   let normalizedRequest: KeyShotRequest;
   try {
     normalizedRequest = await normalizeOutputPaths(config, request);
+    if (normalizedRequest.operation === "product_render") {
+      normalizedRequest = await allocateAutomaticProductOutputs(normalizedRequest);
+    }
   } catch (error) {
     return localFailure(errorMessage(error));
   }
@@ -125,14 +129,14 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
     if (stderrTail) parsed.warnings = [...parsed.warnings, `stderr: ${stderrTail}`];
 
     if (processResult.exitCode !== 0 && parsed.ok) {
-      return {
+      return withErrorGuidance({
         ...parsed,
         ok: false,
         error: `KeyShot exited with code ${processResult.exitCode}`,
-      };
+      });
     }
 
-    return parsed;
+    return withErrorGuidance(parsed);
   } finally {
     // Best-effort cleanup so work/tmp does not accumulate args/result files.
     await cleanupTmp([argsPath, resultPath]).catch(() => undefined);
