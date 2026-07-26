@@ -6,6 +6,9 @@
 
 [English](#english) | [中文](#中文)
 
+> ⭐ **If this project helped you, a star is the easiest way to say thanks — and helps others find it.**
+> 若这个项目对你有用，点个 Star 就是最简单的鼓励，���能帮更多人发现它。
+
 KeyShot MCP is a local [Model Context Protocol](https://modelcontextprotocol.io/)
 server for inspecting, editing, and rendering KeyShot scenes through KeyShot
 headless scripting. It lets an MCP-compatible AI agent perform repeatable product
