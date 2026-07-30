@@ -11,7 +11,17 @@ export type KeyShotOperation =
   | "set_camera"
   | "set_standard_camera"
   | "set_environment"
-  | "save_scene";
+  | "save_scene"
+  | "live_status"
+  | "live_inspect"
+  | "live_snapshot"
+  | "live_import_model"
+  | "live_apply_material"
+  | "live_set_camera"
+  | "live_set_environment"
+  | "live_render"
+  | "live_save_scene"
+  | "live_stop";
 
 export type KeyShotRequest = {
   operation: KeyShotOperation;
@@ -28,4 +38,7 @@ export type KeyShotResult = {
   error: string | null;
   errorCode?: string | null;
   suggestions?: string[];
+  imagePath?: string;
+  imageMimeType?: string;
+  deleteImageAfterRead?: boolean;
 };

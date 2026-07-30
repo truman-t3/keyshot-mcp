@@ -1,15 +1,48 @@
+import fs from "node:fs/promises";
 import type { KeyShotResult } from "./types.js";
 
-export function toolResponse(result: KeyShotResult) {
+export async function toolResponse(result: KeyShotResult) {
+  const content: Array<
+    | { type: "text"; text: string }
+    | { type: "image"; data: string; mimeType: string }
+  > = [
+    {
+      type: "text",
+      text: JSON.stringify(stripPrivateImageFields(result), null, 2),
+    },
+  ];
+
+  if (result.ok && result.imagePath) {
+    try {
+      content.push({
+        type: "image",
+        data: await fs.readFile(result.imagePath, "base64"),
+        mimeType: result.imageMimeType ?? "image/png",
+      });
+    } catch (error) {
+      result.warnings.push(`Could not read Live snapshot image: ${errorMessage(error)}`);
+      content[0] = { type: "text", text: JSON.stringify(stripPrivateImageFields(result), null, 2) };
+    } finally {
+      if (result.deleteImageAfterRead) await fs.rm(result.imagePath, { force: true }).catch(() => undefined);
+    }
+  }
+
   return {
-    content: [
-      {
-        type: "text" as const,
-        text: JSON.stringify(result, null, 2),
-      },
-    ],
+    content,
     isError: !result.ok,
   };
+}
+
+function stripPrivateImageFields(result: KeyShotResult): KeyShotResult {
+  const copy = { ...result };
+  delete copy.imagePath;
+  delete copy.imageMimeType;
+  delete copy.deleteImageAfterRead;
+  return copy;
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }
 
 export function localFailure(error: string, extra?: Partial<KeyShotResult>): KeyShotResult {
@@ -97,6 +130,15 @@ function classifyError(error: string): { errorCode: string; suggestions: string[
     return {
       errorCode: "UNSUPPORTED_KEYSHOT_API",
       suggestions: ["This KeyShot version does not expose the required headless API; use a supported option or verify a newer KeyShot release."],
+    };
+  }
+  if (normalized.includes("live companion") || normalized.includes("live bridge")) {
+    return {
+      errorCode: "LIVE_NOT_CONNECTED",
+      suggestions: [
+        "Open KeyShot, then run 'Start KeyShot MCP Live' from the KeyShot Scripts list.",
+        "Run 'keyshot-mcp live-status' to inspect the local Live Companion connection.",
+      ],
     };
   }
   return {

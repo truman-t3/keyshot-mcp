@@ -11,6 +11,12 @@ import { prepareProductRenderRequest } from "./product-render.js";
 import { VERSION } from "./version.js";
 import { applyRenderQuality } from "./quality.js";
 import { runKeyShotDiagnostics } from "./diagnostics.js";
+import { runLiveSerialized } from "./live-client.js";
+import { runLiveCli } from "./live-cli.js";
+import { normalizeOutputPath, normalizeOutputPaths } from "./output-paths.js";
+import { allocateAutomaticFileOutput } from "./output-collisions.js";
+import fs from "node:fs/promises";
+import path from "node:path";
 import {
   applyMaterialSchema,
   applyMaterialInputSchema,
@@ -36,6 +42,20 @@ import {
   setCameraInputSchema,
   setCameraSchema,
   setEnvironmentSchema,
+  liveApplyMaterialInputSchema,
+  liveApplyMaterialSchema,
+  liveEmptySchema,
+  liveImportModelSchema,
+  liveRenderSchema,
+  liveRenderInputSchema,
+  liveSaveSceneSchema,
+  liveSaveSceneInputSchema,
+  liveSetCameraInputSchema,
+  liveSetCameraSchema,
+  liveSetEnvironmentSchema,
+  liveSetEnvironmentInputSchema,
+  liveSnapshotSchema,
+  liveSnapshotInputSchema,
 } from "./schemas.js";
 
 const config = getConfig();
@@ -357,5 +377,196 @@ server.tool(
   async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "save_scene", ...args })),
 );
 
-const transport = new StdioServerTransport();
-await server.connect(transport);
+server.tool(
+  "keyshot_live_status",
+  "Check the experimental connection to the currently running KeyShot GUI without opening a headless process.",
+  liveEmptySchema.shape,
+  async () => toolResponse(await runLiveSerialized(config, { operation: "live_status" })),
+);
+
+server.tool(
+  "keyshot_live_inspect",
+  "Inspect the current unsaved KeyShot GUI scene, including selected objects, cameras, materials and environment.",
+  liveEmptySchema.shape,
+  async () => toolResponse(await runLiveSerialized(config, { operation: "live_inspect" })),
+);
+
+server.tool(
+  "keyshot_live_snapshot",
+  "Capture the current KeyShot realtime view and return it directly as an MCP image.",
+  liveSnapshotInputSchema.shape,
+  async (args) => {
+    try {
+      const parsed = liveSnapshotSchema.parse(args);
+      const requestedPath = parsed.saveCopy
+        ? await normalizeOutputPath(config, parsed.outputPath ?? "live-snapshot.png")
+        : undefined;
+      const outputPath = parsed.saveCopy && !parsed.outputPath
+        ? await allocateAutomaticFileOutput(requestedPath!)
+        : requestedPath;
+      return toolResponse(await runLiveSerialized(config, {
+        operation: "live_snapshot",
+        saveCopy: parsed.saveCopy,
+        outputPath,
+      }));
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+  },
+);
+
+server.tool(
+  "keyshot_live_import_model",
+  "Import a model into the current KeyShot GUI scene without clearing or automatically saving it.",
+  liveImportModelSchema.shape,
+  async (args) => toolResponse(await runLiveSerialized(config, { operation: "live_import_model", ...args })),
+);
+
+server.tool(
+  "keyshot_live_apply_material",
+  "Apply a material to a named object or the objects currently selected in the KeyShot GUI; the scene is not saved.",
+  liveApplyMaterialInputSchema.shape,
+  async (args) => {
+    try {
+      const parsed = liveApplyMaterialSchema.parse(args);
+      let resolved = { ...parsed };
+      if (parsed.presetName) {
+        const presets = await loadMaterialPresets(config);
+        const preset = findMaterialPreset(presets, parsed.presetName);
+        if (!preset) {
+          const available = presets.map((entry) => entry.name).join(", ") || "(none)";
+          throw new Error(`Material preset not found: "${parsed.presetName}". Available: ${available}`);
+        }
+        resolved = { ...resolved, presetName: preset.name, materialName: preset.materialName, materialPath: preset.materialPath };
+      }
+      return toolResponse(await runLiveSerialized(config, { operation: "live_apply_material", ...resolved }));
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+  },
+);
+
+server.tool(
+  "keyshot_live_set_camera",
+  "Adjust the active or named camera in the running KeyShot GUI using a preset, transform, distance, FOV or focal length.",
+  liveSetCameraInputSchema.shape,
+  async (args) => {
+    try {
+      const parsed = liveSetCameraSchema.parse(args);
+      const request: Record<string, unknown> = { operation: "live_set_camera", ...parsed };
+      if (parsed.cameraPresetName) {
+        const presets = await loadCameraPresets(config);
+        const preset = findCameraPreset(presets, parsed.cameraPresetName);
+        if (!preset) {
+          const available = presets.map((entry) => entry.name).join(", ") || "(none)";
+          throw new Error(`Camera preset not found: "${parsed.cameraPresetName}". Available: ${available}`);
+        }
+        request.cameraPresetName = preset.name;
+        request.cameraName = parsed.cameraName ?? preset.name;
+        if (preset.type === "standard") request.standardView = preset.standardView;
+        else {
+          request.position = preset.position;
+          request.lookAt = preset.lookAt;
+          request.up = preset.up;
+        }
+      }
+      return toolResponse(await runLiveSerialized(config, request as { operation: "live_set_camera" }));
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+  },
+);
+
+server.tool(
+  "keyshot_live_set_environment",
+  "Adjust the active environment in the running KeyShot GUI without automatically saving the scene.",
+  liveSetEnvironmentInputSchema.shape,
+  async (args) => {
+    try {
+      const parsed = liveSetEnvironmentSchema.parse(args);
+      return toolResponse(await runLiveSerialized(config, { operation: "live_set_environment", ...parsed }));
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+  },
+);
+
+server.tool(
+  "keyshot_live_render",
+  "Render the current unsaved KeyShot GUI scene to a safe output path.",
+  liveRenderInputSchema.shape,
+  async (args) => {
+    try {
+      const parsed = liveRenderSchema.parse(args);
+      const automatic = !parsed.outputPath;
+      let outputPath = await normalizeOutputPath(config, parsed.outputPath ?? `live-render.${parsed.format ?? "png"}`);
+      if (automatic && !parsed.overwrite) outputPath = await allocateAutomaticFileOutput(outputPath);
+      if (!automatic && !parsed.overwrite && await pathExists(outputPath)) {
+        throw new Error(`Output already exists and overwrite is false: ${outputPath}`);
+      }
+      const request = applyRenderQuality({ ...parsed, operation: "live_render" as const, outputPath }, "preview");
+      return toolResponse(await runLiveSerialized(config, request));
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+  },
+);
+
+server.tool(
+  "keyshot_live_save_scene",
+  "Explicitly save the current KeyShot GUI scene; defaults to a new automatically numbered copy.",
+  liveSaveSceneInputSchema.shape,
+  async (args) => {
+    try {
+      const parsed = liveSaveSceneSchema.parse(args);
+      if (parsed.overwriteCurrent) {
+        return toolResponse(await runLiveSerialized(config, { operation: "live_save_scene", overwriteCurrent: true }));
+      }
+      let outputScenePath = parsed.outputScenePath;
+      if (!outputScenePath) {
+        const status = await runLiveSerialized(config, { operation: "live_status" });
+        if (!status.ok) return toolResponse(status);
+        outputScenePath = `${liveSceneStem(status.data)}-live.bip`;
+      }
+      const normalized = await normalizeOutputPaths(config, { operation: "live_save_scene", outputScenePath });
+      if (!parsed.outputScenePath) {
+        normalized.outputScenePath = await allocateAutomaticFileOutput(normalized.outputScenePath as string);
+      } else if (await pathExists(normalized.outputScenePath as string)) {
+        throw new Error(`Output already exists and overwrite is false: ${normalized.outputScenePath}`);
+      }
+      return toolResponse(await runLiveSerialized(config, normalized));
+    } catch (error) {
+      return toolResponse(localFailure(errorMessage(error)));
+    }
+  },
+);
+
+server.tool(
+  "keyshot_live_stop",
+  "Stop the KeyShot MCP Live Companion bridge running inside the current KeyShot GUI.",
+  liveEmptySchema.shape,
+  async () => toolResponse(await runLiveSerialized(config, { operation: "live_stop" })),
+);
+
+if (!(await runLiveCli(process.argv.slice(2), config))) {
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+}
+
+function liveSceneStem(data: unknown): string {
+  const scene = data && typeof data === "object" ? (data as Record<string, unknown>).scene : undefined;
+  const record = scene && typeof scene === "object" ? scene as Record<string, unknown> : {};
+  const source = [record.fileName, record["file name"], record.filename, record.name]
+    .find((value) => typeof value === "string" && value.length > 0);
+  const stem = typeof source === "string" ? path.parse(source).name : "keyshot-scene";
+  return stem.trim().replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "keyshot-scene";
+}
+
+async function pathExists(value: string): Promise<boolean> {
+  try {
+    await fs.lstat(value);
+    return true;
+  } catch {
+    return false;
+  }
+}

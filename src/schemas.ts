@@ -297,3 +297,112 @@ export const applyMaterialPresetSchema = applyMaterialPresetInputSchema.refine(
   (value) => value.objectName || value.objectPath,
   { message: "Provide objectName or objectPath." },
 );
+
+// --- Experimental KeyShot GUI Live Companion ---
+export const liveEmptySchema = z.object({});
+
+export const liveSnapshotInputSchema = z.object({
+  saveCopy: z.boolean().default(false),
+  outputPath: optionalPath,
+});
+export const liveSnapshotSchema = liveSnapshotInputSchema.superRefine((value, context) => {
+  if (value.outputPath !== undefined && !value.saveCopy) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "outputPath requires saveCopy=true.", path: ["outputPath"] });
+  }
+});
+
+export const liveImportModelSchema = z.object({
+  modelPath: z.string().min(1),
+  centerGeometry: z.boolean().optional(),
+  snapToGround: z.boolean().optional(),
+  adjustCameraLookAt: z.boolean().optional(),
+  adjustEnvironment: z.boolean().optional(),
+});
+
+export const liveApplyMaterialInputSchema = z.object({
+  objectName: z.string().min(1).optional(),
+  objectPath: z.string().min(1).optional(),
+  presetName: z.string().min(1).optional(),
+  materialName: z.string().min(1).optional(),
+  materialPath: z.string().min(1).optional(),
+});
+
+export const liveApplyMaterialSchema = liveApplyMaterialInputSchema.superRefine((value, context) => {
+  const targets = [value.objectName, value.objectPath].filter((item) => item !== undefined);
+  const materials = [value.presetName, value.materialName, value.materialPath].filter((item) => item !== undefined);
+  if (targets.length > 1) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Choose at most one objectName or objectPath." });
+  }
+  if (materials.length !== 1) {
+    context.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Choose exactly one presetName, materialName, or materialPath.",
+    });
+  }
+});
+
+export const liveSetCameraInputSchema = z.object({
+  cameraPresetName: z.string().min(1).optional(),
+  cameraName: z.string().min(1).optional(),
+  position: vector3.optional(),
+  lookAt: vector3.optional(),
+  up: vector3.optional(),
+  distance: z.number().positive().optional(),
+  fieldOfView: z.number().gt(0).lt(180).optional(),
+  focalLength: z.number().min(5).max(200).optional(),
+});
+
+export const liveSetCameraSchema = liveSetCameraInputSchema.superRefine((value, context) => {
+  if ((value.position === undefined) !== (value.lookAt === undefined)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Provide position and lookAt together.", path: ["lookAt"] });
+  }
+  if (value.cameraPresetName !== undefined && value.position !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "cameraPresetName cannot be combined with a custom position." });
+  }
+  if (value.fieldOfView !== undefined && value.focalLength !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Choose either fieldOfView or focalLength, not both." });
+  }
+  const requested = value.cameraPresetName !== undefined || value.position !== undefined ||
+    value.distance !== undefined || value.fieldOfView !== undefined || value.focalLength !== undefined;
+  if (!requested) context.addIssue({ code: z.ZodIssueCode.custom, message: "Provide a camera preset or camera change." });
+});
+
+export const liveSetEnvironmentInputSchema = z.object({
+  environmentName: z.string().min(1).optional(),
+  environmentPath: z.string().min(1).optional(),
+  brightness: z.number().positive().optional(),
+  rotation: z.number().min(0).lt(360).optional(),
+});
+export const liveSetEnvironmentSchema = liveSetEnvironmentInputSchema.superRefine((value, context) => {
+  if (value.environmentName !== undefined && value.environmentPath !== undefined) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Choose either environmentName or environmentPath, not both." });
+  }
+  if (Object.values(value).every((item) => item === undefined)) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "Provide an environment change." });
+  }
+});
+
+export const liveRenderInputSchema = z.object({
+  outputPath: optionalPath,
+  width: z.number().int().positive().optional(),
+  height: z.number().int().positive().optional(),
+  samples: z.number().int().positive().optional(),
+  maxTimeSeconds: z.number().positive().optional(),
+  format: imageFormat.optional(),
+  qualityPreset: qualityPresetSchema.optional(),
+  overwrite: z.boolean().default(false),
+});
+export const liveRenderSchema = liveRenderInputSchema.refine((value) => !(value.samples !== undefined && value.maxTimeSeconds !== undefined), {
+  message: "Choose either samples or maxTimeSeconds, not both.",
+  path: ["maxTimeSeconds"],
+});
+
+export const liveSaveSceneInputSchema = z.object({
+  outputScenePath: optionalPath,
+  overwriteCurrent: z.boolean().default(false),
+});
+export const liveSaveSceneSchema = liveSaveSceneInputSchema.superRefine((value, context) => {
+  if (value.outputScenePath !== undefined && value.overwriteCurrent) {
+    context.addIssue({ code: z.ZodIssueCode.custom, message: "outputScenePath cannot be combined with overwriteCurrent=true." });
+  }
+});

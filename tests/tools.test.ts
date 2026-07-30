@@ -15,5 +15,12 @@ describe("MCP tool registration", () => {
     expect(indexSource).toContain('"keyshot_product_render"');
     expect(productSource).toContain('operation: "product_render"');
     expect(bridgeSource).toContain('operation == "product_render"');
+    for (const tool of [
+      "keyshot_live_status", "keyshot_live_inspect", "keyshot_live_snapshot", "keyshot_live_import_model",
+      "keyshot_live_apply_material", "keyshot_live_set_camera", "keyshot_live_set_environment",
+      "keyshot_live_render", "keyshot_live_save_scene", "keyshot_live_stop",
+    ]) {
+      expect(indexSource).toContain(`"${tool}"`);
+    }
   });
 });

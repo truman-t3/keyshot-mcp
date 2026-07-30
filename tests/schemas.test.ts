@@ -18,6 +18,11 @@ import {
   saveSceneSchema,
   setCameraSchema,
   setEnvironmentSchema,
+  liveApplyMaterialSchema,
+  liveRenderSchema,
+  liveSaveSceneSchema,
+  liveSetCameraSchema,
+  liveSnapshotSchema,
 } from "../src/schemas.js";
 
 describe("productRenderSchema", () => {
@@ -284,5 +289,30 @@ describe("applyMaterialPresetSchema", () => {
       outputScenePath: "o.bip",
     });
     expect(parsed.presetName).toBe("Steel");
+  });
+});
+
+describe("Live Companion schemas", () => {
+  it("uses the current KeyShot selection when a material target is omitted", () => {
+    expect(liveApplyMaterialSchema.parse({ materialName: "Steel" })).toMatchObject({ materialName: "Steel" });
+    expect(() => liveApplyMaterialSchema.parse({})).toThrow();
+    expect(() => liveApplyMaterialSchema.parse({ materialName: "A", materialPath: "B.mtl" })).toThrow();
+    expect(() => liveApplyMaterialSchema.parse({ objectName: "A", objectPath: "B", materialName: "Steel" })).toThrow();
+  });
+
+  it("validates Live camera and render conflicts", () => {
+    expect(() => liveSetCameraSchema.parse({ position: [1, 2, 3] })).toThrow();
+    expect(() => liveSetCameraSchema.parse({ fieldOfView: 45, focalLength: 50 })).toThrow();
+    expect(liveSetCameraSchema.parse({ cameraPresetName: "Isometric", focalLength: 60 })).toMatchObject({
+      cameraPresetName: "Isometric",
+      focalLength: 60,
+    });
+    expect(() => liveRenderSchema.parse({ samples: 16, maxTimeSeconds: 5 })).toThrow();
+  });
+
+  it("requires explicit snapshot and save combinations", () => {
+    expect(() => liveSnapshotSchema.parse({ outputPath: "snapshot.png" })).toThrow();
+    expect(liveSnapshotSchema.parse({ saveCopy: true, outputPath: "snapshot.png" })).toMatchObject({ saveCopy: true });
+    expect(() => liveSaveSceneSchema.parse({ outputScenePath: "copy.bip", overwriteCurrent: true })).toThrow();
   });
 });

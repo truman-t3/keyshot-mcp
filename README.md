@@ -6,11 +6,21 @@
 
 [English](#english) | [中文](#中文)
 
+> [!WARNING]
+> **Experimental branch, not a release.** The Live Companion prototype is kept
+> here for technical research. In current KeyShot testing, the long-running
+> Script Runner window blocks normal GUI interaction. Do not install this branch
+> for production work. Use the stable `v0.9.0` release instead.
+>
+> **实验分支，并非正式版本。** 此处仅保存 Live Companion 技术验证代码。
+> 当前实测中，KeyShot 长时间运行的脚本窗口会阻挡 GUI 正常操作。请勿将本分支
+> 用于正式工作；稳定版本请使用 `v0.9.0`。
+
 KeyShot MCP is a local [Model Context Protocol](https://modelcontextprotocol.io/)
-server for inspecting, editing, and rendering KeyShot scenes through KeyShot
-headless scripting. It lets an MCP-compatible AI agent perform repeatable product
-visualization tasks while scenes, models, licenses, and rendered files remain on
-the local computer.
+server for inspecting, editing, and rendering KeyShot scenes. Stable headless
+automation handles repeatable production work, while the experimental Live
+Companion can connect to a KeyShot GUI session for interactive assistance. Scenes,
+models, licenses, and rendered files remain on the local computer.
 
 ![KeyShot MCP workflow](assets/workflow.svg)
 
@@ -29,6 +39,8 @@ the local computer.
 - Select environments, change brightness, and rotate the active environment.
 - Save edited scenes to a controlled output directory.
 - Prepare and render a product from a model or existing scene in one tool call.
+- Inspect the current unsaved GUI scene, see the realtime view, and adjust selected
+  materials, cameras, or environments through the experimental Live Companion.
 
 ### Requirements and compatibility
 
@@ -41,7 +53,9 @@ the local computer.
 
 ### Install
 
-The current release is `0.9.0`.
+This branch contains the unpublished `0.10.0` prototype. The latest stable
+release is `0.9.0`; commands below that reference `0.10.0` document the proposed
+CLI and are not currently available from npm.
 
 #### Option 1: run with npx
 
@@ -52,7 +66,7 @@ This requires no global npm installation:
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.9.0"],
+      "args": ["-y", "keyshot-mcp@0.10.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -64,7 +78,7 @@ This requires no global npm installation:
 #### Option 2: install globally
 
 ```bash
-npm install -g keyshot-mcp@0.9.0
+npm install -g keyshot-mcp@0.10.0
 ```
 
 ```json
@@ -113,15 +127,16 @@ The following prompt can be pasted into a coding agent that is allowed to edit
 the MCP client configuration:
 
 ```text
-Install KeyShot MCP 0.9.0 and configure it in my MCP client.
+Install KeyShot MCP 0.10.0 and configure it in my MCP client.
 
 1. Find the local KeyShot headless executable.
 2. Add an MCP server named "keyshot" that runs:
-   npx -y keyshot-mcp@0.9.0
+   npx -y keyshot-mcp@0.10.0
 3. Set KEYSHOT_HEADLESS_EXE to the executable path.
 4. Keep KEYSHOT_ALLOW_EXTERNAL_OUTPUTS disabled.
 5. Restart or reload the MCP client, call keyshot_status, then use keyshot_product_render for a one-click product render.
-6. Do not upload or publish any KeyShot scenes, models, renders, or license data.
+6. For interactive GUI assistance, run `npx keyshot-mcp@0.10.0 install-live`; tell me to open KeyShot and run `Start KeyShot MCP Live` from its Scripts list.
+7. Do not upload or publish any KeyShot scenes, models, renders, or license data.
 ```
 
 ### Configuration
@@ -135,6 +150,8 @@ Install KeyShot MCP 0.9.0 and configure it in my MCP client.
 | `KEYSHOT_LICENSE_ARGS` | empty | Optional additional KeyShot launch arguments. |
 | `KEYSHOT_MATERIAL_PRESETS` | Built-in `presets/materials.json` | Path to a user-managed material preset file. |
 | `KEYSHOT_CAMERA_PRESETS` | Built-in `presets/cameras.json` | Path to a user-managed camera preset file. |
+| `KEYSHOT_LIVE_SCRIPT_DIR` | Auto-detected | Optional KeyShot Scripts folder override for Live Companion installation. |
+| `KEYSHOT_LIVE_DISCOVERY_FILE` | `~/.keyshot-mcp/live-session.json` | Optional Live Companion session discovery path override. |
 
 Relative output paths are resolved inside `KEYSHOT_OUTPUT_DIR`. Parent traversal,
 adjacent-prefix paths, and symbolic-link escapes are rejected by default. Input
@@ -144,6 +161,51 @@ Run `keyshot_status` after installation. It reports the MCP and KeyShot
 versions, resolved executable, output write access, preset validity, headless
 startup result, and actionable suggestions. Additional KeyShot launch arguments
 are never included in the diagnostic output.
+
+### Experimental Live Companion
+
+Live Companion operates on the scene currently open in the KeyShot GUI, including
+unsaved changes. Install its local bridge and support files once:
+
+```bash
+npx keyshot-mcp@0.10.0 install-live
+```
+
+If the KeyShot Scripts folder cannot be detected, copy the folder shown in
+**KeyShot Preferences > Folders** and run:
+
+```bash
+npx keyshot-mcp@0.10.0 install-live --scripts-dir "D:/KeyShot/Scripts"
+```
+
+Each time KeyShot starts, open its Scripts list and run
+`Start KeyShot MCP Live`. Verify the connection with:
+
+```bash
+npx keyshot-mcp@0.10.0 live-status
+```
+
+Stop the bridge from an Agent with `keyshot_live_stop`, or from a terminal with:
+
+```bash
+npx keyshot-mcp@0.10.0 live-stop
+```
+
+The bridge listens only on `127.0.0.1`, uses a new random port and session token
+on every start, serializes all KeyShot API calls, and does not accept arbitrary
+Python. Live edits appear immediately but are not saved automatically. Use
+KeyShot's native `Ctrl+Z` to undo and call `keyshot_live_save_scene` only when a
+new scene copy or an explicit current-file save is required. Before any Live
+edit, the bridge enables and verifies KeyShot's Undo stack; it blocks the edit
+if Undo is unavailable in the current script context.
+
+Example designer workflow:
+
+```text
+Inspect the scene currently open in KeyShot and show me the realtime view.
+Use the objects I selected in KeyShot, apply the Brushed Steel preset, rotate
+the environment to 35 degrees, and show me another snapshot. Do not save yet.
+```
 
 ### Tools
 
@@ -166,8 +228,18 @@ are never included in the diagnostic output.
 | `keyshot_apply_camera_preset` | Apply a standard or absolute-coordinate camera preset. |
 | `keyshot_set_environment` | Select or adjust an environment, brightness, or rotation. |
 | `keyshot_save_scene` | Save a scene to a new output path. |
+| `keyshot_live_status` | Check the connection to the running KeyShot GUI. |
+| `keyshot_live_inspect` | Inspect the current unsaved scene and selected objects. |
+| `keyshot_live_snapshot` | Return the current realtime view as an MCP image. |
+| `keyshot_live_import_model` | Import a model into the current GUI scene without clearing or saving it. |
+| `keyshot_live_apply_material` | Apply a material to a named object or the current selection. |
+| `keyshot_live_set_camera` | Adjust the active or named GUI camera. |
+| `keyshot_live_set_environment` | Adjust the active GUI environment. |
+| `keyshot_live_render` | Render the current unsaved GUI scene to a controlled output path. |
+| `keyshot_live_save_scene` | Explicitly save the current GUI scene, defaulting to a new copy. |
+| `keyshot_live_stop` | Stop the local Live Companion bridge. |
 
-The server exposes 17 tools, a `keyshot_product_render` MCP prompt, and a
+The server exposes 27 tools, a `keyshot_product_render` MCP prompt, and a
 `keyshot://workflow` resource.
 
 ### One-click product render
@@ -309,6 +381,8 @@ Linux.
 
 ### Roadmap
 
+- Validate Live Companion GUI responsiveness and native undo behavior on more
+  KeyShot releases before marking it stable.
 - Verify additional KeyShot releases on real installations.
 - Verify macOS installation and headless behavior.
 - Add depth-of-field and additional lens controls when stable headless APIs are
@@ -338,9 +412,9 @@ software or proprietary resources.
 ## 中文
 
 KeyShot MCP 是一个本地运行的
-[Model Context Protocol](https://modelcontextprotocol.io/) 服务，通过 KeyShot
-headless 脚本让兼容 MCP 的 AI Agent 检查、编辑和渲染 KeyShot 场景。场景、模型、
-许可证和渲染文件均保留在本机。
+[Model Context Protocol](https://modelcontextprotocol.io/) 服务。稳定的 headless
+模式用于重复生产任务，实验性的 Live Companion 可以连接用户正在运行的 KeyShot GUI，
+提供交互式协助。场景、模型、许可证和渲染文件均保留在本机。
 
 ### 主要功能
 
@@ -352,6 +426,8 @@ headless 脚本让兼容 MCP 的 AI Agent 检查、编辑和渲染 KeyShot 场�
 - 选择环境、调整亮度并旋转当前环境。
 - 将修改后的场景保存到受控输出目录。
 - 通过一次工具调用完成模型或现有场景的产品构图与渲染。
+- 通过实验性的 Live Companion 检查当前未保存场景、查看实时视图，并调整所选对象材质、
+  相机和环境。
 
 ### 运行要求与兼容性
 
@@ -363,7 +439,8 @@ headless 脚本让兼容 MCP 的 AI Agent 检查、编辑和渲染 KeyShot 场�
 
 ### 安装
 
-当前版本为 `0.9.0`。
+本分支包含尚未发布的 `0.10.0` 原型。当前稳定版本为 `0.9.0`；下文引用
+`0.10.0` 的命令仅用于说明计划中的 CLI，目前无法从 npm 安装。
 
 #### 方式一：使用 npx
 
@@ -374,7 +451,7 @@ headless 脚本让兼容 MCP 的 AI Agent 检查、编辑和渲染 KeyShot 场�
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.9.0"],
+      "args": ["-y", "keyshot-mcp@0.10.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -386,7 +463,7 @@ headless 脚本让兼容 MCP 的 AI Agent 检查、编辑和渲染 KeyShot 场�
 #### 方式二：全局安装
 
 ```bash
-npm install -g keyshot-mcp@0.9.0
+npm install -g keyshot-mcp@0.10.0
 ```
 
 ```json
@@ -434,15 +511,16 @@ pnpm build
 下面的提示词适用于有权限修改 MCP 客户端配置的编程 Agent：
 
 ```text
-请帮我安装 KeyShot MCP 0.9.0，并添加到我的 MCP 客户端。
+请帮我安装 KeyShot MCP 0.10.0，并添加到我的 MCP 客户端。
 
 1. 查找本机 KeyShot headless 可执行文件。
 2. 添加名为 keyshot 的 MCP server，运行：
-   npx -y keyshot-mcp@0.9.0
+   npx -y keyshot-mcp@0.10.0
 3. 将 KEYSHOT_HEADLESS_EXE 设置为可执行文件路径。
 4. 保持 KEYSHOT_ALLOW_EXTERNAL_OUTPUTS 关闭。
 5. 重启或重新加载 MCP 客户端，调用 keyshot_status，然后使用 keyshot_product_render 一键完成产品出图。
-6. 不要上传或发布任何 KeyShot 场景、模型、渲染图或许可证数据。
+6. 如需交互式 GUI 协助，运行 `npx keyshot-mcp@0.10.0 install-live`，然后提醒我在 KeyShot 脚本列表运行 `Start KeyShot MCP Live`。
+7. 不要上传或发布任何 KeyShot 场景、模型、渲染图或许可证数据。
 ```
 
 ### 配置项
@@ -456,6 +534,8 @@ pnpm build
 | `KEYSHOT_LICENSE_ARGS` | 空 | 可选的 KeyShot 启动参数。 |
 | `KEYSHOT_MATERIAL_PRESETS` | 内置 `presets/materials.json` | 自定义材质预设 JSON 路径。 |
 | `KEYSHOT_CAMERA_PRESETS` | 内置 `presets/cameras.json` | 自定义相机预设 JSON 路径。 |
+| `KEYSHOT_LIVE_SCRIPT_DIR` | 自动检测 | 可选的 KeyShot Scripts 文件夹，用于安装 Live Companion。 |
+| `KEYSHOT_LIVE_DISCOVERY_FILE` | `~/.keyshot-mcp/live-session.json` | 可选的 Live Companion 会话发现文件路径。 |
 
 相对输出路径会自动放入 `KEYSHOT_OUTPUT_DIR`。默认拒绝 `..`、相邻同名前缀目录和
 软链接逃逸。输入场景、模型、材质和环境文件可位于其他目录。
@@ -463,6 +543,47 @@ pnpm build
 安装后调用 `keyshot_status`，可检查 MCP 与 KeyShot 版本、实际可执行文件路径、
 输出目录写入权限、预设文件和 headless 启动状态，并获得可直接执行的修复建议。
 诊断结果不会回显额外的 KeyShot 启动参数。
+
+### 实验性 Live Companion
+
+Live Companion 直接操作当前 KeyShot GUI 中打开的场景，包括尚未保存的修改。首次使用时
+安装本地 Bridge 及其支持文件：
+
+```bash
+npx keyshot-mcp@0.10.0 install-live
+```
+
+如果无法自动找到 KeyShot Scripts 文件夹，请在 **KeyShot 首选项 > 文件夹** 中查看路径，
+然后运行：
+
+```bash
+npx keyshot-mcp@0.10.0 install-live --scripts-dir "D:/KeyShot/Scripts"
+```
+
+每次启动 KeyShot 后，在脚本列表运行 `Start KeyShot MCP Live`，再检查连接：
+
+```bash
+npx keyshot-mcp@0.10.0 live-status
+```
+
+Agent 可调用 `keyshot_live_stop` 停止 Bridge，也可以在终端运行：
+
+```bash
+npx keyshot-mcp@0.10.0 live-stop
+```
+
+Bridge 只监听 `127.0.0.1`，每次启动使用新的随机端口和会话令牌，全部 KeyShot API
+调用均串行执行，也不接受任意 Python。实时修改会立即显示，但默认不保存；设计师可以
+使用 KeyShot 原生 `Ctrl+Z` 撤销，只有明确调用 `keyshot_live_save_scene` 时才保存副本
+或覆盖当前文件。每次实时修改前，Bridge 会启用并复查 KeyShot 的 Undo 栈；如果当前
+脚本上下文无法提供 Undo，修改会被拒绝，以保护当前场景。
+
+设计师可以直接描述：
+
+```text
+检查当前 KeyShot 场景并把实时视图发给我。使用我在 KeyShot 里选中的对象，应用
+Brushed Steel 材质预设，把环境旋转到 35 度，再发一张实时截图，暂时不要保存。
+```
 
 ### MCP 工具
 
@@ -485,8 +606,18 @@ pnpm build
 | `keyshot_apply_camera_preset` | 应用标准视角或绝对坐标相机预设。 |
 | `keyshot_set_environment` | 选择环境并调整亮度或旋转角度。 |
 | `keyshot_save_scene` | 将场景保存到新的输出路径。 |
+| `keyshot_live_status` | 检查与当前 KeyShot GUI 的连接。 |
+| `keyshot_live_inspect` | 检查当前未保存场景和所选对象。 |
+| `keyshot_live_snapshot` | 将当前实时视图作为 MCP 图片返回。 |
+| `keyshot_live_import_model` | 向当前 GUI 场景导入模型，不清空或自动保存。 |
+| `keyshot_live_apply_material` | 向指定对象或当前选择应用材质。 |
+| `keyshot_live_set_camera` | 调整当前或命名 GUI 相机。 |
+| `keyshot_live_set_environment` | 调整当前 GUI 环境。 |
+| `keyshot_live_render` | 将当前未保存 GUI 场景渲染到受控输出路径。 |
+| `keyshot_live_save_scene` | 明确保存当前 GUI 场景，默认生成新副本。 |
+| `keyshot_live_stop` | 停止本机 Live Companion Bridge。 |
 
-服务共提供 17 个工具，并提供 `keyshot_product_render` MCP 提示词和
+服务共提供 27 个工具，并提供 `keyshot_product_render` MCP 提示词和
 `keyshot://workflow` 资源。
 
 ### 一键产品出图
@@ -612,6 +743,7 @@ CI 在 Windows 和 Ubuntu 上使用 Node.js 20、24 运行。Linux CI 验证 MCP
 
 ### 路线图
 
+- 在更多 KeyShot 版本中验证 Live Companion 的界面响应和原生撤销，再将其标记为稳定。
 - 在更多 KeyShot 正式版本上完成实机验证。
 - 验证 macOS 安装和 headless 行为。
 - 在 headless API 稳定支持后增加景深和更多镜头控制。

@@ -1,3 +1,6 @@
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { localFailure, toolResponse } from "../src/result.js";
 
@@ -26,14 +29,14 @@ describe("localFailure", () => {
 });
 
 describe("toolResponse", () => {
-  it("marks the response as an error when the result is not ok", () => {
-    const response = toolResponse(localFailure("nope"));
+  it("marks the response as an error when the result is not ok", async () => {
+    const response = await toolResponse(localFailure("nope"));
     expect(response.isError).toBe(true);
     expect(JSON.parse(response.content[0].text).error).toBe("nope");
   });
 
-  it("does not mark the response as an error when ok", () => {
-    const response = toolResponse({
+  it("does not mark the response as an error when ok", async () => {
+    const response = await toolResponse({
       ok: true,
       data: null,
       outputFiles: [],
@@ -42,5 +45,25 @@ describe("toolResponse", () => {
       error: null,
     });
     expect(response.isError).toBe(false);
+  });
+
+  it("returns a Live snapshot as MCP image content and removes its temporary file", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "keyshot-live-image-"));
+    const imagePath = path.join(root, "snapshot.png");
+    await fs.writeFile(imagePath, Buffer.from([1, 2, 3]));
+    const response = await toolResponse({
+      ok: true,
+      data: { snapshot: imagePath },
+      outputFiles: [],
+      warnings: [],
+      keyshotStdoutTail: "",
+      error: null,
+      imagePath,
+      imageMimeType: "image/png",
+      deleteImageAfterRead: true,
+    });
+    expect(response.content[1]).toEqual({ type: "image", data: "AQID", mimeType: "image/png" });
+    await expect(fs.stat(imagePath)).rejects.toThrow();
+    await fs.rm(root, { recursive: true, force: true });
   });
 });

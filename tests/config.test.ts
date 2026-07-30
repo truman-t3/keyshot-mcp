@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import path from "node:path";
-import { defaultOutputDir, getConfig, type ServerConfig } from "../src/config.js";
+import os from "node:os";
+import {
+  defaultLiveDiscoveryPath,
+  defaultOutputDir,
+  getConfig,
+  type ServerConfig,
+} from "../src/config.js";
 
 const PRESERVED = { ...process.env };
 
@@ -16,6 +22,9 @@ function makeFakeConfig(overrides: Partial<ServerConfig> = {}): ServerConfig {
     bridgeScriptPath: "C:/fake/scripts/keyshot_bridge.py",
     materialPresetsPath: "C:/fake/presets/materials.json",
     cameraPresetsPath: "C:/fake/presets/cameras.json",
+    liveBridgeScriptPath: "C:/fake/scripts/keyshot_live_bridge.py",
+    liveSupportScriptPath: "C:/fake/scripts/keyshot_bridge.py",
+    liveDiscoveryPath: "C:/fake/state/live-session.json",
     ...overrides,
   };
 }
@@ -42,6 +51,9 @@ describe("getConfig", () => {
     expect(config.bridgeScriptPath).toBe(path.join(config.projectRoot, "scripts", "keyshot_bridge.py"));
     expect(config.tmpDir).toBe(path.join(config.projectRoot, "work", "tmp"));
     expect(config.cameraPresetsPath).toBe(path.join(config.projectRoot, "presets", "cameras.json"));
+    expect(config.liveBridgeScriptPath).toBe(path.join(config.projectRoot, "scripts", "keyshot_live_bridge.py"));
+    expect(config.liveDiscoveryPath).toBe(path.resolve(defaultLiveDiscoveryPath()));
+    expect(defaultLiveDiscoveryPath()).toBe(path.join(os.homedir(), ".keyshot-mcp", "live-session.json"));
   });
 
   it("enables external outputs only for an explicit true value", () => {

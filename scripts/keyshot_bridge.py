@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+# AUTHOR truman-t3
+# VERSION 0.10.0
+# HEADLESS COMPLIANT
+# Provides the KeyShot MCP headless and Live Companion support operations.
+
 import json
 import os
 import sys
@@ -874,6 +880,7 @@ def safe_list_call(name):
 
 
 def describe_object(obj):
+    obj = resolve_object_reference(obj)
     return {
         "name": first_success(lambda: obj.getName(), lambda: obj.name(), lambda: obj.name, default=repr(obj)),
         "path": first_success(lambda: obj.getPath(), lambda: obj.path(), lambda: obj.path, default=None),
@@ -885,8 +892,27 @@ def describe_object(obj):
     }
 
 
+def resolve_object_reference(obj):
+    if isinstance(obj, int) and not isinstance(obj, bool):
+        resolved = first_success(
+            lambda: lux.getObject(obj),
+            lambda: lux.getObjectById(obj),
+            default=None,
+        )
+        if resolved is not None and not isinstance(resolved, int):
+            return resolved
+        root = first_success(lambda: lux.getSceneTree(), default=None)
+        nodes = first_success(lambda: root.find(), default=[]) if root is not None else []
+        for node in nodes:
+            node_id = first_success(lambda: node.getID(), lambda: node.id(), lambda: node.id, default=None)
+            if node_id == obj:
+                return node
+    return obj
+
+
 def find_object(name, path):
     for obj in safe_list_call("getObjects"):
+        obj = resolve_object_reference(obj)
         description = describe_object(obj)
         if name and description.get("name") == name:
             return obj

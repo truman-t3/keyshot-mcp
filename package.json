@@ -1,6 +1,6 @@
 {
   "name": "keyshot-mcp",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "mcpName": "io.github.truman-t3/keyshot-mcp",
   "description": "Local MCP server for KeyShot product visualization, scene editing, camera control, and rendering.",
   "type": "module",
@@ -37,6 +37,7 @@
   "files": [
     "dist",
     "scripts/keyshot_bridge.py",
+    "scripts/keyshot_live_bridge.py",
     "scripts/keyshot-smoke.mjs",
     "examples",
     "assets",

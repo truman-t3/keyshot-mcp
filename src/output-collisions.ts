@@ -46,3 +46,11 @@ async function exists(value: string): Promise<boolean> {
     return false;
   }
 }
+
+export async function allocateAutomaticFileOutput(value: string): Promise<string> {
+  for (let sequence = 1; sequence < 10_000; sequence += 1) {
+    const candidate = numberedPath(value, "outputPath", sequence);
+    if (!(await exists(candidate))) return candidate;
+  }
+  throw new Error("Could not find an available automatic output name after 9999 attempts.");
+}

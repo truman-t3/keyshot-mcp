@@ -13,6 +13,10 @@ export type ServerConfig = {
   bridgeScriptPath: string;
   materialPresetsPath: string;
   cameraPresetsPath: string;
+  liveBridgeScriptPath: string;
+  liveSupportScriptPath: string;
+  liveDiscoveryPath: string;
+  liveScriptDir?: string;
 };
 
 const DEFAULT_KEYSHOT_EXE = process.platform === "win32" ? "keyshot_headless.exe" : "keyshot_headless";
@@ -38,11 +42,23 @@ export function getConfig(): ServerConfig {
     cameraPresetsPath: path.resolve(
       process.env.KEYSHOT_CAMERA_PRESETS ?? path.join(projectRoot, "presets", "cameras.json"),
     ),
+    liveBridgeScriptPath: path.join(projectRoot, "scripts", "keyshot_live_bridge.py"),
+    liveSupportScriptPath: path.join(projectRoot, "scripts", "keyshot_bridge.py"),
+    liveDiscoveryPath: path.resolve(process.env.KEYSHOT_LIVE_DISCOVERY_FILE ?? defaultLiveDiscoveryPath()),
+    liveScriptDir: process.env.KEYSHOT_LIVE_SCRIPT_DIR
+      ? path.resolve(process.env.KEYSHOT_LIVE_SCRIPT_DIR)
+      : undefined,
   };
 }
 
 export function defaultOutputDir(): string {
   return path.join(os.homedir(), "Documents", "KeyShot MCP Outputs");
+}
+
+export function defaultLiveDiscoveryPath(): string {
+  // KeyShot may virtualize LocalAppData writes on Windows. The home directory
+  // remains shared between the GUI script and the Node MCP process.
+  return path.join(os.homedir(), ".keyshot-mcp", "live-session.json");
 }
 
 function parseBoolean(value: string | undefined): boolean {

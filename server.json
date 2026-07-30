@@ -2,19 +2,19 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.truman-t3/keyshot-mcp",
   "title": "KeyShot MCP",
-  "description": "Control local KeyShot scenes, cameras, environments, and renders through headless scripting.",
+  "description": "Control KeyShot through stable headless automation and an experimental local GUI Live Companion.",
   "websiteUrl": "https://github.com/truman-t3/keyshot-mcp",
   "repository": {
     "id": "1290741614",
     "url": "https://github.com/truman-t3/keyshot-mcp",
     "source": "github"
   },
-  "version": "0.9.0",
+  "version": "0.10.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "keyshot-mcp",
-      "version": "0.9.0",
+      "version": "0.10.0",
       "transport": {
         "type": "stdio"
       },
@@ -58,6 +58,18 @@
         {
           "name": "KEYSHOT_CAMERA_PRESETS",
           "description": "Optional path to a user-managed camera preset JSON file.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "KEYSHOT_LIVE_SCRIPT_DIR",
+          "description": "Optional KeyShot Scripts folder override used by the experimental Live Companion installer.",
+          "isRequired": false,
+          "isSecret": false
+        },
+        {
+          "name": "KEYSHOT_LIVE_DISCOVERY_FILE",
+          "description": "Optional local Live Companion discovery file override.",
           "isRequired": false,
           "isSecret": false
         }
