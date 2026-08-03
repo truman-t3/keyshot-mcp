@@ -6,56 +6,66 @@
 
 [English](#english) | [中文](#中文)
 
-> ⭐ **If this project helped you, a star is the easiest way to say thanks — and helps others find it.**
-> 若这个项目对你有用，点个 Star 就是最简单的鼓励，���能帮更多人发现它。
+> **Useful for your KeyShot workflow? Star the repository to help other designers discover it.**
+>
+> **如果它改善了你的 KeyShot 工作流，欢迎点一个 Star，让更多设计师发现这个项目。**
 
-KeyShot MCP is a local [Model Context Protocol](https://modelcontextprotocol.io/)
-server for inspecting, editing, and rendering KeyShot scenes through KeyShot
-headless scripting. It lets an MCP-compatible AI agent perform repeatable product
-visualization tasks while scenes, models, licenses, and rendered files remain on
-the local computer.
+KeyShot MCP connects an MCP-compatible AI agent to a licensed KeyShot installation
+on the same computer. It can inspect scenes, import models, apply materials, set
+cameras and environments, save scene copies, and render images through KeyShot
+headless scripting. Models, scenes, licenses, and renders stay local.
 
 ![KeyShot MCP workflow](assets/workflow.svg)
 
 ## English
 
-### What it can do
+### Quick start for designers
 
-- Inspect scene objects, materials, cameras, model sets, and external references.
-- Import models and optionally center them, place them on the ground, update the
-  camera target, and adjust the environment.
-- Render one camera, selected cameras, every camera in a scene, or a sequential
-  render queue.
-- Create and update cameras by position, look-at point, distance, field of view,
-  focal length, or reusable presets.
-- Apply materials directly or through a local material preset library.
-- Select environments, change brightness, and rotate the active environment.
-- Save edited scenes to a controlled output directory.
-- Prepare and render a product from a model or existing scene in one tool call.
+The easiest setup is to send this prompt to an agent that can edit your MCP
+configuration:
 
-### Requirements and compatibility
+```text
+Install KeyShot MCP 0.9.1 and configure it in my MCP client.
+
+1. Use: npx -y keyshot-mcp@0.9.1
+2. Find my local keyshot_headless.exe and set KEYSHOT_HEADLESS_EXE to its full path.
+3. Keep outputs in the default KeyShot MCP Outputs folder unless I choose another safe folder.
+4. Keep KEYSHOT_ALLOW_EXTERNAL_OUTPUTS disabled.
+5. Restart or reload the MCP client and run keyshot_status.
+6. Explain any problem and its suggested fix in plain language.
+7. Do not upload or publish my KeyShot files, renders, or license information.
+```
+
+After setup, try:
+
+```text
+Check whether KeyShot MCP is ready, then prepare a standard-quality product render
+from C:\models\speaker.obj.
+```
+
+### Requirements
 
 - Node.js 20 or newer.
-- A locally installed and licensed KeyShot version with headless scripting.
+- A locally installed and licensed KeyShot edition with headless scripting.
 - Windows 11 with KeyShot Studio 2025 / KeyShot 14.1 is tested.
-- Other KeyShot versions may work when they expose the same official scripting
-  APIs, but they are not currently verified by this project.
-- KeyShot and its license are not included.
+- Other KeyShot versions may work when they expose the same scripting APIs, but
+  they are not currently verified by this project.
+- KeyShot, its license, materials, and environments are not included.
 
 ### Install
 
-The current release is `0.9.0`.
+The current release is `0.9.1`.
 
-#### Option 1: run with npx
+#### Run with npx
 
-This requires no global npm installation:
+No global npm installation is required:
 
 ```json
 {
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.9.0"],
+      "args": ["-y", "keyshot-mcp@0.9.1"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -64,10 +74,10 @@ This requires no global npm installation:
 }
 ```
 
-#### Option 2: install globally
+#### Install globally
 
 ```bash
-npm install -g keyshot-mcp@0.9.0
+npm install -g keyshot-mcp@0.9.1
 ```
 
 ```json
@@ -83,7 +93,7 @@ npm install -g keyshot-mcp@0.9.0
 }
 ```
 
-#### Option 3: run from source
+#### Run from source
 
 ```bash
 git clone https://github.com/truman-t3/keyshot-mcp.git
@@ -92,211 +102,144 @@ pnpm install
 pnpm build
 ```
 
-Configure the MCP client to run the absolute path to `dist/index.js`:
+Point the MCP client to the absolute path of `dist/index.js`. Ready-to-edit examples
+are available in [`examples`](examples).
 
-```json
-{
-  "mcpServers": {
-    "keyshot": {
-      "command": "node",
-      "args": ["C:/absolute/path/to/keyshot-mcp/dist/index.js"],
-      "env": {
-        "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
-      }
-    }
-  }
-}
-```
+Restart the MCP client after changing its configuration, then call
+`keyshot_status`. The status result checks the MCP version, KeyShot executable,
+output access, bridge files, preset JSON, and a minimal KeyShot startup.
 
-Restart the MCP client after changing its configuration.
+### Common workflows
 
-### Agent installation prompt
+#### One-call product render
 
-The following prompt can be pasted into a coding agent that is allowed to edit
-the MCP client configuration:
+`keyshot_product_render` is the recommended high-level tool for ordinary product
+work. It can import a model or open a scene, apply object-specific materials,
+configure a camera and environment, save a scene copy, and render in one KeyShot
+process.
 
 ```text
-Install KeyShot MCP 0.9.0 and configure it in my MCP client.
-
-1. Find the local KeyShot headless executable.
-2. Add an MCP server named "keyshot" that runs:
-   npx -y keyshot-mcp@0.9.0
-3. Set KEYSHOT_HEADLESS_EXE to the executable path.
-4. Keep KEYSHOT_ALLOW_EXTERNAL_OUTPUTS disabled.
-5. Restart or reload the MCP client, call keyshot_status, then use keyshot_product_render for a one-click product render.
-6. Do not upload or publish any KeyShot scenes, models, renders, or license data.
+Import C:\models\speaker.obj, center and ground it, use the Isometric camera preset,
+set a 55 mm focal length, save a scene copy, and render a standard PNG.
 ```
 
-### Configuration
+For a new model, import composition options default to enabled. Existing scenes
+keep their current composition unless explicit changes are requested.
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `KEYSHOT_HEADLESS_EXE` | `keyshot_headless.exe` on Windows | Absolute executable path or a command available on `PATH`. |
-| `KEYSHOT_OUTPUT_DIR` | `~/Documents/KeyShot MCP Outputs` | Root directory for rendered images and saved scenes. |
-| `KEYSHOT_ALLOW_EXTERNAL_OUTPUTS` | `false` | Allows output paths outside `KEYSHOT_OUTPUT_DIR` when explicitly set to `true`. |
-| `KEYSHOT_TIMEOUT_MS` | `600000` | Timeout for one KeyShot headless process. |
-| `KEYSHOT_LICENSE_ARGS` | empty | Optional additional KeyShot launch arguments. |
-| `KEYSHOT_MATERIAL_PRESETS` | Built-in `presets/materials.json` | Path to a user-managed material preset file. |
-| `KEYSHOT_CAMERA_PRESETS` | Built-in `presets/cameras.json` | Path to a user-managed camera preset file. |
+#### Render every camera
 
-Relative output paths are resolved inside `KEYSHOT_OUTPUT_DIR`. Parent traversal,
-adjacent-prefix paths, and symbolic-link escapes are rejected by default. Input
-scene, model, material, and environment paths may be located elsewhere.
+```text
+Render every saved camera in C:\scenes\speaker.bip at preview quality. Continue if
+one camera fails and do not overwrite existing images.
+```
 
-Run `keyshot_status` after installation. It reports the MCP and KeyShot
-versions, resolved executable, output write access, preset validity, headless
-startup result, and actionable suggestions. Additional KeyShot launch arguments
-are never included in the diagnostic output.
+Use `keyshot_batch_render` instead when only selected named cameras are required.
+
+#### Prepare a model without rendering
+
+```text
+Import C:\models\speaker.obj, center it, place it on the ground, adjust the camera
+target and environment, then save speaker-prepared.bip.
+```
+
+#### Adjust camera and environment
+
+```text
+Set the Product Hero camera to a 55 mm focal length and distance 6, rotate the
+current environment to 45 degrees, save a new scene, then render a preview.
+```
+
+`fieldOfView` and `focalLength` cannot be used together. `position` and `lookAt`
+are optional, but must be supplied as a pair. `samples` and `maxTimeSeconds` select
+different KeyShot render modes and cannot be combined.
+
+### Quality presets
+
+| Preset | Resolution | Samples | Use |
+| --- | ---: | ---: | --- |
+| `preview` | 960 x 540 | 16 | Fast composition and material checks |
+| `standard` | 1920 x 1080 | 64 | Default for `keyshot_product_render` |
+| `final` | 3840 x 2160 | 256 | High-resolution final output |
+
+Explicit `width`, `height`, and `samples` override the corresponding preset values.
+Explicit `maxTimeSeconds` switches to time-based rendering instead of preset samples.
+Lower-level render tools preserve their existing behavior when no preset is given.
 
 ### Tools
 
 | Tool | Purpose |
 | --- | --- |
-| `keyshot_status` | Diagnose local configuration, output access, presets, and KeyShot headless startup. |
-| `keyshot_product_render` | Prepare, save, and render a model or existing scene in one headless process. |
-| `keyshot_inspect_scene` | Inspect objects, cameras, materials, model sets, and references. |
-| `keyshot_list_cameras` | List available camera names. |
-| `keyshot_render` | Render one image. |
+| `keyshot_status` | Diagnose local configuration, output access, presets, and KeyShot startup. |
+| `keyshot_product_render` | Prepare, save, and render a model or scene in one process. |
+| `keyshot_inspect_scene` | List scene metadata, objects, cameras, materials, model sets, and references. |
+| `keyshot_list_cameras` | Return saved camera names before a selected-camera render. |
+| `keyshot_render` | Render one active or named camera. |
 | `keyshot_render_queue` | Run independent render jobs sequentially. |
-| `keyshot_batch_render` | Render a supplied list of named cameras from one scene. |
-| `keyshot_render_all_cameras` | Discover and render every camera in one scene. |
-| `keyshot_import_model` | Import a model with optional composition adjustments. |
-| `keyshot_apply_material` | Apply a library material or material file. |
-| `keyshot_list_material_presets` | List local material presets. |
-| `keyshot_apply_material_preset` | Apply a named material preset. |
+| `keyshot_batch_render` | Render selected named cameras from one scene. |
+| `keyshot_render_all_cameras` | Discover and render every saved camera. |
+| `keyshot_import_model` | Import a model into an empty or base scene and save it. |
+| `keyshot_apply_material` | Apply a KeyShot material name or local material file to one object. |
+| `keyshot_list_material_presets` | List configured material presets. |
+| `keyshot_apply_material_preset` | Apply a configured material preset to one object. |
 | `keyshot_set_camera` | Create or update camera transform, distance, FOV, or focal length. |
 | `keyshot_list_camera_presets` | List standard and custom camera presets. |
-| `keyshot_apply_camera_preset` | Apply a standard or absolute-coordinate camera preset. |
-| `keyshot_set_environment` | Select or adjust an environment, brightness, or rotation. |
-| `keyshot_save_scene` | Save a scene to a new output path. |
+| `keyshot_apply_camera_preset` | Create or update a camera from a preset. |
+| `keyshot_set_environment` | Select or adjust an environment, brightness, and rotation. |
+| `keyshot_save_scene` | Save an existing scene to a controlled output path. |
 
-The server exposes 17 tools, a `keyshot_product_render` MCP prompt, and a
-`keyshot://workflow` resource.
+The server also exposes one MCP Prompt for product rendering and one MCP Resource
+describing the KeyShot headless workflow. The bundled Agent Skill in
+[`skills/keyshot-mcp`](skills/keyshot-mcp) teaches compatible agents how to install,
+diagnose, and use the server safely.
 
-### One-click product render
+### Configuration
 
-In an MCP client, a designer can use a natural-language request:
+| Variable | Default | Description |
+| --- | --- | --- |
+| `KEYSHOT_HEADLESS_EXE` | `D:\keyshot2025_183972\bin\keyshot_headless.exe` | Full executable path or a command available on `PATH`. |
+| `KEYSHOT_OUTPUT_DIR` | `<home>/Documents/KeyShot MCP Outputs` | Root for rendered images and saved scenes. |
+| `KEYSHOT_ALLOW_EXTERNAL_OUTPUTS` | `false` | Allow output outside the configured root only when explicitly set to `true`. |
+| `KEYSHOT_TIMEOUT_MS` | `600000` | Timeout for one KeyShot process. |
+| `KEYSHOT_LICENSE_ARGS` | empty | Optional launch arguments; diagnostics never echo their values. |
+| `KEYSHOT_MATERIAL_PRESETS` | bundled JSON | Optional user-managed material preset file. |
+| `KEYSHOT_CAMERA_PRESETS` | bundled JSON | Optional user-managed camera preset file. |
 
-```text
-Turn C:\models\speaker.obj into a product render. Center it, place it on the
-ground, use the Isometric camera preset, save the KeyShot scene, and render a
-1600 x 1200 PNG with 128 samples.
-```
+All KeyShot operations run sequentially to reduce license and output conflicts.
+Input scenes and models may come from any local path. By default, generated images
+and scenes must remain inside `KEYSHOT_OUTPUT_DIR`; `..`, sibling-prefix, and
+symlink/junction escapes are rejected.
 
-The `keyshot_product_render` tool accepts either `modelPath` or `scenePath`. New
-models default to centered and grounded geometry with a `Product Hero`
-isometric camera. Existing scenes keep their current camera, materials, and
-environment unless explicit changes are requested.
-
-One-click product rendering defaults to the `standard` quality preset. All
-rendering tools accept:
-
-| Preset | Resolution | Samples |
-| --- | ---: | ---: |
-| `preview` | 960 × 540 | 16 |
-| `standard` | 1920 × 1080 | 64 |
-| `final` | 3840 × 2160 | 256 |
-
-Explicit `width`, `height`, or `samples` values override the corresponding
-preset value. `maxTimeSeconds` replaces preset samples. Explicit `samples` and
-`maxTimeSeconds` cannot be used together.
-
-```json
-{
-  "modelPath": "C:/models/speaker.obj",
-  "outputScenePath": "speaker-product.bip",
-  "outputPath": "speaker-product.png",
-  "materialAssignments": [
-    { "objectName": "Body", "presetName": "Brushed Steel" }
-  ],
-  "cameraPresetName": "Isometric",
-  "focalLength": 55,
-  "brightness": 1.2,
-  "rotation": 45,
-  "qualityPreset": "standard"
-}
-```
-
-Use `renderMode: "allCameras"` with `outputDir` to render every named camera.
-Generated names are derived from the source filename when output paths are
-omitted. If an automatically named result exists, the scene and image receive
-the same `-2`, `-3`, and later suffix. Explicit output paths remain protected
-and return an error when occupied; set `overwrite: true` only when replacement
-is intentional. Material assignments always require an
-explicit object and never overwrite the entire model implicitly.
-
-### Product composition examples
-
-Import a model and prepare its initial composition:
-
-```text
-Import C:\models\speaker.obj into KeyShot. Center the geometry, place it on the
-ground, update the camera look-at point and environment, then save the scene as
-speaker-prepared.bip.
-```
-
-The corresponding `keyshot_import_model` options are:
-
-```json
-{
-  "centerGeometry": true,
-  "snapToGround": true,
-  "adjustCameraLookAt": true,
-  "adjustEnvironment": true
-}
-```
-
-Create a product camera with one lens control:
-
-```text
-Set the Product Hero camera to a 55 mm focal length and distance 6, save a new
-scene, then render a PNG preview.
-```
-
-`fieldOfView` must be greater than `0` and less than `180`. `focalLength` accepts
-`5` to `200` mm. The two controls are mutually exclusive. `position` and
-`lookAt` are optional, but must be supplied together when changing the transform.
-
-Rotate the active HDRI or environment:
-
-```text
-Rotate the current KeyShot environment to 45 degrees, save the edited scene,
-and render all cameras.
-```
-
-`rotation` accepts values from `0` inclusive to `360` exclusive.
-
-For rendering, `samples` and `maxTimeSeconds` select different KeyShot render
-modes and cannot be supplied together.
+Automatically generated product outputs use `-2`, `-3`, and later suffixes when a
+name already exists. Explicit output paths are not silently renamed. Operations
+that support `overwrite` require it to be set deliberately before replacing files.
 
 ### Camera and material presets
 
-The built-in camera library includes Front, Back, Left, Right, Top, Bottom, and
-Isometric views. A custom `KEYSHOT_CAMERA_PRESETS` JSON file may contain standard
-views or absolute `position`, `lookAt`, and optional `up` vectors.
+The bundled camera library contains Front, Back, Left, Right, Top, Bottom, and
+Isometric standard views. A custom camera JSON may define a standard view or an
+absolute `position`, `lookAt`, and optional `up` vector.
 
-Material presets are stored in JSON and reference KeyShot library material names
-or local material files. The MCP server reads preset files but does not modify
-them.
+Material presets reference a KeyShot library material name or local material file.
+The MCP server reads preset files but does not edit them automatically. See
+[`presets`](presets) for the supported formats.
 
-### Reproducible KeyShot smoke test
+### Reproducible KeyShot demo
 
 The repository includes a smoke test built from generated cube geometry in
-`examples/demo`. It verifies startup, import composition, scene inspection,
-camera presets, focal length, field of view, camera distance, environment
-rotation, scene saving, camera discovery, one-click model rendering, one-click
-existing-scene rendering, and real PNG output:
+[`examples/demo`](examples/demo). It verifies startup, import composition, scene
+inspection, camera presets, lens controls, environment rotation, scene saving,
+camera discovery, one-call product rendering, and real PNG output.
 
 ```bash
 npm run smoke:keyshot
 ```
 
-Generated `.bip` files and test renders remain in the configured local output
-directory. The repository includes one representative result:
+Generated `.bip` files and test renders stay in the configured local output
+directory. A representative result is included below:
 
 ![KeyShot smoke test render](assets/demo/keyshot-mcp-demo.png)
 
-### Development and tests
+### Development
 
 ```bash
 pnpm install
@@ -307,77 +250,73 @@ npm pack --dry-run
 ```
 
 CI runs on Windows and Ubuntu with Node.js 20 and 24. Linux CI validates the MCP
-server, bridge logic, and package; it does not claim that KeyShot itself runs on
-Linux.
+server, bridge logic, metadata, and package; it does not claim that KeyShot itself
+was tested on Linux.
 
 ### Roadmap
 
-- Verify additional KeyShot releases on real installations.
+- Verify additional supported KeyShot releases on real installations.
 - Verify macOS installation and headless behavior.
-- Add depth-of-field and additional lens controls when stable headless APIs are
-  available.
+- Add depth-of-field and additional lens controls when stable headless APIs exist.
 
-### License and security
+### License, security, and trademarks
 
-Released under the [MIT License](LICENSE). See [SECURITY.md](SECURITY.md) for
-security guidance and [CONTRIBUTING.md](CONTRIBUTING.md) for development notes.
-Do not commit KeyShot licenses, private scenes, customer assets, or unpublished
-renders.
+This project uses the [MIT License](LICENSE). See [SECURITY.md](SECURITY.md) for
+security reporting and [CONTRIBUTING.md](CONTRIBUTING.md) for development guidance.
+Do not commit licenses, private scenes, customer assets, or unpublished renders.
 
-### Trademark and project status
-
-KeyShot is a trademark of KeyShot ApS and/or KeyShot Inc. This is an independent,
-open-source community project and is not affiliated with, endorsed by, or
-sponsored by KeyShot.
-
-This project provides only an MCP integration. It does not include KeyShot
-Studio, KeyShot assets, or a KeyShot license. Users must install and license
-KeyShot Studio separately and comply with the applicable KeyShot terms. Do not
-use this project to bypass licensing, share credentials, or redistribute KeyShot
-software or proprietary resources.
+KeyShot is a trademark of KeyShot ApS and/or KeyShot Inc. This independent
+open-source community project is not affiliated with, endorsed by, sponsored by,
+or otherwise associated with KeyShot. Users must install and license KeyShot
+separately and comply with its applicable terms. This project must not be used to
+bypass licensing or redistribute proprietary KeyShot software or assets.
 
 ---
 
 ## 中文
 
-KeyShot MCP 是一个本地运行的
-[Model Context Protocol](https://modelcontextprotocol.io/) 服务，通过 KeyShot
-headless 脚本让兼容 MCP 的 AI Agent 检查、编辑和渲染 KeyShot 场景。场景、模型、
-许可证和渲染文件均保留在本机。
+### 设计师快速开始
 
-### 主要功能
+最简单的安装方式，是把下面这段话发给能够修改 MCP 配置的 Agent：
 
-- 检查场景对象、材质、相机、模型集和外部引用。
-- 导入模型，并可选择自动居中、贴地、调整相机观察点和环境。
-- 渲染单个相机、指定相机、场景中的全部相机或顺序渲染队列。
-- 通过位置、观察点、距离、视野角、焦距或预设创建和更新相机。
-- 直接应用材质，或使用本地材质预设库。
-- 选择环境、调整亮度并旋转当前环境。
-- 将修改后的场景保存到受控输出目录。
-- 通过一次工具调用完成模型或现有场景的产品构图与渲染。
+```text
+请安装 KeyShot MCP 0.9.1，并配置到我的 MCP 客户端。
 
-### 运行要求与兼容性
+1. 使用：npx -y keyshot-mcp@0.9.1
+2. 查找本机 keyshot_headless.exe，并把完整路径设置为 KEYSHOT_HEADLESS_EXE。
+3. 默认把结果保存在“文档/KeyShot MCP Outputs”，除非我明确选择其他安全目录。
+4. 保持 KEYSHOT_ALLOW_EXTERNAL_OUTPUTS 关闭。
+5. 重启或重新加载 MCP 客户端，然后运行 keyshot_status。
+6. 用普通设计师能理解的语言说明问题和修复建议。
+7. 不要上传或发布我的 KeyShot 文件、渲染图或许可证信息。
+```
+
+安装后可以这样说：
+
+```text
+检查 KeyShot MCP 是否准备就绪，然后用 C:\models\speaker.obj 生成一张标准质量的产品渲染图。
+```
+
+### 使用要求
 
 - Node.js 20 或更高版本。
-- 本机已安装并获得许可、且支持 headless 脚本的 KeyShot。
-- 已实测：Windows 11、KeyShot Studio 2025 / KeyShot 14.1。
-- 其他 KeyShot 版本在提供相同官方脚本 API 时可能兼容，但本项目尚未完成实机验证。
-- 本项目不包含 KeyShot 软件或许可证。
+- 本机已安装、合法授权并支持 headless 脚本的 KeyShot。
+- 已实测 Windows 11 + KeyShot Studio 2025 / KeyShot 14.1。
+- 暴露相同脚本 API 的其他 KeyShot 版本可能可用，但本项目暂未完成实机验证。
+- 本项目不包含 KeyShot、许可证、官方材质或环境资源。
 
 ### 安装
 
-当前版本为 `0.9.0`。
+当前正式版本为 `0.9.1`。
 
-#### 方式一：使用 npx
-
-无需全局安装 npm 包：
+#### 使用 npx 免安装运行
 
 ```json
 {
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.9.0"],
+      "args": ["-y", "keyshot-mcp@0.9.1"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -386,10 +325,10 @@ headless 脚本让兼容 MCP 的 AI Agent 检查、编辑和渲染 KeyShot 场�
 }
 ```
 
-#### 方式二：全局安装
+#### 全局安装
 
 ```bash
-npm install -g keyshot-mcp@0.9.0
+npm install -g keyshot-mcp@0.9.1
 ```
 
 ```json
@@ -405,7 +344,7 @@ npm install -g keyshot-mcp@0.9.0
 }
 ```
 
-#### 方式三：从源码运行
+#### 从源码运行
 
 ```bash
 git clone https://github.com/truman-t3/keyshot-mcp.git
@@ -414,189 +353,128 @@ pnpm install
 pnpm build
 ```
 
-将 MCP 客户端配置为运行 `dist/index.js` 的绝对路径：
+在 MCP 客户端中填写 `dist/index.js` 的绝对路径。可编辑配置示例位于
+[`examples`](examples)。修改配置后重启 MCP 客户端，再调用 `keyshot_status`。
 
-```json
-{
-  "mcpServers": {
-    "keyshot": {
-      "command": "node",
-      "args": ["C:/absolute/path/to/keyshot-mcp/dist/index.js"],
-      "env": {
-        "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
-      }
-    }
-  }
-}
-```
+状态检查会验证 MCP 版本、KeyShot 可执行文件、输出目录、bridge、预设 JSON，
+并运行最小 KeyShot 启动测试。
 
-修改配置后请重启或重新加载 MCP 客户端。
+### 常用工作流
 
-### 复制给 Agent 的安装提示词
+#### 一句话完成产品出图
 
-下面的提示词适用于有权限修改 MCP 客户端配置的编程 Agent：
+普通产品工作优先使用 `keyshot_product_render`。它能在一个 KeyShot 进程中导入模型
+或打开场景、应用指定材质、调整相机和环境、保存场景副本并渲染图片。
 
 ```text
-请帮我安装 KeyShot MCP 0.9.0，并添加到我的 MCP 客户端。
-
-1. 查找本机 KeyShot headless 可执行文件。
-2. 添加名为 keyshot 的 MCP server，运行：
-   npx -y keyshot-mcp@0.9.0
-3. 将 KEYSHOT_HEADLESS_EXE 设置为可执行文件路径。
-4. 保持 KEYSHOT_ALLOW_EXTERNAL_OUTPUTS 关闭。
-5. 重启或重新加载 MCP 客户端，调用 keyshot_status，然后使用 keyshot_product_render 一键完成产品出图。
-6. 不要上传或发布任何 KeyShot 场景、模型、渲染图或许可证数据。
+导入 C:\models\speaker.obj，自动居中贴地，使用 Isometric 相机预设和 55 mm 焦距，
+保存场景副本并输出标准质量 PNG。
 ```
 
-### 配置项
+新模型的导入构图选项默认开启；已有场景在没有明确要求时保留现有构图。
 
-| 环境变量 | 默认值 | 用途 |
-| --- | --- | --- |
-| `KEYSHOT_HEADLESS_EXE` | Windows 上为 `keyshot_headless.exe` | KeyShot headless 绝对路径，或系统 `PATH` 中的命令。 |
-| `KEYSHOT_OUTPUT_DIR` | `~/Documents/KeyShot MCP Outputs` | 渲染图和已保存场景的根目录。 |
-| `KEYSHOT_ALLOW_EXTERNAL_OUTPUTS` | `false` | 明确设为 `true` 时允许写入输出根目录之外。 |
-| `KEYSHOT_TIMEOUT_MS` | `600000` | 单个 KeyShot headless 进程的超时时间。 |
-| `KEYSHOT_LICENSE_ARGS` | 空 | 可选的 KeyShot 启动参数。 |
-| `KEYSHOT_MATERIAL_PRESETS` | 内置 `presets/materials.json` | 自定义材质预设 JSON 路径。 |
-| `KEYSHOT_CAMERA_PRESETS` | 内置 `presets/cameras.json` | 自定义相机预设 JSON 路径。 |
-
-相对输出路径会自动放入 `KEYSHOT_OUTPUT_DIR`。默认拒绝 `..`、相邻同名前缀目录和
-软链接逃逸。输入场景、模型、材质和环境文件可位于其他目录。
-
-安装后调用 `keyshot_status`，可检查 MCP 与 KeyShot 版本、实际可执行文件路径、
-输出目录写入权限、预设文件和 headless 启动状态，并获得可直接执行的修复建议。
-诊断结果不会回显额外的 KeyShot 启动参数。
-
-### MCP 工具
-
-| 工具 | 用途 |
-| --- | --- |
-| `keyshot_status` | 诊断本地配置、输出权限、预设文件和 KeyShot headless 启动状态。 |
-| `keyshot_product_render` | 在一个 headless 进程中完成模型或场景准备、保存和渲染。 |
-| `keyshot_inspect_scene` | 检查对象、相机、材质、模型集和外部引用。 |
-| `keyshot_list_cameras` | 列出场景中的相机名称。 |
-| `keyshot_render` | 渲染一张图片。 |
-| `keyshot_render_queue` | 顺序执行多个独立渲染任务。 |
-| `keyshot_batch_render` | 渲染用户指定的一组相机。 |
-| `keyshot_render_all_cameras` | 自动发现并渲染场景中的全部相机。 |
-| `keyshot_import_model` | 导入模型并可选择自动构图。 |
-| `keyshot_apply_material` | 应用材质库名称或材质文件。 |
-| `keyshot_list_material_presets` | 列出本地材质预设。 |
-| `keyshot_apply_material_preset` | 应用指定材质预设。 |
-| `keyshot_set_camera` | 创建或更新相机变换、距离、视野角或焦距。 |
-| `keyshot_list_camera_presets` | 列出标准和自定义相机预设。 |
-| `keyshot_apply_camera_preset` | 应用标准视角或绝对坐标相机预设。 |
-| `keyshot_set_environment` | 选择环境并调整亮度或旋转角度。 |
-| `keyshot_save_scene` | 将场景保存到新的输出路径。 |
-
-服务共提供 17 个工具，并提供 `keyshot_product_render` MCP 提示词和
-`keyshot://workflow` 资源。
-
-### 一键产品出图
-
-设计师可以直接在支持 MCP 的 Agent 中描述需求：
+#### 渲染全部相机
 
 ```text
-把 C:\models\speaker.obj 做成产品渲染图。自动居中、贴地，使用 Isometric
-相机预设，保存 KeyShot 场景，并用 128 采样渲染一张 1600 x 1200 PNG。
+用预览质量渲染 C:\scenes\speaker.bip 中的全部相机。某个相机失败时继续，
+并且不要覆盖已有图片。
 ```
 
-`keyshot_product_render` 可以接收 `modelPath` 或 `scenePath`。新模型默认自动居中、
-贴地并创建名为 `Product Hero` 的等轴测相机；已有场景默认保留当前相机、材质和环境，
-只有明确提供参数时才修改。
+只渲染部分指定相机时，使用 `keyshot_batch_render`。
 
-一键产品出图未指定质量时默认使用 `standard`。全部渲染工具都支持：
-
-| 预设 | 分辨率 | 采样 |
-| --- | ---: | ---: |
-| `preview` | 960 × 540 | 16 |
-| `standard` | 1920 × 1080 | 64 |
-| `final` | 3840 × 2160 | 256 |
-
-显式填写的 `width`、`height` 或 `samples` 会分别覆盖预设值。
-`maxTimeSeconds` 会替代预设采样；不能同时显式提供 `samples` 和
-`maxTimeSeconds`。
-
-```json
-{
-  "modelPath": "C:/models/speaker.obj",
-  "outputScenePath": "speaker-product.bip",
-  "outputPath": "speaker-product.png",
-  "materialAssignments": [
-    { "objectName": "Body", "presetName": "Brushed Steel" }
-  ],
-  "cameraPresetName": "Isometric",
-  "focalLength": 55,
-  "brightness": 1.2,
-  "rotation": 45,
-  "qualityPreset": "standard"
-}
-```
-
-将 `renderMode` 设为 `allCameras` 并提供 `outputDir`，即可渲染场景中的全部命名相机。
-省略输出路径时会根据源文件名自动生成。自动名称已存在时，场景和图片会统一增加
-`-2`、`-3` 等编号；用户明确填写的路径仍会严格防止覆盖。只有明确设置
-`overwrite: true` 才会替换。材质指定必须包含明确的对象，不会隐式覆盖整个模型。
-
-### 产品构图示例
-
-导入模型并完成初始构图：
+#### 只整理模型，不渲染
 
 ```text
-把 C:\models\speaker.obj 导入 KeyShot，自动居中、贴地、调整相机观察点和环境，
+导入 C:\models\speaker.obj，自动居中、贴地、调整相机观察点和环境，
 然后保存为 speaker-prepared.bip。
 ```
 
-对应的 `keyshot_import_model` 参数：
-
-```json
-{
-  "centerGeometry": true,
-  "snapToGround": true,
-  "adjustCameraLookAt": true,
-  "adjustEnvironment": true
-}
-```
-
-设置产品相机：
+#### 调整相机和环境
 
 ```text
-把 Product Hero 相机设为 55 mm 焦距、距离 6，保存新场景并渲染 PNG 预览图。
+把 Product Hero 相机设置为 55 mm 焦距、距离 6，把当前环境旋转到 45 度，
+保存新场景并渲染预览图。
 ```
 
-`fieldOfView` 必须大于 `0` 且小于 `180`；`focalLength` 支持 `5–200 mm`，
-两者不能同时使用。`position` 和 `lookAt` 可不填写，但修改相机位置时必须成对提供。
+`fieldOfView` 与 `focalLength` 不能同时使用。`position` 和 `lookAt` 可以省略，
+但修改位置时必须成对提供。`samples` 与 `maxTimeSeconds` 对应不同渲染模式，
+不能同时使用。
 
-旋转当前 HDRI 或环境：
+### 质量预设
 
-```text
-把当前 KeyShot 环境旋转到 45 度，保存场景，然后渲染全部相机。
-```
+| 预设 | 分辨率 | 采样 | 用途 |
+| --- | ---: | ---: | --- |
+| `preview` | 960 x 540 | 16 | 快速检查构图和材质 |
+| `standard` | 1920 x 1080 | 64 | `keyshot_product_render` 的默认值 |
+| `final` | 3840 x 2160 | 256 | 高清最终输出 |
 
-`rotation` 支持大于等于 `0` 且小于 `360` 的数值。
+显式填写的 `width`、`height` 和 `samples` 会分别覆盖预设值；填写
+`maxTimeSeconds` 会改用限时渲染。底层渲染工具在没有指定预设时保持原有行为。
 
-渲染参数 `samples` 和 `maxTimeSeconds` 对应不同的 KeyShot 渲染模式，不能同时使用。
+### 工具
+
+| 工具 | 用途 |
+| --- | --- |
+| `keyshot_status` | 检查本机配置、输出目录、预设和 KeyShot 启动状态。 |
+| `keyshot_product_render` | 在一个进程中整理、保存并渲染模型或场景。 |
+| `keyshot_inspect_scene` | 查看场景、对象、相机、材质、模型集和外部引用。 |
+| `keyshot_list_cameras` | 返回场景中的相机名称。 |
+| `keyshot_render` | 渲染当前或指定相机。 |
+| `keyshot_render_queue` | 顺序执行多个独立渲染任务。 |
+| `keyshot_batch_render` | 渲染选定的多个相机。 |
+| `keyshot_render_all_cameras` | 自动发现并渲染全部相机。 |
+| `keyshot_import_model` | 导入模型并保存为场景。 |
+| `keyshot_apply_material` | 给指定对象应用材质名称或本地材质文件。 |
+| `keyshot_list_material_presets` | 列出材质预设。 |
+| `keyshot_apply_material_preset` | 给指定对象应用材质预设。 |
+| `keyshot_set_camera` | 创建或修改相机位置、距离、视野角或焦距。 |
+| `keyshot_list_camera_presets` | 列出标准与自定义相机预设。 |
+| `keyshot_apply_camera_preset` | 根据预设创建或修改相机。 |
+| `keyshot_set_environment` | 选择或调整环境、亮度和旋转。 |
+| `keyshot_save_scene` | 将场景保存到受控输出路径。 |
+
+服务还提供一个产品渲染 MCP Prompt，以及一个说明 headless 工作流程的 MCP Resource。
+[`skills/keyshot-mcp`](skills/keyshot-mcp) 中的 Agent Skill 会指导兼容的 Agent 安装、
+诊断并安全使用这些工具。
+
+### 配置
+
+| 环境变量 | 默认值 | 说明 |
+| --- | --- | --- |
+| `KEYSHOT_HEADLESS_EXE` | `D:\keyshot2025_183972\bin\keyshot_headless.exe` | 完整路径，或系统 `PATH` 中可执行的命令。 |
+| `KEYSHOT_OUTPUT_DIR` | `<用户目录>/Documents/KeyShot MCP Outputs` | 渲染图和场景副本的根目录。 |
+| `KEYSHOT_ALLOW_EXTERNAL_OUTPUTS` | `false` | 只有明确设为 `true` 时才允许写到输出根目录之外。 |
+| `KEYSHOT_TIMEOUT_MS` | `600000` | 单次 KeyShot 进程超时时间。 |
+| `KEYSHOT_LICENSE_ARGS` | 空 | 可选启动参数；诊断结果不会回显具体内容。 |
+| `KEYSHOT_MATERIAL_PRESETS` | 内置 JSON | 可选的用户材质预设文件。 |
+| `KEYSHOT_CAMERA_PRESETS` | 内置 JSON | 可选的用户相机预设文件。 |
+
+所有 KeyShot 操作串行执行，减少许可证和文件冲突。输入模型和场景可以位于任意本地
+路径；生成的场景和图片默认只能写入 `KEYSHOT_OUTPUT_DIR`。系统会拒绝 `..`、同名前缀
+目录以及符号链接或目录联接逃逸。
+
+自动生成的产品输出遇到重名时会使用 `-2`、`-3` 等编号。用户明确填写的路径不会
+被静默改名；支持 `overwrite` 的操作只有在明确开启后才覆盖文件。
 
 ### 相机与材质预设
 
 内置相机库包含 Front、Back、Left、Right、Top、Bottom 和 Isometric 七个标准视角。
-自定义 `KEYSHOT_CAMERA_PRESETS` JSON 可使用标准视角，也可提供绝对 `position`、
-`lookAt` 和可选 `up` 向量。
+自定义相机 JSON 可使用标准视角，也可提供绝对 `position`、`lookAt` 和可选 `up`。
 
-材质预设通过 JSON 引用 KeyShot 材质库名称或本地材质文件。MCP 只读取预设文件，
-不会自动修改它们。
+材质预设引用 KeyShot 材质库名称或本地材质文件。MCP 只读取预设文件，不自动修改。
+格式示例见 [`presets`](presets)。
 
-### 可复现的 KeyShot smoke test
+### 可复现的 KeyShot Demo
 
-仓库提供基于 `examples/demo` 生成立方体几何体的 smoke test，用于验证 KeyShot
-启动、导入构图、场景检查、相机预设、焦距、视野角、相机距离、环境旋转、场景保存、
-相机发现、模型一键出图、现有场景一键渲染全部相机和真实 PNG 输出：
+仓库使用 [`examples/demo`](examples/demo) 中生成的立方体几何体进行 smoke test，
+验证启动、导入构图、场景检查、相机预设、镜头控制、环境旋转、场景保存、相机发现、
+一键产品出图和真实 PNG 输出。
 
 ```bash
 npm run smoke:keyshot
 ```
 
-生成的 `.bip` 和测试渲染图只保留在配置的本地输出目录。仓库中包含一张代表性结果：
+生成的 `.bip` 和测试渲染图只保存在本地输出目录。仓库提供一张代表性结果：
 
 ![KeyShot smoke test 渲染图](assets/demo/keyshot-mcp-demo.png)
 
@@ -610,26 +488,22 @@ python -m unittest discover -s tests -p "test_*.py"
 npm pack --dry-run
 ```
 
-CI 在 Windows 和 Ubuntu 上使用 Node.js 20、24 运行。Linux CI 验证 MCP 服务、
-桥接逻辑和 npm 包，不代表 KeyShot 软件已在 Linux 上通过实机测试。
+CI 在 Windows 和 Ubuntu 上使用 Node.js 20、24。Linux CI 验证 MCP 服务、bridge、
+元数据和 npm 包，不表示 KeyShot 软件已经在 Linux 上通过实机测试。
 
 ### 路线图
 
-- 在更多 KeyShot 正式版本上完成实机验证。
+- 在更多受支持的 KeyShot 正式版本上完成实机验证。
 - 验证 macOS 安装和 headless 行为。
-- 在 headless API 稳定支持后增加景深和更多镜头控制。
+- 在稳定 headless API 可用后增加景深和更多镜头控制。
 
-### 许可证与安全
+### 许可证、安全与商标
 
-项目采用 [MIT License](LICENSE)。安全说明见 [SECURITY.md](SECURITY.md)，开发说明
-见 [CONTRIBUTING.md](CONTRIBUTING.md)。请勿提交 KeyShot 许可证、私有场景、客户素材
+项目采用 [MIT License](LICENSE)。安全报告方式见 [SECURITY.md](SECURITY.md)，
+开发说明见 [CONTRIBUTING.md](CONTRIBUTING.md)。请勿提交许可证、私有场景、客户素材
 或未公开渲染图。
 
-### 商标与项目性质
-
-KeyShot 是 KeyShot ApS 和/或 KeyShot Inc. 的商标。本项目是独立的开源社区项目，
-与 KeyShot 官方无隶属、认可、赞助或其他合作关系。
-
-本项目仅提供 MCP 集成功能，不包含 KeyShot Studio、KeyShot 官方素材或 KeyShot
-许可证。用户必须自行安装并合法授权 KeyShot Studio，同时遵守适用的 KeyShot 条款。
-不得使用本项目绕过许可证、共享账号凭据，或重新分发 KeyShot 软件及其专有资源。
+KeyShot 是 KeyShot ApS 和/或 KeyShot Inc. 的商标。本项目是独立开源社区项目，
+与 KeyShot 官方无隶属、认可、赞助或其他合作关系。用户必须自行安装并合法授权
+KeyShot，同时遵守适用条款。不得使用本项目绕过许可证或重新分发 KeyShot 专有软件
+及资源。

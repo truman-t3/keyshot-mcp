@@ -1,4 +1,16 @@
 import type { KeyShotResult } from "./types.js";
+import { z } from "zod";
+
+export const keyShotResultSchema = z.object({
+  ok: z.boolean().describe("True when the requested operation completed successfully."),
+  data: z.unknown().nullable().describe("Operation-specific structured result data, or null when unavailable."),
+  outputFiles: z.array(z.string()).describe("Absolute paths of images or scene files created by the operation."),
+  warnings: z.array(z.string()).describe("Non-fatal conditions the user or agent should review."),
+  keyshotStdoutTail: z.string().describe("Truncated tail of KeyShot headless output for diagnostics."),
+  error: z.string().nullable().describe("Human-readable failure reason, or null after success."),
+  errorCode: z.string().nullable().optional().describe("Stable error category for common failures."),
+  suggestions: z.array(z.string()).optional().describe("Actionable recovery steps for the user or agent."),
+});
 
 export function toolResponse(result: KeyShotResult) {
   return {
@@ -8,6 +20,7 @@ export function toolResponse(result: KeyShotResult) {
         text: JSON.stringify(result, null, 2),
       },
     ],
+    structuredContent: { ...result },
     isError: !result.ok,
   };
 }

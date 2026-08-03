@@ -16,4 +16,13 @@ describe("MCP tool registration", () => {
     expect(productSource).toContain('operation: "product_render"');
     expect(bridgeSource).toContain('operation == "product_render"');
   });
+
+  it("registers all public tools with titles, output schemas, and safety annotations", () => {
+    const indexSource = fs.readFileSync(new URL("../src/index.ts", import.meta.url), "utf8");
+    expect(indexSource.match(/server\.registerTool\(/g)).toHaveLength(17);
+    expect(indexSource).not.toContain("server.tool(");
+    expect(indexSource.match(/title: "/g)).toHaveLength(19);
+    expect(indexSource.match(/outputSchema: keyShotResultSchema/g)).toHaveLength(17);
+    expect(indexSource.match(/annotations: (readOnlyAnnotations|outputWritingAnnotations)/g)).toHaveLength(17);
+  });
 });

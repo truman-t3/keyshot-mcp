@@ -2,7 +2,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { getConfig } from "./config.js";
-import { toolResponse, localFailure } from "./result.js";
+import { toolResponse, localFailure, keyShotResultSchema } from "./result.js";
 import { runKeyShotSerialized } from "./runner.js";
 import { runRenderQueue } from "./queue.js";
 import { loadMaterialPresets, findMaterialPreset } from "./presets.js";
@@ -39,6 +39,20 @@ import {
 } from "./schemas.js";
 
 const config = getConfig();
+
+const readOnlyAnnotations = {
+  readOnlyHint: true,
+  destructiveHint: false,
+  idempotentHint: true,
+  openWorldHint: false,
+} as const;
+
+const outputWritingAnnotations = {
+  readOnlyHint: false,
+  destructiveHint: true,
+  idempotentHint: false,
+  openWorldHint: false,
+} as const;
 
 const server = new McpServer({
   name: "keyshot-mcp",
@@ -106,14 +120,27 @@ server.registerPrompt(
   }),
 );
 
-server.tool("keyshot_status", "Diagnose the local KeyShot MCP installation and verify headless startup.", {}, async () =>
-  toolResponse(await runKeyShotDiagnostics(config)),
+server.registerTool(
+  "keyshot_status",
+  {
+    title: "Check KeyShot MCP status",
+    description: "Diagnose the local KeyShot MCP installation before editing or rendering. Checks configuration, output access, presets, bridge files, and a minimal KeyShot headless startup without modifying a user scene.",
+    inputSchema: {},
+    outputSchema: keyShotResultSchema,
+    annotations: readOnlyAnnotations,
+  },
+  async () => toolResponse(await runKeyShotDiagnostics(config)),
 );
 
-server.tool(
+server.registerTool(
   "keyshot_product_render",
-  "Prepare and render a product from either a model file or an existing KeyShot scene in one headless process.",
-  productRenderInputSchema.shape,
+  {
+    title: "Prepare and render a product",
+    description: "Use this high-level tool for a complete product workflow in one KeyShot headless process: open a scene or import a model, apply object-specific materials, configure camera and environment, save a scene copy, and render one or all cameras. Prefer lower-level tools only when the individual stages need separate control.",
+    inputSchema: productRenderInputSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => {
     try {
       const parsed = productRenderSchema.parse(args);
@@ -125,34 +152,54 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_inspect_scene",
-  "Open a KeyShot scene and return available objects, cameras, materials and scene metadata.",
-  scenePathSchema.shape,
+  {
+    title: "Inspect a KeyShot scene",
+    description: "Open an existing KeyShot scene read-only and return scene metadata, objects, cameras, material assignments, model sets, and external references. Use this before targeted material or camera edits when names are unknown.",
+    inputSchema: scenePathSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: readOnlyAnnotations,
+  },
   async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "inspect_scene", ...args })),
 );
 
-server.tool(
+server.registerTool(
   "keyshot_list_cameras",
-  "Open a KeyShot scene and return the list of available camera names (useful before batch rendering).",
-  listCamerasSchema.shape,
+  {
+    title: "List scene cameras",
+    description: "Open a KeyShot scene without saving changes and return its saved camera names. Use this before keyshot_batch_render when only selected views should be rendered; use keyshot_render_all_cameras when no manual selection is needed.",
+    inputSchema: listCamerasSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: readOnlyAnnotations,
+  },
   async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "list_cameras", ...args })),
 );
 
-server.tool(
+server.registerTool(
   "keyshot_render",
-  "Render a KeyShot scene to an image file.",
-  renderSchema.shape,
+  {
+    title: "Render one KeyShot view",
+    description: "Render one active or named camera from an existing KeyShot scene to an image file. Use keyshot_batch_render for selected cameras, keyshot_render_all_cameras for every camera, or keyshot_product_render when scene preparation is also required.",
+    inputSchema: renderSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => {
     const parsed = renderInputSchema.parse(args);
     return toolResponse(await runKeyShotSerialized(config, { operation: "render", ...applyRenderQuality(parsed) }));
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_render_queue",
-  "Render several jobs sequentially. Stops at the first failure unless continueOnError is set.",
-  renderQueueSchema.shape,
+  {
+    title: "Run a sequential render queue",
+    description: "Render multiple independent scene and camera jobs sequentially so KeyShot processes do not compete for a license or output files. Stops after the first failure unless continueOnError is enabled.",
+    inputSchema: renderQueueSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => {
     const parsed = renderQueueInputSchema.parse(args);
     return toolResponse(
@@ -165,10 +212,15 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_batch_render",
-  "Render multiple named cameras from one KeyShot scene into an output directory.",
-  batchRenderSchema.shape,
+  {
+    title: "Render selected cameras",
+    description: "Render an explicit list of saved camera names from one KeyShot scene into an output directory. Use keyshot_list_cameras first when camera names are unknown; use keyshot_render_all_cameras to discover and render every camera automatically.",
+    inputSchema: batchRenderSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => {
     const parsed = batchRenderInputSchema.parse(args);
     return toolResponse(
@@ -177,10 +229,15 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_render_all_cameras",
-  "Discover every camera in one KeyShot scene and render each view into an output directory.",
-  renderAllCamerasSchema.shape,
+  {
+    title: "Render all scene cameras",
+    description: "Discover every saved camera in a KeyShot scene and render each view in one headless process. Safe file names are generated from camera names; duplicate names are numbered and per-camera failures can be reported while remaining views continue.",
+    inputSchema: renderAllCamerasSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => {
     const parsed = renderAllCamerasInputSchema.parse(args);
     return toolResponse(
@@ -189,10 +246,15 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_import_model",
-  "Import a model into an optional base scene, optionally center and ground it, adjust the camera or environment, and save the resulting scene.",
-  importModelSchema.shape,
+  {
+    title: "Import a model into KeyShot",
+    description: "Import a supported local model into an empty scene or optional base scene, apply requested import composition options, and save the result to a new scene path. This tool does not render; use keyshot_product_render for an import-to-image workflow.",
+    inputSchema: importModelSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) =>
     toolResponse(
       await runKeyShotSerialized(config, {
@@ -202,20 +264,30 @@ server.tool(
     ),
 );
 
-server.tool(
+server.registerTool(
   "keyshot_apply_material",
-  "Apply a material by name or material file to a scene object and save the resulting scene.",
-  applyMaterialInputSchema.shape,
+  {
+    title: "Apply a KeyShot material",
+    description: "Apply one KeyShot library material name or local material file to a specific scene object, then save the edited scene to the requested output path. Use objectPath when duplicate object names exist; use keyshot_apply_material_preset for a configured reusable preset.",
+    inputSchema: applyMaterialInputSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => {
     const parsed = applyMaterialSchema.parse(args);
     return toolResponse(await runKeyShotSerialized(config, { operation: "apply_material", ...parsed }));
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_list_material_presets",
-  "List material presets from the local preset library (presets/materials.json or KEYSHOT_MATERIAL_PRESETS).",
-  listMaterialPresetsSchema.shape,
+  {
+    title: "List material presets",
+    description: "Read the configured local material preset JSON and return valid preset names and material sources without opening KeyShot or modifying files. Use a returned name with keyshot_apply_material_preset.",
+    inputSchema: listMaterialPresetsSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: readOnlyAnnotations,
+  },
   async () => {
     try {
       const presets = await loadMaterialPresets(config);
@@ -233,10 +305,15 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_apply_material_preset",
-  "Apply a named material preset (from the preset library) to a scene object and save the resulting scene.",
-  applyMaterialPresetInputSchema.shape,
+  {
+    title: "Apply a material preset",
+    description: "Resolve a named preset from the configured material preset library, apply it to one scene object, and save a new KeyShot scene. List presets first when the name is unknown; use keyshot_apply_material for a direct library name or material file.",
+    inputSchema: applyMaterialPresetInputSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => {
     const parsed = applyMaterialPresetSchema.parse(args);
     let presets;
@@ -266,20 +343,30 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_set_camera",
-  "Create or update a camera transform, distance, field of view, or focal length and save the resulting scene.",
-  setCameraInputSchema.shape,
+  {
+    title: "Set a KeyShot camera",
+    description: "Create or update a named camera using a position and target, distance, field of view, or focal length, then save the edited scene. Position and lookAt must be supplied together; fieldOfView and focalLength select mutually exclusive lens modes.",
+    inputSchema: setCameraInputSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => {
     const parsed = setCameraSchema.parse(args);
     return toolResponse(await runKeyShotSerialized(config, { operation: "set_camera", ...parsed }));
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_list_camera_presets",
-  "List standard and custom camera presets from presets/cameras.json or KEYSHOT_CAMERA_PRESETS.",
-  listCameraPresetsSchema.shape,
+  {
+    title: "List camera presets",
+    description: "Read the configured camera preset JSON and return valid standard or absolute camera presets without opening KeyShot or modifying files. Use a returned name with keyshot_apply_camera_preset.",
+    inputSchema: listCameraPresetsSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: readOnlyAnnotations,
+  },
   async () => {
     try {
       const presets = await loadCameraPresets(config);
@@ -297,10 +384,15 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_apply_camera_preset",
-  "Create or update a named camera from a standard or custom camera preset and save the scene.",
-  applyCameraPresetSchema.shape,
+  {
+    title: "Apply a camera preset",
+    description: "Create or update a saved camera from a configured standard view or absolute camera preset, then save the edited scene. List camera presets first when the name is unknown; use keyshot_set_camera for direct transform or lens control.",
+    inputSchema: applyCameraPresetSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => {
     let presets;
     try {
@@ -343,17 +435,27 @@ server.tool(
   },
 );
 
-server.tool(
+server.registerTool(
   "keyshot_set_environment",
-  "Set a scene environment by name or file, brightness, or rotation when supported by KeyShot headless scripting.",
-  setEnvironmentSchema.shape,
+  {
+    title: "Set the KeyShot environment",
+    description: "Select a KeyShot environment by library name or local file, optionally change brightness and rotation, and save the edited scene. Unsupported environment APIs return a clear error instead of silently ignoring requested changes.",
+    inputSchema: setEnvironmentSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "set_environment", ...args })),
 );
 
-server.tool(
+server.registerTool(
   "keyshot_save_scene",
-  "Save a KeyShot scene to a new path.",
-  saveSceneSchema.shape,
+  {
+    title: "Save a KeyShot scene copy",
+    description: "Open an existing KeyShot scene and save it to a requested output path inside the configured safe output directory. Use this for an explicit scene copy; editing tools already save their own output scenes.",
+    inputSchema: saveSceneSchema,
+    outputSchema: keyShotResultSchema,
+    annotations: outputWritingAnnotations,
+  },
   async (args) => toolResponse(await runKeyShotSerialized(config, { operation: "save_scene", ...args })),
 );
 

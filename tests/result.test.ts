@@ -27,9 +27,11 @@ describe("localFailure", () => {
 
 describe("toolResponse", () => {
   it("marks the response as an error when the result is not ok", () => {
-    const response = toolResponse(localFailure("nope"));
+    const result = localFailure("nope");
+    const response = toolResponse(result);
     expect(response.isError).toBe(true);
     expect(JSON.parse(response.content[0].text).error).toBe("nope");
+    expect(response.structuredContent).toEqual(result);
   });
 
   it("does not mark the response as an error when ok", () => {
@@ -42,5 +44,6 @@ describe("toolResponse", () => {
       error: null,
     });
     expect(response.isError).toBe(false);
+    expect(response.structuredContent.ok).toBe(true);
   });
 });

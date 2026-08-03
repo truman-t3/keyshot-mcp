@@ -1,0 +1,95 @@
+---
+name: keyshot-mcp
+author: truman-t3
+description: Install, diagnose, and safely use KeyShot MCP for local product visualization, scene editing, camera control, material assignment, and rendering.
+version: 0.9.1
+---
+
+# KeyShot MCP
+
+Use this skill when a user wants to install KeyShot MCP, troubleshoot its local
+KeyShot connection, inspect or edit a KeyShot scene, or produce product renders.
+Respond in the user's language and explain errors in plain, non-technical terms.
+
+## Safety rules
+
+- Keep models, scenes, renders, and license information on the local computer.
+- Never request, print, store, or upload license credentials.
+- Keep `KEYSHOT_ALLOW_EXTERNAL_OUTPUTS` disabled unless the user explicitly selects
+  and trusts an external output directory.
+- Do not overwrite an explicit output path unless the user clearly requests it.
+- Use scene copies for editing workflows; do not modify customer source files in place.
+- Do not execute arbitrary Python or simulate KeyShot GUI actions.
+
+## Installation workflow
+
+1. Confirm Node.js 20 or newer is available.
+2. Confirm KeyShot is installed and locally licensed.
+3. Locate `keyshot_headless.exe`. Prefer its absolute path.
+4. Configure the MCP client to run `npx -y keyshot-mcp@0.9.1` and set
+   `KEYSHOT_HEADLESS_EXE`.
+5. Leave `KEYSHOT_OUTPUT_DIR` unset to use
+   `<home>/Documents/KeyShot MCP Outputs`, or set a user-approved directory.
+6. Restart or reload the MCP client.
+7. Call `keyshot_status` before the first scene operation.
+8. If status is not ready, follow its `suggestions` and explain the failing check.
+
+Example configuration:
+
+```json
+{
+  "mcpServers": {
+    "keyshot": {
+      "command": "npx",
+      "args": ["-y", "keyshot-mcp@0.9.1"],
+      "env": {
+        "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
+      }
+    }
+  }
+}
+```
+
+## Tool selection
+
+- Start with `keyshot_status` for installation or startup problems.
+- Prefer `keyshot_product_render` for an end-to-end model or scene workflow.
+- Use `keyshot_inspect_scene` before object-specific edits when names are unknown.
+- Use `keyshot_list_cameras` before rendering selected cameras.
+- Use `keyshot_render` for one view, `keyshot_batch_render` for selected views,
+  `keyshot_render_all_cameras` for every saved view, and `keyshot_render_queue`
+  for independent jobs from multiple scenes.
+- Use `keyshot_import_model` when the user wants a prepared scene without a render.
+- List camera or material presets before applying a preset with an unknown name.
+- Use `objectPath` instead of `objectName` when duplicate names exist.
+- Use `keyshot_save_scene` only for an explicit scene copy; editing tools already
+  save their own output scenes.
+
+## Render guidance
+
+- `preview`: quick composition and material feedback.
+- `standard`: normal product output and the default for `keyshot_product_render`.
+- `final`: high-resolution output after the design is approved.
+- Explicit width, height, and samples override their preset values.
+- Never combine `samples` with `maxTimeSeconds`.
+- Never combine camera `fieldOfView` with `focalLength`.
+- Supply camera `position` and `lookAt` together.
+
+## Result handling
+
+Every tool returns `ok`, operation-specific `data`, `outputFiles`, `warnings`,
+`keyshotStdoutTail`, and `error`. Failures may also return `errorCode` and
+`suggestions`.
+
+1. Confirm `ok` before claiming success.
+2. Report every created file from `outputFiles`.
+3. Surface warnings without presenting them as failures.
+4. On failure, explain `error` and the first relevant suggestion.
+5. Run `keyshot_status` when the cause is unclear.
+
+## Boundaries
+
+KeyShot MCP uses KeyShot headless scripting. It does not include KeyShot, a
+license, proprietary materials, environments, or customer assets. Features that
+are not exposed by the installed KeyShot headless API must be reported as
+unsupported rather than silently ignored.
