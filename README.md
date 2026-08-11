@@ -53,7 +53,7 @@ models, licenses, and rendered files remain on the local computer.
 
 ### Install
 
-This branch contains the unpublished `0.10.0` prototype. The latest stable
+This branch contains the unpublished `0.10.0-live.1` prototype. The latest stable
 release is `0.9.0`; commands below that reference `0.10.0` document the proposed
 CLI and are not currently available from npm.
 
@@ -439,7 +439,7 @@ KeyShot MCP 是一个本地运行的
 
 ### 安装
 
-本分支包含尚未发布的 `0.10.0` 原型。当前稳定版本为 `0.9.0`；下文引用
+本分支包含尚未发布的 `0.10.0-live.1` 原型。当前稳定版本为 `0.9.0`；下文引用
 `0.10.0` 的命令仅用于说明计划中的 CLI，目前无法从 npm 安装。
 
 #### 方式一：使用 npx

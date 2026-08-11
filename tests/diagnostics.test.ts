@@ -56,7 +56,7 @@ describe("KeyShot diagnostics", () => {
     };
     expect(result.ok).toBe(true);
     expect(data.ready).toBe(true);
-    expect(data.serverVersion).toBe("0.10.0");
+    expect(data.serverVersion).toBe("0.10.0-live.1");
     expect(data.checks).toHaveLength(6);
     expect(data.config.outputDir).toContain("outputs");
     expect(data.availableFunctions).toBeUndefined();

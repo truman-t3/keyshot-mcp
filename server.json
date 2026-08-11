@@ -9,12 +9,12 @@
     "url": "https://github.com/truman-t3/keyshot-mcp",
     "source": "github"
   },
-  "version": "0.10.0",
+  "version": "0.10.0-live.1",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "keyshot-mcp",
-      "version": "0.10.0",
+      "version": "0.10.0-live.1",
       "transport": {
         "type": "stdio"
       },
