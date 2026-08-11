@@ -17,7 +17,10 @@ export type DiagnosticCheck = {
   suggestion?: string;
 };
 
-type StatusRunner = (config: ServerConfig, request: { operation: "status" }) => Promise<KeyShotResult>;
+type StatusRunner = (
+  config: ServerConfig,
+  request: { operation: "status" },
+) => Promise<KeyShotResult>;
 
 export async function runKeyShotDiagnostics(
   config: ServerConfig,
@@ -38,28 +41,37 @@ export async function runKeyShotDiagnostics(
       : "Set KEYSHOT_HEADLESS_EXE to the full path of keyshot_headless.exe and restart the MCP client.",
   });
 
-  checks.push(await fileCheck(
-    "bridge-script",
-    "KeyShot bridge script",
-    config.bridgeScriptPath,
-    "Reinstall keyshot-mcp so scripts/keyshot_bridge.py is included.",
-  ));
+  checks.push(
+    await fileCheck(
+      "bridge-script",
+      "KeyShot bridge script",
+      config.bridgeScriptPath,
+      "Reinstall keyshot-mcp so scripts/keyshot_bridge.py is included.",
+    ),
+  );
   checks.push(await outputWriteCheck(config.keyshotOutputDir));
-  checks.push(await presetCheck(
-    "camera-presets",
-    "Camera presets",
-    () => loadCameraPresets(config),
-    config.cameraPresetsPath,
-  ));
-  checks.push(await presetCheck(
-    "material-presets",
-    "Material presets",
-    () => loadMaterialPresets(config),
-    config.materialPresetsPath,
-  ));
+  checks.push(
+    await presetCheck(
+      "camera-presets",
+      "Camera presets",
+      () => loadCameraPresets(config),
+      config.cameraPresetsPath,
+    ),
+  );
+  checks.push(
+    await presetCheck(
+      "material-presets",
+      "Material presets",
+      () => loadMaterialPresets(config),
+      config.materialPresetsPath,
+    ),
+  );
 
   let keyshotResult: KeyShotResult;
-  if (resolvedExecutable && checks.find((check) => check.id === "bridge-script")?.ok) {
+  if (
+    resolvedExecutable &&
+    checks.find((check) => check.id === "bridge-script")?.ok
+  ) {
     keyshotResult = await runStatus(config, { operation: "status" });
   } else {
     keyshotResult = {
@@ -68,7 +80,8 @@ export async function runKeyShotDiagnostics(
       outputFiles: [],
       warnings: [],
       keyshotStdoutTail: "",
-      error: "KeyShot startup was skipped because a required local file was not available.",
+      error:
+        "KeyShot startup was skipped because a required local file was not available.",
       errorCode: "DIAGNOSTIC_PREREQUISITE_FAILED",
       suggestions: [],
     };
@@ -81,24 +94,31 @@ export async function runKeyShotDiagnostics(
     severity: "error",
     message: keyshotResult.ok
       ? "KeyShot headless scripting started successfully."
-      : keyshotResult.error ?? "KeyShot headless scripting did not start.",
+      : (keyshotResult.error ?? "KeyShot headless scripting did not start."),
     suggestion: keyshotResult.ok
       ? undefined
-      : keyshotResult.suggestions?.[0] ?? "Open KeyShot normally, confirm the license is active, and retry.",
+      : (keyshotResult.suggestions?.[0] ??
+        "Open KeyShot normally, confirm the license is active, and retry."),
   });
 
   const ready = checks.every((check) => check.severity !== "error" || check.ok);
   const suggestions = unique([
-    ...checks.flatMap((check) => !check.ok && check.suggestion ? [check.suggestion] : []),
+    ...checks.flatMap((check) =>
+      !check.ok && check.suggestion ? [check.suggestion] : [],
+    ),
     ...(keyshotResult.suggestions ?? []),
   ]);
-  const bridgeData = keyshotResult.data && typeof keyshotResult.data === "object"
-    ? keyshotResult.data as Record<string, unknown>
-    : {};
+  const bridgeData =
+    keyshotResult.data && typeof keyshotResult.data === "object"
+      ? (keyshotResult.data as Record<string, unknown>)
+      : {};
   const availableFunctions = Array.isArray(bridgeData.availableFunctions)
-    ? bridgeData.availableFunctions.filter((name): name is string => typeof name === "string")
+    ? bridgeData.availableFunctions.filter(
+        (name): name is string => typeof name === "string",
+      )
     : [];
-  const { availableFunctions: _omittedFunctions, ...bridgeSummary } = bridgeData;
+  const { availableFunctions: _omittedFunctions, ...bridgeSummary } =
+    bridgeData;
 
   return {
     ...keyshotResult,
@@ -123,13 +143,18 @@ export async function runKeyShotDiagnostics(
       checks,
       suggestions,
     },
-    error: ready ? null : keyshotResult.error ?? "KeyShot MCP is not ready. Review the failed diagnostic checks.",
-    errorCode: ready ? null : keyshotResult.errorCode ?? "DIAGNOSTIC_FAILED",
+    error: ready
+      ? null
+      : (keyshotResult.error ??
+        "KeyShot MCP is not ready. Review the failed diagnostic checks."),
+    errorCode: ready ? null : (keyshotResult.errorCode ?? "DIAGNOSTIC_FAILED"),
     suggestions,
   };
 }
 
-function capabilitySummary(availableFunctions: string[]): Record<string, boolean> {
+function capabilitySummary(
+  availableFunctions: string[],
+): Record<string, boolean> {
   const available = new Set(availableFunctions);
   return {
     render: available.has("renderImage"),
@@ -143,19 +168,31 @@ function capabilitySummary(availableFunctions: string[]): Record<string, boolean
   };
 }
 
-export async function resolveExecutable(command: string): Promise<string | null> {
-  if (path.isAbsolute(command) || command.includes("/") || command.includes("\\")) {
+export async function resolveExecutable(
+  command: string,
+): Promise<string | null> {
+  if (
+    path.isAbsolute(command) ||
+    command.includes("/") ||
+    command.includes("\\")
+  ) {
     const candidate = path.resolve(command);
-    return await isFile(candidate) ? candidate : null;
+    return (await isFile(candidate)) ? candidate : null;
   }
 
-  const pathEntries = (process.env.PATH ?? "").split(path.delimiter).filter(Boolean);
-  const extensions = process.platform === "win32" && path.extname(command) === ""
-    ? (process.env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM").split(";")
-    : [""];
+  const pathEntries = (process.env.PATH ?? "")
+    .split(path.delimiter)
+    .filter(Boolean);
+  const extensions =
+    process.platform === "win32" && path.extname(command) === ""
+      ? (process.env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM").split(";")
+      : [""];
   for (const entry of pathEntries) {
     for (const extension of extensions) {
-      const candidate = path.join(entry.replace(/^"|"$/g, ""), `${command}${extension}`);
+      const candidate = path.join(
+        entry.replace(/^"|"$/g, ""),
+        `${command}${extension}`,
+      );
       if (await isFile(candidate)) return path.resolve(candidate);
     }
   }
@@ -169,7 +206,14 @@ async function fileCheck(
   suggestion: string,
 ): Promise<DiagnosticCheck> {
   const ok = await isFile(filePath);
-  return { id, label, ok, severity: "error", message: ok ? `Found: ${filePath}` : `Missing: ${filePath}`, suggestion: ok ? undefined : suggestion };
+  return {
+    id,
+    label,
+    ok,
+    severity: "error",
+    message: ok ? `Found: ${filePath}` : `Missing: ${filePath}`,
+    suggestion: ok ? undefined : suggestion,
+  };
 }
 
 async function outputWriteCheck(outputDir: string): Promise<DiagnosticCheck> {
@@ -193,7 +237,8 @@ async function outputWriteCheck(outputDir: string): Promise<DiagnosticCheck> {
       ok: false,
       severity: "error",
       message: `Output directory is not writable: ${outputDir} (${errorMessage(error)})`,
-      suggestion: "Set KEYSHOT_OUTPUT_DIR to a local folder where the current user can create files.",
+      suggestion:
+        "Set KEYSHOT_OUTPUT_DIR to a local folder where the current user can create files.",
     };
   }
 }

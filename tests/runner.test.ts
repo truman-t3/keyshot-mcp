@@ -1,16 +1,28 @@
-import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readdirSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ServerConfig } from "../src/config.js";
-import { MAX_CAPTURE_CHARS, runKeyShotSerialized, spawnWithTimeout } from "../src/runner.js";
+import {
+  MAX_CAPTURE_CHARS,
+  runKeyShotSerialized,
+  spawnWithTimeout,
+} from "../src/runner.js";
 
 // The runner spawns the configured headless exe with `node <script> ...`. We point the
 // "exe" at the current Node process and pass our fake script as the first license arg,
 // so the fake runs in place of keyshot_headless.exe without needing a platform-specific
 // wrapper executable.
-const mjsPath = fileURLToPath(new URL("./fixtures/fake-keyshot.mjs", import.meta.url));
+const mjsPath = fileURLToPath(
+  new URL("./fixtures/fake-keyshot.mjs", import.meta.url),
+);
 
 let tmpRoot: string;
 
@@ -40,7 +52,9 @@ describe("runner", () => {
   });
 
   it("returns the parsed result on the happy path", async () => {
-    const result = await runKeyShotSerialized(makeConfig(), { operation: "status" });
+    const result = await runKeyShotSerialized(makeConfig(), {
+      operation: "status",
+    });
     expect(result.ok).toBe(true);
     expect((result.data as { operation?: string }).operation).toBe("status");
   });
@@ -55,9 +69,12 @@ describe("runner", () => {
   });
 
   it("reports a local failure when the headless exe is missing", async () => {
-    const result = await runKeyShotSerialized(makeConfig({ keyshotHeadlessExe: join(tmpRoot, "nope.exe") }), {
-      operation: "status",
-    });
+    const result = await runKeyShotSerialized(
+      makeConfig({ keyshotHeadlessExe: join(tmpRoot, "nope.exe") }),
+      {
+        operation: "status",
+      },
+    );
     expect(result.ok).toBe(false);
     expect(result.error).toContain("not found");
   });
@@ -78,7 +95,9 @@ describe("runner", () => {
 
   it("reports a clear failure when a PATH command cannot be started", async () => {
     const result = await runKeyShotSerialized(
-      makeConfig({ keyshotHeadlessExe: "definitely-not-a-keyshot-command-042" }),
+      makeConfig({
+        keyshotHeadlessExe: "definitely-not-a-keyshot-command-042",
+      }),
       { operation: "status" },
     );
     expect(result.ok).toBe(false);
@@ -91,13 +110,16 @@ describe("runner", () => {
     writeFileSync(join(outputDir, "product.bip"), "existing");
     const sourcePath = join(tmpRoot, "source.bip");
     writeFileSync(sourcePath, "scene");
-    const result = await runKeyShotSerialized(makeConfig({ keyshotOutputDir: outputDir }), {
-      operation: "product_render",
-      scenePath: sourcePath,
-      outputScenePath: "product.bip",
-      outputPath: "product.png",
-      overwrite: false,
-    });
+    const result = await runKeyShotSerialized(
+      makeConfig({ keyshotOutputDir: outputDir }),
+      {
+        operation: "product_render",
+        scenePath: sourcePath,
+        outputScenePath: "product.bip",
+        outputPath: "product.png",
+        overwrite: false,
+      },
+    );
     expect(result.ok).toBe(false);
     expect(result.error).toContain("Output already exists");
   });
@@ -114,14 +136,21 @@ describe("runner", () => {
   });
 
   it("times out a long-running process", async () => {
-    const result = await spawnWithTimeout(process.execPath, ["-e", "setTimeout(() => {}, 30000)"], 50);
+    const result = await spawnWithTimeout(
+      process.execPath,
+      ["-e", "setTimeout(() => {}, 30000)"],
+      50,
+    );
     expect(result.timedOut).toBe(true);
   });
 
   it("bounds captured stdout and stderr", async () => {
     const result = await spawnWithTimeout(
       process.execPath,
-      ["-e", "process.stdout.write('x'.repeat(100000));process.stderr.write('y'.repeat(100000))"],
+      [
+        "-e",
+        "process.stdout.write('x'.repeat(100000));process.stderr.write('y'.repeat(100000))",
+      ],
       30000,
     );
     expect(result.stdout.length).toBe(MAX_CAPTURE_CHARS);

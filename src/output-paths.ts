@@ -21,7 +21,10 @@ export async function normalizeOutputPaths(
   return normalized;
 }
 
-export async function normalizeOutputPath(config: ServerConfig, value: string): Promise<string> {
+export async function normalizeOutputPath(
+  config: ServerConfig,
+  value: string,
+): Promise<string> {
   const candidate = path.resolve(config.keyshotOutputDir, value);
   if (config.keyshotAllowExternalOutputs) return candidate;
 
@@ -54,7 +57,12 @@ async function realpathWithMissingTail(inputPath: string): Promise<string> {
 
 function isWithin(root: string, candidate: string): boolean {
   const relative = path.relative(normalizeCase(root), normalizeCase(candidate));
-  return relative === "" || (!relative.startsWith(`..${path.sep}`) && relative !== ".." && !path.isAbsolute(relative));
+  return (
+    relative === "" ||
+    (!relative.startsWith(`..${path.sep}`) &&
+      relative !== ".." &&
+      !path.isAbsolute(relative))
+  );
 }
 
 function normalizeCase(value: string): string {

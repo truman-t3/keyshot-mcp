@@ -6,10 +6,24 @@ import type { ServerConfig } from "../src/config.js";
 const config = {} as ServerConfig;
 
 function ok(outputFiles: string[]): KeyShotResult {
-  return { ok: true, data: {}, outputFiles, warnings: [], keyshotStdoutTail: "", error: null };
+  return {
+    ok: true,
+    data: {},
+    outputFiles,
+    warnings: [],
+    keyshotStdoutTail: "",
+    error: null,
+  };
 }
 function fail(error: string): KeyShotResult {
-  return { ok: false, data: null, outputFiles: [], warnings: [], keyshotStdoutTail: "", error };
+  return {
+    ok: false,
+    data: null,
+    outputFiles: [],
+    warnings: [],
+    keyshotStdoutTail: "",
+    error,
+  };
 }
 
 const jobs: RenderJob[] = [
@@ -46,7 +60,12 @@ describe("runRenderQueue", () => {
     const runFn = vi.fn(async (_c, req) =>
       (req as any).scenePath === "b.bip" ? fail("boom") : ok(["x.png"]),
     );
-    const result = await runRenderQueue(config, jobs, { continueOnError: true }, runFn);
+    const result = await runRenderQueue(
+      config,
+      jobs,
+      { continueOnError: true },
+      runFn,
+    );
     expect(runFn).toHaveBeenCalledTimes(3);
     expect(result.ok).toBe(false);
     const data = result.data as any;
@@ -58,6 +77,9 @@ describe("runRenderQueue", () => {
   it("passes the render operation to the runner", async () => {
     const runFn = vi.fn(async () => ok([]));
     await runRenderQueue(config, [jobs[0]], {}, runFn);
-    expect(runFn).toHaveBeenCalledWith(config, expect.objectContaining({ operation: "render", scenePath: "a.bip" }));
+    expect(runFn).toHaveBeenCalledWith(
+      config,
+      expect.objectContaining({ operation: "render", scenePath: "a.bip" }),
+    );
   });
 });

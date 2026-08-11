@@ -14,11 +14,17 @@ describe("product render request preparation", () => {
     root = mkdtempSync(path.join(tmpdir(), "keyshot-product-render-"));
     const presets = path.join(root, "presets");
     mkdirSync(presets, { recursive: true });
-    writeFileSync(path.join(presets, "materials.json"), JSON.stringify({ Steel: { materialName: "Steel Brushed" } }));
-    writeFileSync(path.join(presets, "cameras.json"), JSON.stringify({
-      Isometric: { standardView: "isometric" },
-      Hero: { position: [1, 2, 3], lookAt: [0, 0, 0], up: [0, 1, 0] },
-    }));
+    writeFileSync(
+      path.join(presets, "materials.json"),
+      JSON.stringify({ Steel: { materialName: "Steel Brushed" } }),
+    );
+    writeFileSync(
+      path.join(presets, "cameras.json"),
+      JSON.stringify({
+        Isometric: { standardView: "isometric" },
+        Hero: { position: [1, 2, 3], lookAt: [0, 0, 0], up: [0, 1, 0] },
+      }),
+    );
     config = {
       projectRoot: root,
       keyshotHeadlessExe: "keyshot_headless.exe",
@@ -36,7 +42,9 @@ describe("product render request preparation", () => {
   afterAll(() => rmSync(root, { recursive: true, force: true }));
 
   it("prepares conservative defaults for a new model", async () => {
-    const input = productRenderSchema.parse({ modelPath: "C:/models/My Speaker.obj" });
+    const input = productRenderSchema.parse({
+      modelPath: "C:/models/My Speaker.obj",
+    });
     const request = await prepareProductRenderRequest(config, input);
     expect(request.outputScenePath).toBe("My-Speaker-product.bip");
     expect(request.outputPath).toBe("My-Speaker-product.png");
@@ -48,17 +56,26 @@ describe("product render request preparation", () => {
     expect(request.width).toBe(1920);
     expect(request.height).toBe(1080);
     expect(request.samples).toBe(64);
-    expect(request._automaticOutputFields).toEqual(["outputScenePath", "outputPath"]);
+    expect(request._automaticOutputFields).toEqual([
+      "outputScenePath",
+      "outputPath",
+    ]);
   });
 
   it("preserves an existing scene unless controls are requested", async () => {
-    const input = productRenderSchema.parse({ scenePath: "C:/scenes/watch.bip", renderMode: "allCameras" });
+    const input = productRenderSchema.parse({
+      scenePath: "C:/scenes/watch.bip",
+      renderMode: "allCameras",
+    });
     const request = await prepareProductRenderRequest(config, input);
     expect(request.outputScenePath).toBe("watch-product.bip");
     expect(request.outputDir).toBe("watch-renders");
     expect(request.cameraName).toBeUndefined();
     expect(request.centerGeometry).toBeUndefined();
-    expect(request._automaticOutputFields).toEqual(["outputScenePath", "outputDir"]);
+    expect(request._automaticOutputFields).toEqual([
+      "outputScenePath",
+      "outputDir",
+    ]);
   });
 
   it("resolves material and absolute camera presets while retaining lens overrides", async () => {
@@ -72,12 +89,21 @@ describe("product render request preparation", () => {
     expect(request.position).toEqual([1, 2, 3]);
     expect(request.focalLength).toBe(85);
     expect(request.materialAssignments).toEqual([
-      expect.objectContaining({ objectName: "Case", presetName: "Steel", materialName: "Steel Brushed" }),
+      expect.objectContaining({
+        objectName: "Case",
+        presetName: "Steel",
+        materialName: "Steel Brushed",
+      }),
     ]);
   });
 
   it("reports missing presets with available names", async () => {
-    const input = productRenderSchema.parse({ modelPath: "m.obj", cameraPresetName: "Missing" });
-    await expect(prepareProductRenderRequest(config, input)).rejects.toThrow("Available: Isometric, Hero");
+    const input = productRenderSchema.parse({
+      modelPath: "m.obj",
+      cameraPresetName: "Missing",
+    });
+    await expect(prepareProductRenderRequest(config, input)).rejects.toThrow(
+      "Available: Isometric, Hero",
+    );
   });
 });

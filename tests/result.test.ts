@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { localFailure, toolResponse } from "../src/result.js";
+import {
+  localFailure,
+  toolImageResponse,
+  toolResponse,
+} from "../src/result.js";
 
 describe("localFailure", () => {
   it("produces a well-formed failure result", () => {
@@ -13,13 +17,22 @@ describe("localFailure", () => {
   });
 
   it("classifies common failures with actionable suggestions", () => {
-    expect(localFailure("KeyShot headless executable not found: x").errorCode).toBe("KEYSHOT_NOT_FOUND");
-    expect(localFailure("Output already exists and overwrite is false").errorCode).toBe("OUTPUT_EXISTS");
-    expect(localFailure("KeyShot timed out after 100ms").errorCode).toBe("KEYSHOT_TIMEOUT");
+    expect(
+      localFailure("KeyShot headless executable not found: x").errorCode,
+    ).toBe("KEYSHOT_NOT_FOUND");
+    expect(
+      localFailure("Output already exists and overwrite is false").errorCode,
+    ).toBe("OUTPUT_EXISTS");
+    expect(localFailure("KeyShot timed out after 100ms").errorCode).toBe(
+      "KEYSHOT_TIMEOUT",
+    );
   });
 
   it("merges extra fields", () => {
-    const result = localFailure("boom", { warnings: ["careful"], data: { a: 1 } });
+    const result = localFailure("boom", {
+      warnings: ["careful"],
+      data: { a: 1 },
+    });
     expect(result.warnings).toEqual(["careful"]);
     expect(result.data).toEqual({ a: 1 });
   });
@@ -45,5 +58,26 @@ describe("toolResponse", () => {
     });
     expect(response.isError).toBe(false);
     expect(response.structuredContent.ok).toBe(true);
+  });
+});
+
+describe("toolImageResponse", () => {
+  it("keeps JSON compatibility while adding MCP image content", () => {
+    const result = {
+      ok: true,
+      data: { preview: true },
+      outputFiles: [],
+      warnings: [],
+      keyshotStdoutTail: "",
+      error: null,
+    };
+    const response = toolImageResponse(result, "iVBORw0KGgo=");
+    expect(response.content[0].type).toBe("text");
+    expect(response.content[1]).toEqual({
+      type: "image",
+      data: "iVBORw0KGgo=",
+      mimeType: "image/png",
+    });
+    expect(response.structuredContent).toEqual(result);
   });
 });

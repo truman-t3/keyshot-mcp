@@ -23,7 +23,9 @@ import {
 describe("productRenderSchema", () => {
   it("requires exactly one model or scene source and applies safe defaults", () => {
     expect(() => productRenderSchema.parse({})).toThrow();
-    expect(() => productRenderSchema.parse({ modelPath: "m.obj", scenePath: "s.bip" })).toThrow();
+    expect(() =>
+      productRenderSchema.parse({ modelPath: "m.obj", scenePath: "s.bip" }),
+    ).toThrow();
     const parsed = productRenderSchema.parse({ modelPath: "m.obj" });
     expect(parsed.renderMode).toBe("single");
     expect(parsed.overwrite).toBe(false);
@@ -31,30 +33,69 @@ describe("productRenderSchema", () => {
   });
 
   it("keeps import controls model-only and output fields mode-specific", () => {
-    expect(() => productRenderSchema.parse({ scenePath: "s.bip", centerGeometry: true })).toThrow();
-    expect(() => productRenderSchema.parse({ scenePath: "s.bip", outputDir: "renders" })).toThrow();
-    expect(() => productRenderSchema.parse({
-      scenePath: "s.bip",
-      renderMode: "allCameras",
-      outputPath: "hero.png",
-    })).toThrow();
+    expect(() =>
+      productRenderSchema.parse({ scenePath: "s.bip", centerGeometry: true }),
+    ).toThrow();
+    expect(() =>
+      productRenderSchema.parse({ scenePath: "s.bip", outputDir: "renders" }),
+    ).toThrow();
+    expect(() =>
+      productRenderSchema.parse({
+        scenePath: "s.bip",
+        renderMode: "allCameras",
+        outputPath: "hero.png",
+      }),
+    ).toThrow();
   });
 
   it("validates camera, environment, render, and material conflicts", () => {
     const source = { modelPath: "m.obj" };
-    expect(() => productRenderSchema.parse({ ...source, position: [1, 2, 3] })).toThrow();
-    expect(() => productRenderSchema.parse({ ...source, cameraPresetName: "Front", position: [1, 2, 3], lookAt: [0, 0, 0] })).toThrow();
-    expect(() => productRenderSchema.parse({ ...source, fieldOfView: 45, focalLength: 50 })).toThrow();
-    expect(() => productRenderSchema.parse({ ...source, environmentName: "Studio", environmentPath: "studio.hdr" })).toThrow();
-    expect(() => productRenderSchema.parse({ ...source, samples: 64, maxTimeSeconds: 10 })).toThrow();
-    expect(() => productRenderSchema.parse({
-      ...source,
-      materialAssignments: [{ objectName: "Body", materialName: "Metal", materialPath: "metal.mtl" }],
-    })).toThrow();
-    expect(productRenderSchema.parse({
-      ...source,
-      materialAssignments: [{ objectName: "Body", presetName: "Steel" }],
-    }).materialAssignments).toHaveLength(1);
+    expect(() =>
+      productRenderSchema.parse({ ...source, position: [1, 2, 3] }),
+    ).toThrow();
+    expect(() =>
+      productRenderSchema.parse({
+        ...source,
+        cameraPresetName: "Front",
+        position: [1, 2, 3],
+        lookAt: [0, 0, 0],
+      }),
+    ).toThrow();
+    expect(() =>
+      productRenderSchema.parse({
+        ...source,
+        fieldOfView: 45,
+        focalLength: 50,
+      }),
+    ).toThrow();
+    expect(() =>
+      productRenderSchema.parse({
+        ...source,
+        environmentName: "Studio",
+        environmentPath: "studio.hdr",
+      }),
+    ).toThrow();
+    expect(() =>
+      productRenderSchema.parse({ ...source, samples: 64, maxTimeSeconds: 10 }),
+    ).toThrow();
+    expect(() =>
+      productRenderSchema.parse({
+        ...source,
+        materialAssignments: [
+          {
+            objectName: "Body",
+            materialName: "Metal",
+            materialPath: "metal.mtl",
+          },
+        ],
+      }),
+    ).toThrow();
+    expect(
+      productRenderSchema.parse({
+        ...source,
+        materialAssignments: [{ objectName: "Body", presetName: "Steel" }],
+      }).materialAssignments,
+    ).toHaveLength(1);
   });
 });
 
@@ -65,26 +106,45 @@ describe("renderSchema", () => {
   });
 
   it("accepts optional camera and dimensions", () => {
-    const parsed = renderSchema.parse({ scenePath: "a.bip", camera: "Front", width: 1920, height: 1080, qualityPreset: "preview" });
+    const parsed = renderSchema.parse({
+      scenePath: "a.bip",
+      camera: "Front",
+      width: 1920,
+      height: 1080,
+      qualityPreset: "preview",
+    });
     expect(parsed.camera).toBe("Front");
     expect(parsed.width).toBe(1920);
     expect(parsed.qualityPreset).toBe("preview");
-    expect(() => renderSchema.parse({ scenePath: "a.bip", qualityPreset: "ultra" })).toThrow();
+    expect(() =>
+      renderSchema.parse({ scenePath: "a.bip", qualityPreset: "ultra" }),
+    ).toThrow();
   });
 
   it("rejects conflicting samples and maxTimeSeconds", () => {
-    expect(() => renderInputSchema.parse({ scenePath: "a.bip", samples: 64, maxTimeSeconds: 10 })).toThrow();
+    expect(() =>
+      renderInputSchema.parse({
+        scenePath: "a.bip",
+        samples: 64,
+        maxTimeSeconds: 10,
+      }),
+    ).toThrow();
   });
 });
 
 describe("importModelSchema", () => {
   it("requires modelPath and outputScenePath", () => {
     expect(() => importModelSchema.parse({ modelPath: "m.obj" })).toThrow();
-    expect(() => importModelSchema.parse({ outputScenePath: "out.bip" })).toThrow();
+    expect(() =>
+      importModelSchema.parse({ outputScenePath: "out.bip" }),
+    ).toThrow();
   });
 
   it("treats baseScenePath as optional", () => {
-    const parsed = importModelSchema.parse({ modelPath: "m.obj", outputScenePath: "out.bip" });
+    const parsed = importModelSchema.parse({
+      modelPath: "m.obj",
+      outputScenePath: "out.bip",
+    });
     expect(parsed.baseScenePath).toBeUndefined();
     const withBase = importModelSchema.parse({
       modelPath: "m.obj",
@@ -117,8 +177,12 @@ describe("setCameraSchema", () => {
   };
 
   it("requires position and lookAt as a pair", () => {
-    expect(() => setCameraSchema.parse({ ...valid, lookAt: undefined } as object)).toThrow();
-    expect(() => setCameraSchema.parse({ ...valid, position: undefined } as object)).toThrow();
+    expect(() =>
+      setCameraSchema.parse({ ...valid, lookAt: undefined } as object),
+    ).toThrow();
+    expect(() =>
+      setCameraSchema.parse({ ...valid, position: undefined } as object),
+    ).toThrow();
   });
 
   it("accepts an optional up vector", () => {
@@ -127,23 +191,31 @@ describe("setCameraSchema", () => {
   });
 
   it("allows lens-only and distance-only camera updates", () => {
-    expect(setCameraSchema.parse({
-      scenePath: "a.bip",
-      cameraName: "Hero",
-      focalLength: 85,
-      outputScenePath: "out.bip",
-    }).focalLength).toBe(85);
-    expect(setCameraSchema.parse({
-      scenePath: "a.bip",
-      distance: 4,
-      outputScenePath: "out.bip",
-    }).distance).toBe(4);
+    expect(
+      setCameraSchema.parse({
+        scenePath: "a.bip",
+        cameraName: "Hero",
+        focalLength: 85,
+        outputScenePath: "out.bip",
+      }).focalLength,
+    ).toBe(85);
+    expect(
+      setCameraSchema.parse({
+        scenePath: "a.bip",
+        distance: 4,
+        outputScenePath: "out.bip",
+      }).distance,
+    ).toBe(4);
   });
 
   it("rejects conflicting or out-of-range lens controls", () => {
     const base = { scenePath: "a.bip", outputScenePath: "out.bip" };
-    expect(() => setCameraSchema.parse({ ...base, fieldOfView: 45, focalLength: 50 })).toThrow();
-    expect(() => setCameraSchema.parse({ ...base, fieldOfView: 180 })).toThrow();
+    expect(() =>
+      setCameraSchema.parse({ ...base, fieldOfView: 45, focalLength: 50 }),
+    ).toThrow();
+    expect(() =>
+      setCameraSchema.parse({ ...base, fieldOfView: 180 }),
+    ).toThrow();
     expect(() => setCameraSchema.parse({ ...base, focalLength: 4 })).toThrow();
     expect(() => setCameraSchema.parse(base)).toThrow();
   });
@@ -152,22 +224,36 @@ describe("setCameraSchema", () => {
 describe("setEnvironmentSchema", () => {
   it("accepts rotations from 0 up to but not including 360 degrees", () => {
     const base = { scenePath: "a.bip", outputScenePath: "out.bip" };
-    expect(setEnvironmentSchema.parse({ ...base, rotation: 0 }).rotation).toBe(0);
-    expect(setEnvironmentSchema.parse({ ...base, rotation: 359.9 }).rotation).toBe(359.9);
-    expect(() => setEnvironmentSchema.parse({ ...base, rotation: 360 })).toThrow();
+    expect(setEnvironmentSchema.parse({ ...base, rotation: 0 }).rotation).toBe(
+      0,
+    );
+    expect(
+      setEnvironmentSchema.parse({ ...base, rotation: 359.9 }).rotation,
+    ).toBe(359.9);
+    expect(() =>
+      setEnvironmentSchema.parse({ ...base, rotation: 360 }),
+    ).toThrow();
   });
 });
 
 describe("applyMaterialInputSchema", () => {
   it("refuses when neither objectName nor objectPath is given", () => {
     expect(() =>
-      applyMaterialSchema.parse({ scenePath: "a.bip", materialName: "Metal", outputScenePath: "o.bip" }),
+      applyMaterialSchema.parse({
+        scenePath: "a.bip",
+        materialName: "Metal",
+        outputScenePath: "o.bip",
+      }),
     ).toThrow();
   });
 
   it("refuses when neither materialName nor materialPath is given", () => {
     expect(() =>
-      applyMaterialSchema.parse({ scenePath: "a.bip", objectName: "Body", outputScenePath: "o.bip" }),
+      applyMaterialSchema.parse({
+        scenePath: "a.bip",
+        objectName: "Body",
+        outputScenePath: "o.bip",
+      }),
     ).toThrow();
   });
 
@@ -185,7 +271,11 @@ describe("applyMaterialInputSchema", () => {
 describe("batchRenderSchema", () => {
   it("requires at least one camera", () => {
     expect(() =>
-      batchRenderSchema.parse({ scenePath: "a.bip", outputDir: "out", cameras: [] }),
+      batchRenderSchema.parse({
+        scenePath: "a.bip",
+        outputDir: "out",
+        cameras: [],
+      }),
     ).toThrow();
   });
 
@@ -211,37 +301,54 @@ describe("applyCameraPresetSchema", () => {
       outputScenePath: "out.bip",
     });
     expect(parsed.cameraName).toBe("Hero View");
-    expect(() => applyCameraPresetSchema.parse({ scenePath: "a.bip", presetName: "Front" })).toThrow();
+    expect(() =>
+      applyCameraPresetSchema.parse({
+        scenePath: "a.bip",
+        presetName: "Front",
+      }),
+    ).toThrow();
   });
 });
 
 describe("renderAllCamerasSchema", () => {
   it("requires a scene and output directory and defaults to continuing on errors", () => {
-    const parsed = renderAllCamerasSchema.parse({ scenePath: "a.bip", outputDir: "all-cameras" });
+    const parsed = renderAllCamerasSchema.parse({
+      scenePath: "a.bip",
+      outputDir: "all-cameras",
+    });
     expect(parsed.continueOnError).toBe(true);
-    expect(() => renderAllCamerasSchema.parse({ scenePath: "a.bip" })).toThrow();
+    expect(() =>
+      renderAllCamerasSchema.parse({ scenePath: "a.bip" }),
+    ).toThrow();
   });
 
   it("rejects conflicting render modes", () => {
-    expect(() => renderAllCamerasInputSchema.parse({
-      scenePath: "a.bip",
-      outputDir: "all-cameras",
-      samples: 64,
-      maxTimeSeconds: 10,
-    })).toThrow();
+    expect(() =>
+      renderAllCamerasInputSchema.parse({
+        scenePath: "a.bip",
+        outputDir: "all-cameras",
+        samples: 64,
+        maxTimeSeconds: 10,
+      }),
+    ).toThrow();
   });
 });
 
 describe("saveSceneSchema", () => {
   it("requires scenePath and outputScenePath", () => {
-    expect(saveSceneSchema.parse({ scenePath: "a.bip", outputScenePath: "o.bip" }).outputScenePath).toBe("o.bip");
+    expect(
+      saveSceneSchema.parse({ scenePath: "a.bip", outputScenePath: "o.bip" })
+        .outputScenePath,
+    ).toBe("o.bip");
   });
 });
 
 describe("listCamerasSchema", () => {
   it("requires a scenePath", () => {
     expect(() => listCamerasSchema.parse({})).toThrow();
-    expect(listCamerasSchema.parse({ scenePath: "a.bip" }).scenePath).toBe("a.bip");
+    expect(listCamerasSchema.parse({ scenePath: "a.bip" }).scenePath).toBe(
+      "a.bip",
+    );
   });
 });
 
@@ -268,14 +375,20 @@ describe("renderQueueSchema", () => {
   });
 
   it("rejects a job without scenePath", () => {
-    expect(() => renderQueueSchema.parse({ jobs: [{ camera: "Front" }] })).toThrow();
+    expect(() =>
+      renderQueueSchema.parse({ jobs: [{ camera: "Front" }] }),
+    ).toThrow();
   });
 });
 
 describe("applyMaterialPresetSchema", () => {
   it("requires presetName and an object reference", () => {
     expect(() =>
-      applyMaterialPresetSchema.parse({ scenePath: "a.bip", presetName: "Steel", outputScenePath: "o.bip" }),
+      applyMaterialPresetSchema.parse({
+        scenePath: "a.bip",
+        presetName: "Steel",
+        outputScenePath: "o.bip",
+      }),
     ).toThrow();
     const parsed = applyMaterialPresetSchema.parse({
       scenePath: "a.bip",

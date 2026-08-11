@@ -8,8 +8,12 @@ describe("normalizePresets", () => {
       "Clear Glass": { materialPath: "C:/mats/glass.mtl" },
     });
     expect(presets).toHaveLength(2);
-    expect(findMaterialPreset(presets, "Brushed Steel")?.materialName).toBe("Steel Brushed");
-    expect(findMaterialPreset(presets, "Clear Glass")?.materialPath).toBe("C:/mats/glass.mtl");
+    expect(findMaterialPreset(presets, "Brushed Steel")?.materialName).toBe(
+      "Steel Brushed",
+    );
+    expect(findMaterialPreset(presets, "Clear Glass")?.materialPath).toBe(
+      "C:/mats/glass.mtl",
+    );
   });
 
   it("parses the array shape", () => {
@@ -36,14 +40,20 @@ describe("normalizePresets", () => {
 });
 
 describe("findMaterialPreset", () => {
-  const presets = normalizePresets({ "Brushed Steel": { materialName: "Steel Brushed" } });
+  const presets = normalizePresets({
+    "Brushed Steel": { materialName: "Steel Brushed" },
+  });
 
   it("matches exactly", () => {
-    expect(findMaterialPreset(presets, "Brushed Steel")?.name).toBe("Brushed Steel");
+    expect(findMaterialPreset(presets, "Brushed Steel")?.name).toBe(
+      "Brushed Steel",
+    );
   });
 
   it("matches case-insensitively as a fallback", () => {
-    expect(findMaterialPreset(presets, "brushed steel")?.name).toBe("Brushed Steel");
+    expect(findMaterialPreset(presets, "brushed steel")?.name).toBe(
+      "Brushed Steel",
+    );
   });
 
   it("returns undefined when not found", () => {

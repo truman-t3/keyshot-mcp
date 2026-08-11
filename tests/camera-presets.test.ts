@@ -22,26 +22,38 @@ function config(cameraPresetsPath: string): ServerConfig {
     keyshotTimeoutMs: 1000,
     tmpDir: path.join(path.dirname(cameraPresetsPath), "tmp"),
     bridgeScriptPath: path.join(path.dirname(cameraPresetsPath), "bridge.py"),
-    materialPresetsPath: path.join(path.dirname(cameraPresetsPath), "materials.json"),
+    materialPresetsPath: path.join(
+      path.dirname(cameraPresetsPath),
+      "materials.json",
+    ),
     cameraPresetsPath,
   };
 }
 
 afterEach(async () => {
-  await Promise.all(tempRoots.splice(0).map((root) => rm(root, { recursive: true, force: true })));
+  await Promise.all(
+    tempRoots
+      .splice(0)
+      .map((root) => rm(root, { recursive: true, force: true })),
+  );
 });
 
 describe("camera presets", () => {
   it("normalizes all seven standard views from an object registry", () => {
     const input = Object.fromEntries(
-      STANDARD_CAMERA_VIEWS.map((view) => [view, { standardView: view.toUpperCase() }]),
+      STANDARD_CAMERA_VIEWS.map((view) => [
+        view,
+        { standardView: view.toUpperCase() },
+      ]),
     );
     const presets = normalizeCameraPresets(input);
     expect(presets).toHaveLength(7);
     expect(presets.every((preset) => preset.type === "standard")).toBe(true);
-    expect(presets.map((preset) => preset.type === "standard" && preset.standardView)).toEqual(
-      STANDARD_CAMERA_VIEWS,
-    );
+    expect(
+      presets.map(
+        (preset) => preset.type === "standard" && preset.standardView,
+      ),
+    ).toEqual(STANDARD_CAMERA_VIEWS);
   });
 
   it("normalizes an array with a custom absolute camera", () => {
@@ -69,7 +81,11 @@ describe("camera presets", () => {
   it("drops incomplete, ambiguous, and unsupported entries", () => {
     const presets = normalizeCameraPresets({
       MissingLookAt: { position: [1, 2, 3] },
-      Ambiguous: { standardView: "front", position: [1, 2, 3], lookAt: [0, 0, 0] },
+      Ambiguous: {
+        standardView: "front",
+        position: [1, 2, 3],
+        lookAt: [0, 0, 0],
+      },
       Unknown: { standardView: "diagonal" },
       Good: { standardView: "isometric" },
     });
@@ -77,7 +93,9 @@ describe("camera presets", () => {
   });
 
   it("finds names exactly and case-insensitively", () => {
-    const presets = normalizeCameraPresets({ Isometric: { standardView: "isometric" } });
+    const presets = normalizeCameraPresets({
+      Isometric: { standardView: "isometric" },
+    });
     expect(findCameraPreset(presets, "Isometric")?.name).toBe("Isometric");
     expect(findCameraPreset(presets, "isometric")?.name).toBe("Isometric");
     expect(findCameraPreset(presets, "missing")).toBeUndefined();
@@ -87,15 +105,23 @@ describe("camera presets", () => {
     const root = await mkdtemp(path.join(tmpdir(), "camera-presets-"));
     tempRoots.push(root);
     const file = path.join(root, "cameras.json");
-    await writeFile(file, JSON.stringify({ Front: { standardView: "front" } }), "utf8");
+    await writeFile(
+      file,
+      JSON.stringify({ Front: { standardView: "front" } }),
+      "utf8",
+    );
     await expect(loadCameraPresets(config(file))).resolves.toHaveLength(1);
     await writeFile(file, "{broken", "utf8");
-    await expect(loadCameraPresets(config(file))).rejects.toThrow("not valid JSON");
+    await expect(loadCameraPresets(config(file))).rejects.toThrow(
+      "not valid JSON",
+    );
   });
 
   it("treats a missing custom file as an empty library", async () => {
     const root = await mkdtemp(path.join(tmpdir(), "camera-presets-"));
     tempRoots.push(root);
-    await expect(loadCameraPresets(config(path.join(root, "missing.json")))).resolves.toEqual([]);
+    await expect(
+      loadCameraPresets(config(path.join(root, "missing.json"))),
+    ).resolves.toEqual([]);
   });
 });

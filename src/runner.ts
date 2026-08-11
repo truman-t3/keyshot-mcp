@@ -10,20 +10,33 @@ import type { KeyShotRequest, KeyShotResult } from "./types.js";
 
 let queue: Promise<unknown> = Promise.resolve();
 
-export function runKeyShotSerialized(config: ServerConfig, request: KeyShotRequest): Promise<KeyShotResult> {
+export function runKeyShotSerialized(
+  config: ServerConfig,
+  request: KeyShotRequest,
+): Promise<KeyShotResult> {
   const run = queue.then(() => runKeyShot(config, request));
   queue = run.catch(() => undefined);
   return run;
 }
 
-async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promise<KeyShotResult> {
-  if (isPathLike(config.keyshotHeadlessExe) && !(await exists(config.keyshotHeadlessExe))) {
-    return localFailure(`KeyShot headless executable not found: ${config.keyshotHeadlessExe}`);
+async function runKeyShot(
+  config: ServerConfig,
+  request: KeyShotRequest,
+): Promise<KeyShotResult> {
+  if (
+    isPathLike(config.keyshotHeadlessExe) &&
+    !(await exists(config.keyshotHeadlessExe))
+  ) {
+    return localFailure(
+      `KeyShot headless executable not found: ${config.keyshotHeadlessExe}`,
+    );
   }
 
   const bridgeExists = await exists(config.bridgeScriptPath);
   if (!bridgeExists) {
-    return localFailure(`KeyShot bridge script not found: ${config.bridgeScriptPath}`);
+    return localFailure(
+      `KeyShot bridge script not found: ${config.bridgeScriptPath}`,
+    );
   }
 
   if (request.scenePath && !(await exists(request.scenePath))) {
@@ -37,7 +50,8 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
   try {
     normalizedRequest = await normalizeOutputPaths(config, request);
     if (normalizedRequest.operation === "product_render") {
-      normalizedRequest = await allocateAutomaticProductOutputs(normalizedRequest);
+      normalizedRequest =
+        await allocateAutomaticProductOutputs(normalizedRequest);
     }
   } catch (error) {
     return localFailure(errorMessage(error));
@@ -47,14 +61,21 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
     for (const field of ["modelPath", "baseScenePath"] as const) {
       const value = normalizedRequest[field];
       if (typeof value === "string" && !(await exists(value))) {
-        return localFailure(`${field === "modelPath" ? "Model" : "Base scene"} file not found: ${value}`);
+        return localFailure(
+          `${field === "modelPath" ? "Model" : "Base scene"} file not found: ${value}`,
+        );
       }
     }
     if (normalizedRequest.overwrite !== true) {
-      const protectedOutputs = [normalizedRequest.outputScenePath, normalizedRequest.outputPath];
+      const protectedOutputs = [
+        normalizedRequest.outputScenePath,
+        normalizedRequest.outputPath,
+      ];
       for (const output of protectedOutputs) {
-        if (typeof output === "string" && await exists(output)) {
-          return localFailure(`Output already exists and overwrite is false: ${output}`);
+        if (typeof output === "string" && (await exists(output))) {
+          return localFailure(
+            `Output already exists and overwrite is false: ${output}`,
+          );
         }
       }
     }
@@ -83,36 +104,54 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
   ];
 
   try {
-    const processResult = await spawnWithTimeout(config.keyshotHeadlessExe, args, config.keyshotTimeoutMs);
+    const processResult = await spawnWithTimeout(
+      config.keyshotHeadlessExe,
+      args,
+      config.keyshotTimeoutMs,
+    );
     const stdoutTail = tail(processResult.stdout, 6000);
     const stderrTail = tail(processResult.stderr, 6000);
 
     let parsed: KeyShotResult | null = null;
     if (await exists(resultPath)) {
       try {
-        parsed = JSON.parse(await fs.readFile(resultPath, "utf8")) as KeyShotResult;
+        parsed = JSON.parse(
+          await fs.readFile(resultPath, "utf8"),
+        ) as KeyShotResult;
       } catch (error) {
-        return localFailure(`Could not parse KeyShot result JSON: ${errorMessage(error)}`, {
-          keyshotStdoutTail: stdoutTail,
-          warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
-        });
+        return localFailure(
+          `Could not parse KeyShot result JSON: ${errorMessage(error)}`,
+          {
+            keyshotStdoutTail: stdoutTail,
+            warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
+          },
+        );
       }
     }
 
     if (processResult.spawnError) {
-      return localFailure(`Could not start KeyShot headless: ${processResult.spawnError}`, {
-        keyshotStdoutTail: stdoutTail,
-        warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
-      });
+      return localFailure(
+        `Could not start KeyShot headless: ${processResult.spawnError}`,
+        {
+          keyshotStdoutTail: stdoutTail,
+          warnings: stderrTail ? [`stderr: ${stderrTail}`] : [],
+        },
+      );
     }
 
     if (processResult.timedOut) {
-      return localFailure(`KeyShot timed out after ${config.keyshotTimeoutMs}ms`, {
-        data: parsed?.data ?? null,
-        outputFiles: parsed?.outputFiles ?? [],
-        warnings: [...(parsed?.warnings ?? []), ...(stderrTail ? [`stderr: ${stderrTail}`] : [])],
-        keyshotStdoutTail: stdoutTail,
-      });
+      return localFailure(
+        `KeyShot timed out after ${config.keyshotTimeoutMs}ms`,
+        {
+          data: parsed?.data ?? null,
+          outputFiles: parsed?.outputFiles ?? [],
+          warnings: [
+            ...(parsed?.warnings ?? []),
+            ...(stderrTail ? [`stderr: ${stderrTail}`] : []),
+          ],
+          keyshotStdoutTail: stdoutTail,
+        },
+      );
     }
 
     if (!parsed) {
@@ -126,7 +165,8 @@ async function runKeyShot(config: ServerConfig, request: KeyShotRequest): Promis
     }
 
     parsed.keyshotStdoutTail = stdoutTail || parsed.keyshotStdoutTail || "";
-    if (stderrTail) parsed.warnings = [...parsed.warnings, `stderr: ${stderrTail}`];
+    if (stderrTail)
+      parsed.warnings = [...parsed.warnings, `stderr: ${stderrTail}`];
 
     if (processResult.exitCode !== 0 && parsed.ok) {
       return withErrorGuidance({
@@ -183,7 +223,8 @@ export function spawnWithTimeout(
       timedOut = true;
       terminateProcessTree(child.pid, "SIGTERM");
       setTimeout(() => {
-        if (!settled && process.platform !== "win32") terminateProcessTree(child.pid, "SIGKILL");
+        if (!settled && process.platform !== "win32")
+          terminateProcessTree(child.pid, "SIGKILL");
       }, 2500).unref();
     }, timeoutMs);
 
@@ -205,7 +246,10 @@ export function spawnWithTimeout(
   });
 }
 
-function terminateProcessTree(pid: number | undefined, signal: NodeJS.Signals): void {
+function terminateProcessTree(
+  pid: number | undefined,
+  signal: NodeJS.Signals,
+): void {
   if (!pid) return;
   if (process.platform === "win32") {
     const killer = spawn("taskkill", ["/pid", String(pid), "/T", "/F"], {
@@ -234,7 +278,9 @@ function appendBounded(current: string, addition: string): string {
 }
 
 function isPathLike(command: string): boolean {
-  return path.isAbsolute(command) || command.includes("/") || command.includes("\\");
+  return (
+    path.isAbsolute(command) || command.includes("/") || command.includes("\\")
+  );
 }
 
 async function exists(filePath: string): Promise<boolean> {
@@ -247,7 +293,9 @@ async function exists(filePath: string): Promise<boolean> {
 }
 
 function tail(value: string, maxChars: number): string {
-  return value.length <= maxChars ? value : value.slice(value.length - maxChars);
+  return value.length <= maxChars
+    ? value
+    : value.slice(value.length - maxChars);
 }
 
 function errorMessage(error: unknown): string {

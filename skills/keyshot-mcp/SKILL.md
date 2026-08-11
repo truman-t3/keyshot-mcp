@@ -2,7 +2,7 @@
 name: keyshot-mcp
 author: truman-t3
 description: Install, diagnose, and safely use KeyShot MCP for local product visualization, scene editing, camera control, material assignment, and rendering.
-version: 0.9.1
+version: 0.10.0
 ---
 
 # KeyShot MCP
@@ -26,7 +26,7 @@ Respond in the user's language and explain errors in plain, non-technical terms.
 1. Confirm Node.js 20 or newer is available.
 2. Confirm KeyShot is installed and locally licensed.
 3. Locate `keyshot_headless.exe`. Prefer its absolute path.
-4. Configure the MCP client to run `npx -y keyshot-mcp@0.9.1` and set
+4. Configure the MCP client to run `npx -y keyshot-mcp@0.10.0` and set
    `KEYSHOT_HEADLESS_EXE`.
 5. Leave `KEYSHOT_OUTPUT_DIR` unset to use
    `<home>/Documents/KeyShot MCP Outputs`, or set a user-approved directory.
@@ -41,7 +41,7 @@ Example configuration:
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.9.1"],
+      "args": ["-y", "keyshot-mcp@0.10.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -56,6 +56,8 @@ Example configuration:
 - Prefer `keyshot_product_render` for an end-to-end model or scene workflow.
 - Use `keyshot_inspect_scene` before object-specific edits when names are unknown.
 - Use `keyshot_list_cameras` before rendering selected cameras.
+- Use `keyshot_preview_render` after inspection so the Agent and user can review
+  composition, materials, and lighting before a standard or final render.
 - Use `keyshot_render` for one view, `keyshot_batch_render` for selected views,
   `keyshot_render_all_cameras` for every saved view, and `keyshot_render_queue`
   for independent jobs from multiple scenes.
@@ -86,6 +88,15 @@ Every tool returns `ok`, operation-specific `data`, `outputFiles`, `warnings`,
 3. Surface warnings without presenting them as failures.
 4. On failure, explain `error` and the first relevant suggestion.
 5. Run `keyshot_status` when the cause is unclear.
+
+## Recommended feedback loop
+
+1. Run `keyshot_status`.
+2. Inspect the scene and identify the intended camera or object.
+3. Call `keyshot_preview_render` and describe only what is visible in the returned image.
+4. Ask the user to confirm material, camera, and environment changes.
+5. Apply approved edits to a scene copy.
+6. Render at `standard` or `final` quality.
 
 ## Boundaries
 

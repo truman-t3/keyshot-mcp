@@ -28,7 +28,10 @@ export type RenderJobResult = {
 };
 
 // Injectable runner so the queue can be unit tested without KeyShot.
-export type RunFn = (config: ServerConfig, request: KeyShotRequest) => Promise<KeyShotResult>;
+export type RunFn = (
+  config: ServerConfig,
+  request: KeyShotRequest,
+) => Promise<KeyShotResult>;
 
 /**
  * Run several render jobs one after another.
@@ -104,6 +107,7 @@ export async function runRenderQueue(
     outputFiles,
     warnings,
     keyshotStdoutTail: "",
-    error: failed === 0 ? null : `${failed} of ${jobs.length} render job(s) failed.`,
+    error:
+      failed === 0 ? null : `${failed} of ${jobs.length} render job(s) failed.`,
   };
 }

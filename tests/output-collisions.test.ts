@@ -26,7 +26,9 @@ describe("automatic product output allocation", () => {
       outputPath: image,
       _automaticOutputFields: ["outputScenePath", "outputPath"],
     });
-    expect(result.outputScenePath).toBe(path.join(root, "speaker-product-3.bip"));
+    expect(result.outputScenePath).toBe(
+      path.join(root, "speaker-product-3.bip"),
+    );
     expect(result.outputPath).toBe(path.join(root, "speaker-product-3.png"));
   });
 
@@ -44,15 +46,23 @@ describe("automatic product output allocation", () => {
   it("does not rename explicit outputs or overwrite requests", async () => {
     const explicit = path.join(root, "explicit.bip");
     writeFileSync(explicit, "existing");
-    expect((await allocateAutomaticProductOutputs({
-      operation: "product_render",
-      outputScenePath: explicit,
-    })).outputScenePath).toBe(explicit);
-    expect((await allocateAutomaticProductOutputs({
-      operation: "product_render",
-      outputScenePath: explicit,
-      overwrite: true,
-      _automaticOutputFields: ["outputScenePath"],
-    })).outputScenePath).toBe(explicit);
+    expect(
+      (
+        await allocateAutomaticProductOutputs({
+          operation: "product_render",
+          outputScenePath: explicit,
+        })
+      ).outputScenePath,
+    ).toBe(explicit);
+    expect(
+      (
+        await allocateAutomaticProductOutputs({
+          operation: "product_render",
+          outputScenePath: explicit,
+          overwrite: true,
+          _automaticOutputFields: ["outputScenePath"],
+        })
+      ).outputScenePath,
+    ).toBe(explicit);
   });
 });

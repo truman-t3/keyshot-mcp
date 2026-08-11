@@ -20,19 +20,24 @@ export async function prepareProductRenderRequest(
 
   const automaticOutputFields: string[] = [];
   if (!input.outputScenePath) automaticOutputFields.push("outputScenePath");
-  if (renderMode === "single" && !input.outputPath) automaticOutputFields.push("outputPath");
-  if (renderMode === "allCameras" && !input.outputDir) automaticOutputFields.push("outputDir");
+  if (renderMode === "single" && !input.outputPath)
+    automaticOutputFields.push("outputPath");
+  if (renderMode === "allCameras" && !input.outputDir)
+    automaticOutputFields.push("outputDir");
 
-  const request: KeyShotRequest = applyRenderQuality({
-    ...input,
-    operation: "product_render",
-    renderMode,
-    format,
-    outputScenePath: input.outputScenePath ?? `${stem}-product.bip`,
-    overwrite: input.overwrite ?? false,
-    continueOnError: input.continueOnError ?? true,
-    _automaticOutputFields: automaticOutputFields,
-  }, "standard");
+  const request: KeyShotRequest = applyRenderQuality(
+    {
+      ...input,
+      operation: "product_render",
+      renderMode,
+      format,
+      outputScenePath: input.outputScenePath ?? `${stem}-product.bip`,
+      overwrite: input.overwrite ?? false,
+      continueOnError: input.continueOnError ?? true,
+      _automaticOutputFields: automaticOutputFields,
+    },
+    "standard",
+  );
 
   if (renderMode === "single") {
     request.outputPath = input.outputPath ?? `${stem}-product.${format}`;
@@ -49,18 +54,26 @@ export async function prepareProductRenderRequest(
     request.adjustEnvironment = input.adjustEnvironment ?? true;
   }
 
-  request.materialAssignments = await resolveMaterialAssignments(config, input.materialAssignments ?? []);
+  request.materialAssignments = await resolveMaterialAssignments(
+    config,
+    input.materialAssignments ?? [],
+  );
 
-  const presetName = input.cameraPresetName ?? (input.modelPath ? "Isometric" : undefined);
+  const presetName =
+    input.cameraPresetName ?? (input.modelPath ? "Isometric" : undefined);
   if (presetName) {
     const presets = await loadCameraPresets(config);
     const preset = findCameraPreset(presets, presetName);
     if (!preset) {
-      const available = presets.map((entry) => entry.name).join(", ") || "(none)";
-      throw new Error(`Camera preset not found: "${presetName}". Available: ${available}`);
+      const available =
+        presets.map((entry) => entry.name).join(", ") || "(none)";
+      throw new Error(
+        `Camera preset not found: "${presetName}". Available: ${available}`,
+      );
     }
     request.cameraPresetName = preset.name;
-    request.cameraName = input.cameraName ?? (input.modelPath ? "Product Hero" : preset.name);
+    request.cameraName =
+      input.cameraName ?? (input.modelPath ? "Product Hero" : preset.name);
     if (preset.type === "standard") {
       request.standardView = preset.standardView;
     } else {
@@ -80,15 +93,20 @@ async function resolveMaterialAssignments(
   assignments: NonNullable<ProductRenderInput["materialAssignments"]>,
 ): Promise<Array<Record<string, unknown>>> {
   if (assignments.length === 0) return [];
-  const needsPresets = assignments.some((assignment) => assignment.presetName !== undefined);
+  const needsPresets = assignments.some(
+    (assignment) => assignment.presetName !== undefined,
+  );
   const presets = needsPresets ? await loadMaterialPresets(config) : [];
 
   return assignments.map((assignment) => {
     if (!assignment.presetName) return { ...assignment };
     const preset = findMaterialPreset(presets, assignment.presetName);
     if (!preset) {
-      const available = presets.map((entry) => entry.name).join(", ") || "(none)";
-      throw new Error(`Material preset not found: "${assignment.presetName}". Available: ${available}`);
+      const available =
+        presets.map((entry) => entry.name).join(", ") || "(none)";
+      throw new Error(
+        `Material preset not found: "${assignment.presetName}". Available: ${available}`,
+      );
     }
     return {
       objectName: assignment.objectName,
@@ -102,6 +120,9 @@ async function resolveMaterialAssignments(
 
 function safeStem(sourcePath: string): string {
   const parsed = path.parse(sourcePath);
-  const normalized = parsed.name.trim().replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "");
+  const normalized = parsed.name
+    .trim()
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
   return normalized || "product";
 }

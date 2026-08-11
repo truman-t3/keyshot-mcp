@@ -15,28 +15,42 @@ export type ServerConfig = {
   cameraPresetsPath: string;
 };
 
-const DEFAULT_KEYSHOT_EXE = process.platform === "win32" ? "keyshot_headless.exe" : "keyshot_headless";
+const DEFAULT_KEYSHOT_EXE =
+  process.platform === "win32" ? "keyshot_headless.exe" : "keyshot_headless";
 const DEFAULT_TIMEOUT_MS = 600_000;
 
 export function getConfig(): ServerConfig {
-  const projectRoot = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
+  const projectRoot = path.resolve(
+    fileURLToPath(new URL("..", import.meta.url)),
+  );
 
-  const keyshotOutputDir = path.resolve(process.env.KEYSHOT_OUTPUT_DIR ?? defaultOutputDir());
+  const keyshotOutputDir = path.resolve(
+    process.env.KEYSHOT_OUTPUT_DIR ?? defaultOutputDir(),
+  );
 
   return {
     projectRoot,
     keyshotHeadlessExe: process.env.KEYSHOT_HEADLESS_EXE ?? DEFAULT_KEYSHOT_EXE,
     keyshotOutputDir,
-    keyshotAllowExternalOutputs: parseBoolean(process.env.KEYSHOT_ALLOW_EXTERNAL_OUTPUTS),
-    keyshotLicenseArgs: splitWindowsArgs(process.env.KEYSHOT_LICENSE_ARGS ?? ""),
-    keyshotTimeoutMs: parsePositiveInt(process.env.KEYSHOT_TIMEOUT_MS, DEFAULT_TIMEOUT_MS),
+    keyshotAllowExternalOutputs: parseBoolean(
+      process.env.KEYSHOT_ALLOW_EXTERNAL_OUTPUTS,
+    ),
+    keyshotLicenseArgs: splitWindowsArgs(
+      process.env.KEYSHOT_LICENSE_ARGS ?? "",
+    ),
+    keyshotTimeoutMs: parsePositiveInt(
+      process.env.KEYSHOT_TIMEOUT_MS,
+      DEFAULT_TIMEOUT_MS,
+    ),
     tmpDir: path.join(projectRoot, "work", "tmp"),
     bridgeScriptPath: path.join(projectRoot, "scripts", "keyshot_bridge.py"),
     materialPresetsPath: path.resolve(
-      process.env.KEYSHOT_MATERIAL_PRESETS ?? path.join(projectRoot, "presets", "materials.json"),
+      process.env.KEYSHOT_MATERIAL_PRESETS ??
+        path.join(projectRoot, "presets", "materials.json"),
     ),
     cameraPresetsPath: path.resolve(
-      process.env.KEYSHOT_CAMERA_PRESETS ?? path.join(projectRoot, "presets", "cameras.json"),
+      process.env.KEYSHOT_CAMERA_PRESETS ??
+        path.join(projectRoot, "presets", "cameras.json"),
     ),
   };
 }
@@ -46,7 +60,9 @@ export function defaultOutputDir(): string {
 }
 
 function parseBoolean(value: string | undefined): boolean {
-  return ["1", "true", "yes", "on"].includes((value ?? "").trim().toLowerCase());
+  return ["1", "true", "yes", "on"].includes(
+    (value ?? "").trim().toLowerCase(),
+  );
 }
 
 function parsePositiveInt(value: string | undefined, fallback: number): number {

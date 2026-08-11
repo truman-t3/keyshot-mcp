@@ -1,6 +1,6 @@
 {
   "name": "keyshot-mcp",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "mcpName": "io.github.truman-t3/keyshot-mcp",
   "description": "Local MCP server for KeyShot product visualization, scene editing, camera control, and rendering.",
   "type": "module",
@@ -21,6 +21,11 @@
     "start": "node ./dist/index.js",
     "check": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
+    "docs:tools": "pnpm run build && node ./scripts/generate-tools-docs.mjs",
+    "docs:tools:check": "pnpm run build && node ./scripts/generate-tools-docs.mjs --check",
+    "format": "prettier --write \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/*.mjs\" \"*.json\" \"*.md\" \"docs/**/*.md\" \"skills/**/*.md\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/*.mjs\" \"*.json\" \"*.md\" \"docs/**/*.md\" \"skills/**/*.md\"",
+    "lint:python": "python -m ruff check scripts tests",
     "status": "node ./dist/cli/status.js",
     "smoke:keyshot": "tsc -p tsconfig.json && node ./scripts/keyshot-smoke.mjs"
   },
@@ -43,11 +48,13 @@
     "assets",
     "presets",
     "skills",
+    "docs",
     "glama.json",
     "server.json",
     "README.md",
     "CONTRIBUTING.md",
     "SECURITY.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "license": "MIT",
@@ -61,6 +68,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.17.2",
+    "prettier": "3.6.2",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
   }

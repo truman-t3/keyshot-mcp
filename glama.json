@@ -1,6 +1,4 @@
 {
   "$schema": "https://glama.ai/mcp/schemas/server.json",
-  "maintainers": [
-    "truman-t3"
-  ]
+  "maintainers": ["truman-t3"]
 }

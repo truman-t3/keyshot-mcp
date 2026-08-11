@@ -32,7 +32,9 @@ export type AbsoluteCameraPreset = {
 
 export type CameraPreset = StandardCameraPreset | AbsoluteCameraPreset;
 
-export async function loadCameraPresets(config: ServerConfig): Promise<CameraPreset[]> {
+export async function loadCameraPresets(
+  config: ServerConfig,
+): Promise<CameraPreset[]> {
   let raw: string;
   try {
     raw = await fs.readFile(config.cameraPresetsPath, "utf8");
@@ -44,7 +46,9 @@ export async function loadCameraPresets(config: ServerConfig): Promise<CameraPre
   try {
     parsed = JSON.parse(raw);
   } catch {
-    throw new Error(`Camera presets file is not valid JSON: ${config.cameraPresetsPath}`);
+    throw new Error(
+      `Camera presets file is not valid JSON: ${config.cameraPresetsPath}`,
+    );
   }
 
   return normalizeCameraPresets(parsed);
@@ -62,7 +66,9 @@ export function normalizeCameraPresets(parsed: unknown): CameraPreset[] {
       if (preset) entries.push(preset);
     }
   } else if (parsed && typeof parsed === "object") {
-    for (const [name, value] of Object.entries(parsed as Record<string, unknown>)) {
+    for (const [name, value] of Object.entries(
+      parsed as Record<string, unknown>,
+    )) {
       if (!value || typeof value !== "object") continue;
       const preset = toCameraPreset(name, value as Record<string, unknown>);
       if (preset) entries.push(preset);
@@ -83,15 +89,20 @@ export function findCameraPreset(
   );
 }
 
-function toCameraPreset(name: string, record: Record<string, unknown>): CameraPreset | undefined {
-  const description = typeof record.description === "string" ? record.description : undefined;
+function toCameraPreset(
+  name: string,
+  record: Record<string, unknown>,
+): CameraPreset | undefined {
+  const description =
+    typeof record.description === "string" ? record.description : undefined;
   const standardView = normalizeStandardView(record.standardView);
   const position = toVector(record.position);
   const lookAt = toVector(record.lookAt);
   const up = toVector(record.up);
 
   const hasStandard = standardView !== undefined;
-  const hasAbsolute = position !== undefined || lookAt !== undefined || up !== undefined;
+  const hasAbsolute =
+    position !== undefined || lookAt !== undefined || up !== undefined;
   if (hasStandard && !hasAbsolute) {
     return { name, type: "standard", standardView, description };
   }
@@ -109,6 +120,7 @@ function normalizeStandardView(value: unknown): StandardCameraView | undefined {
 
 function toVector(value: unknown): CameraVector | undefined {
   if (!Array.isArray(value) || value.length !== 3) return undefined;
-  if (!value.every((item) => typeof item === "number" && Number.isFinite(item))) return undefined;
+  if (!value.every((item) => typeof item === "number" && Number.isFinite(item)))
+    return undefined;
   return [value[0], value[1], value[2]];
 }

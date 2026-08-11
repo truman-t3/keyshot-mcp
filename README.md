@@ -13,7 +13,9 @@
 KeyShot MCP connects an MCP-compatible AI agent to a licensed KeyShot installation
 on the same computer. It can inspect scenes, import models, apply materials, set
 cameras and environments, save scene copies, and render images through KeyShot
-headless scripting. Models, scenes, licenses, and renders stay local.
+headless scripting. KeyShot file processing stays local; however, an MCP client may
+send tool results, scene metadata, or embedded previews to its configured model
+provider. See [Security](SECURITY.md) before using confidential work.
 
 ![KeyShot MCP workflow](assets/workflow.svg)
 
@@ -25,15 +27,16 @@ The easiest setup is to send this prompt to an agent that can edit your MCP
 configuration:
 
 ```text
-Install KeyShot MCP 0.9.1 and configure it in my MCP client.
+Install KeyShot MCP 0.10.0 and configure it in my MCP client.
 
-1. Use: npx -y keyshot-mcp@0.9.1
+1. Use: npx -y keyshot-mcp@0.10.0
 2. Find my local keyshot_headless.exe and set KEYSHOT_HEADLESS_EXE to its full path.
 3. Keep outputs in the default KeyShot MCP Outputs folder unless I choose another safe folder.
 4. Keep KEYSHOT_ALLOW_EXTERNAL_OUTPUTS disabled.
 5. Restart or reload the MCP client and run keyshot_status.
 6. Explain any problem and its suggested fix in plain language.
-7. Do not upload or publish my KeyShot files, renders, or license information.
+7. Do not upload or publish my KeyShot files, persistent renders, or license information.
+8. Before sending a preview image to the configured model provider, remind me when the scene is confidential.
 ```
 
 After setup, try:
@@ -54,7 +57,7 @@ from C:\models\speaker.obj.
 
 ### Install
 
-The current release is `0.9.1`.
+The current release is `0.10.0`.
 
 #### Run with npx
 
@@ -65,7 +68,7 @@ No global npm installation is required:
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.9.1"],
+      "args": ["-y", "keyshot-mcp@0.10.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -77,7 +80,7 @@ No global npm installation is required:
 #### Install globally
 
 ```bash
-npm install -g keyshot-mcp@0.9.1
+npm install -g keyshot-mcp@0.10.0
 ```
 
 ```json
@@ -110,6 +113,16 @@ Restart the MCP client after changing its configuration, then call
 output access, bridge files, preset JSON, and a minimal KeyShot startup.
 
 ### Common workflows
+
+#### Preview before final rendering
+
+Use `keyshot_preview_render` after checking a scene. It returns a PNG directly to
+the Agent, so composition, materials, and lighting can be described and confirmed
+before a standard or final render. Temporary previews are deleted automatically;
+set `outputPath` only when a persistent PNG copy is needed.
+
+Recommended loop: status check -> scene inspection -> preview -> Agent feedback ->
+user confirmation -> standard or final render.
 
 #### One-call product render
 
@@ -155,11 +168,11 @@ different KeyShot render modes and cannot be combined.
 
 ### Quality presets
 
-| Preset | Resolution | Samples | Use |
-| --- | ---: | ---: | --- |
-| `preview` | 960 x 540 | 16 | Fast composition and material checks |
-| `standard` | 1920 x 1080 | 64 | Default for `keyshot_product_render` |
-| `final` | 3840 x 2160 | 256 | High-resolution final output |
+| Preset     |  Resolution | Samples | Use                                  |
+| ---------- | ----------: | ------: | ------------------------------------ |
+| `preview`  |   960 x 540 |      16 | Fast composition and material checks |
+| `standard` | 1920 x 1080 |      64 | Default for `keyshot_product_render` |
+| `final`    | 3840 x 2160 |     256 | High-resolution final output         |
 
 Explicit `width`, `height`, and `samples` override the corresponding preset values.
 Explicit `maxTimeSeconds` switches to time-based rendering instead of preset samples.
@@ -167,42 +180,44 @@ Lower-level render tools preserve their existing behavior when no preset is give
 
 ### Tools
 
-| Tool | Purpose |
-| --- | --- |
-| `keyshot_status` | Diagnose local configuration, output access, presets, and KeyShot startup. |
-| `keyshot_product_render` | Prepare, save, and render a model or scene in one process. |
-| `keyshot_inspect_scene` | List scene metadata, objects, cameras, materials, model sets, and references. |
-| `keyshot_list_cameras` | Return saved camera names before a selected-camera render. |
-| `keyshot_render` | Render one active or named camera. |
-| `keyshot_render_queue` | Run independent render jobs sequentially. |
-| `keyshot_batch_render` | Render selected named cameras from one scene. |
-| `keyshot_render_all_cameras` | Discover and render every saved camera. |
-| `keyshot_import_model` | Import a model into an empty or base scene and save it. |
-| `keyshot_apply_material` | Apply a KeyShot material name or local material file to one object. |
-| `keyshot_list_material_presets` | List configured material presets. |
-| `keyshot_apply_material_preset` | Apply a configured material preset to one object. |
-| `keyshot_set_camera` | Create or update camera transform, distance, FOV, or focal length. |
-| `keyshot_list_camera_presets` | List standard and custom camera presets. |
-| `keyshot_apply_camera_preset` | Create or update a camera from a preset. |
-| `keyshot_set_environment` | Select or adjust an environment, brightness, and rotation. |
-| `keyshot_save_scene` | Save an existing scene to a controlled output path. |
+| Tool                            | Purpose                                                                       |
+| ------------------------------- | ----------------------------------------------------------------------------- |
+| `keyshot_status`                | Diagnose local configuration, output access, presets, and KeyShot startup.    |
+| `keyshot_product_render`        | Prepare, save, and render a model or scene in one process.                    |
+| `keyshot_preview_render`        | Return a temporary or saved PNG directly to the Agent for visual review.      |
+| `keyshot_inspect_scene`         | List scene metadata, objects, cameras, materials, model sets, and references. |
+| `keyshot_list_cameras`          | Return saved camera names before a selected-camera render.                    |
+| `keyshot_render`                | Render one active or named camera.                                            |
+| `keyshot_render_queue`          | Run independent render jobs sequentially.                                     |
+| `keyshot_batch_render`          | Render selected named cameras from one scene.                                 |
+| `keyshot_render_all_cameras`    | Discover and render every saved camera.                                       |
+| `keyshot_import_model`          | Import a model into an empty or base scene and save it.                       |
+| `keyshot_apply_material`        | Apply a KeyShot material name or local material file to one object.           |
+| `keyshot_list_material_presets` | List configured material presets.                                             |
+| `keyshot_apply_material_preset` | Apply a configured material preset to one object.                             |
+| `keyshot_set_camera`            | Create or update camera transform, distance, FOV, or focal length.            |
+| `keyshot_list_camera_presets`   | List standard and custom camera presets.                                      |
+| `keyshot_apply_camera_preset`   | Create or update a camera from a preset.                                      |
+| `keyshot_set_environment`       | Select or adjust an environment, brightness, and rotation.                    |
+| `keyshot_save_scene`            | Save an existing scene to a controlled output path.                           |
 
 The server also exposes one MCP Prompt for product rendering and one MCP Resource
-describing the KeyShot headless workflow. The bundled Agent Skill in
+describing the KeyShot headless workflow. The complete generated reference for
+all 18 tools is in [`docs/TOOLS.md`](docs/TOOLS.md). The bundled Agent Skill in
 [`skills/keyshot-mcp`](skills/keyshot-mcp) teaches compatible agents how to install,
 diagnose, and use the server safely.
 
 ### Configuration
 
-| Variable | Default | Description |
-| --- | --- | --- |
-| `KEYSHOT_HEADLESS_EXE` | `D:\keyshot2025_183972\bin\keyshot_headless.exe` | Full executable path or a command available on `PATH`. |
-| `KEYSHOT_OUTPUT_DIR` | `<home>/Documents/KeyShot MCP Outputs` | Root for rendered images and saved scenes. |
-| `KEYSHOT_ALLOW_EXTERNAL_OUTPUTS` | `false` | Allow output outside the configured root only when explicitly set to `true`. |
-| `KEYSHOT_TIMEOUT_MS` | `600000` | Timeout for one KeyShot process. |
-| `KEYSHOT_LICENSE_ARGS` | empty | Optional launch arguments; diagnostics never echo their values. |
-| `KEYSHOT_MATERIAL_PRESETS` | bundled JSON | Optional user-managed material preset file. |
-| `KEYSHOT_CAMERA_PRESETS` | bundled JSON | Optional user-managed camera preset file. |
+| Variable                         | Default                                | Description                                                                  |
+| -------------------------------- | -------------------------------------- | ---------------------------------------------------------------------------- |
+| `KEYSHOT_HEADLESS_EXE`           | `keyshot_headless.exe` on Windows      | Full executable path or a command available on `PATH`.                       |
+| `KEYSHOT_OUTPUT_DIR`             | `<home>/Documents/KeyShot MCP Outputs` | Root for rendered images and saved scenes.                                   |
+| `KEYSHOT_ALLOW_EXTERNAL_OUTPUTS` | `false`                                | Allow output outside the configured root only when explicitly set to `true`. |
+| `KEYSHOT_TIMEOUT_MS`             | `600000`                               | Timeout for one KeyShot process.                                             |
+| `KEYSHOT_LICENSE_ARGS`           | empty                                  | Optional launch arguments; diagnostics never echo their values.              |
+| `KEYSHOT_MATERIAL_PRESETS`       | bundled JSON                           | Optional user-managed material preset file.                                  |
+| `KEYSHOT_CAMERA_PRESETS`         | bundled JSON                           | Optional user-managed camera preset file.                                    |
 
 All KeyShot operations run sequentially to reduce license and output conflicts.
 Input scenes and models may come from any local path. By default, generated images
@@ -275,20 +290,24 @@ bypass licensing or redistribute proprietary KeyShot software or assets.
 
 ## 中文
 
+KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具结果、场景元数据或
+内嵌预览发送给它所配置的模型服务。处理保密项目之前请先阅读[安全说明](SECURITY.md)。
+
 ### 设计师快速开始
 
 最简单的安装方式，是把下面这段话发给能够修改 MCP 配置的 Agent：
 
 ```text
-请安装 KeyShot MCP 0.9.1，并配置到我的 MCP 客户端。
+请安装 KeyShot MCP 0.10.0，并配置到我的 MCP 客户端。
 
-1. 使用：npx -y keyshot-mcp@0.9.1
+1. 使用：npx -y keyshot-mcp@0.10.0
 2. 查找本机 keyshot_headless.exe，并把完整路径设置为 KEYSHOT_HEADLESS_EXE。
 3. 默认把结果保存在“文档/KeyShot MCP Outputs”，除非我明确选择其他安全目录。
 4. 保持 KEYSHOT_ALLOW_EXTERNAL_OUTPUTS 关闭。
 5. 重启或重新加载 MCP 客户端，然后运行 keyshot_status。
 6. 用普通设计师能理解的语言说明问题和修复建议。
-7. 不要上传或发布我的 KeyShot 文件、渲染图或许可证信息。
+7. 不要上传或发布我的 KeyShot 文件、保留的渲染图或许可证信息。
+8. 如果场景属于保密项目，在把预览发送给模型服务之前先提醒我。
 ```
 
 安装后可以这样说：
@@ -307,7 +326,7 @@ bypass licensing or redistribute proprietary KeyShot software or assets.
 
 ### 安装
 
-当前正式版本为 `0.9.1`。
+当前正式版本为 `0.10.0`。
 
 #### 使用 npx 免安装运行
 
@@ -316,7 +335,7 @@ bypass licensing or redistribute proprietary KeyShot software or assets.
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.9.1"],
+      "args": ["-y", "keyshot-mcp@0.10.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -328,7 +347,7 @@ bypass licensing or redistribute proprietary KeyShot software or assets.
 #### 全局安装
 
 ```bash
-npm install -g keyshot-mcp@0.9.1
+npm install -g keyshot-mcp@0.10.0
 ```
 
 ```json
@@ -360,6 +379,15 @@ pnpm build
 并运行最小 KeyShot 启动测试。
 
 ### 常用工作流
+
+#### 正式渲染前先看预览
+
+检查场景后调用 `keyshot_preview_render`。它会把 PNG 直接返回给 Agent，便于
+先检查构图、材质和光线，再由用户确认是否继续标准或最终渲染。临时预览会自动
+删除；只有需要保留图片时才填写 `outputPath`。
+
+推荐流程：状态检查 -> 场景检查 -> 预览 -> Agent 描述问题 -> 用户确认 ->
+标准或最终渲染。
 
 #### 一句话完成产品出图
 
@@ -402,52 +430,54 @@ pnpm build
 
 ### 质量预设
 
-| 预设 | 分辨率 | 采样 | 用途 |
-| --- | ---: | ---: | --- |
-| `preview` | 960 x 540 | 16 | 快速检查构图和材质 |
-| `standard` | 1920 x 1080 | 64 | `keyshot_product_render` 的默认值 |
-| `final` | 3840 x 2160 | 256 | 高清最终输出 |
+| 预设       |      分辨率 | 采样 | 用途                              |
+| ---------- | ----------: | ---: | --------------------------------- |
+| `preview`  |   960 x 540 |   16 | 快速检查构图和材质                |
+| `standard` | 1920 x 1080 |   64 | `keyshot_product_render` 的默认值 |
+| `final`    | 3840 x 2160 |  256 | 高清最终输出                      |
 
 显式填写的 `width`、`height` 和 `samples` 会分别覆盖预设值；填写
 `maxTimeSeconds` 会改用限时渲染。底层渲染工具在没有指定预设时保持原有行为。
 
 ### 工具
 
-| 工具 | 用途 |
-| --- | --- |
-| `keyshot_status` | 检查本机配置、输出目录、预设和 KeyShot 启动状态。 |
-| `keyshot_product_render` | 在一个进程中整理、保存并渲染模型或场景。 |
-| `keyshot_inspect_scene` | 查看场景、对象、相机、材质、模型集和外部引用。 |
-| `keyshot_list_cameras` | 返回场景中的相机名称。 |
-| `keyshot_render` | 渲染当前或指定相机。 |
-| `keyshot_render_queue` | 顺序执行多个独立渲染任务。 |
-| `keyshot_batch_render` | 渲染选定的多个相机。 |
-| `keyshot_render_all_cameras` | 自动发现并渲染全部相机。 |
-| `keyshot_import_model` | 导入模型并保存为场景。 |
-| `keyshot_apply_material` | 给指定对象应用材质名称或本地材质文件。 |
-| `keyshot_list_material_presets` | 列出材质预设。 |
-| `keyshot_apply_material_preset` | 给指定对象应用材质预设。 |
-| `keyshot_set_camera` | 创建或修改相机位置、距离、视野角或焦距。 |
-| `keyshot_list_camera_presets` | 列出标准与自定义相机预设。 |
-| `keyshot_apply_camera_preset` | 根据预设创建或修改相机。 |
-| `keyshot_set_environment` | 选择或调整环境、亮度和旋转。 |
-| `keyshot_save_scene` | 将场景保存到受控输出路径。 |
+| 工具                            | 用途                                               |
+| ------------------------------- | -------------------------------------------------- |
+| `keyshot_status`                | 检查本机配置、输出目录、预设和 KeyShot 启动状态。  |
+| `keyshot_product_render`        | 在一个进程中整理、保存并渲染模型或场景。           |
+| `keyshot_preview_render`        | 将临时或保留的 PNG 直接返回给 Agent 进行视觉检查。 |
+| `keyshot_inspect_scene`         | 查看场景、对象、相机、材质、模型集和外部引用。     |
+| `keyshot_list_cameras`          | 返回场景中的相机名称。                             |
+| `keyshot_render`                | 渲染当前或指定相机。                               |
+| `keyshot_render_queue`          | 顺序执行多个独立渲染任务。                         |
+| `keyshot_batch_render`          | 渲染选定的多个相机。                               |
+| `keyshot_render_all_cameras`    | 自动发现并渲染全部相机。                           |
+| `keyshot_import_model`          | 导入模型并保存为场景。                             |
+| `keyshot_apply_material`        | 给指定对象应用材质名称或本地材质文件。             |
+| `keyshot_list_material_presets` | 列出材质预设。                                     |
+| `keyshot_apply_material_preset` | 给指定对象应用材质预设。                           |
+| `keyshot_set_camera`            | 创建或修改相机位置、距离、视野角或焦距。           |
+| `keyshot_list_camera_presets`   | 列出标准与自定义相机预设。                         |
+| `keyshot_apply_camera_preset`   | 根据预设创建或修改相机。                           |
+| `keyshot_set_environment`       | 选择或调整环境、亮度和旋转。                       |
+| `keyshot_save_scene`            | 将场景保存到受控输出路径。                         |
 
 服务还提供一个产品渲染 MCP Prompt，以及一个说明 headless 工作流程的 MCP Resource。
+完整的 18 个工具参考由代码自动生成在 [`docs/TOOLS.md`](docs/TOOLS.md)。
 [`skills/keyshot-mcp`](skills/keyshot-mcp) 中的 Agent Skill 会指导兼容的 Agent 安装、
 诊断并安全使用这些工具。
 
 ### 配置
 
-| 环境变量 | 默认值 | 说明 |
-| --- | --- | --- |
-| `KEYSHOT_HEADLESS_EXE` | `D:\keyshot2025_183972\bin\keyshot_headless.exe` | 完整路径，或系统 `PATH` 中可执行的命令。 |
-| `KEYSHOT_OUTPUT_DIR` | `<用户目录>/Documents/KeyShot MCP Outputs` | 渲染图和场景副本的根目录。 |
-| `KEYSHOT_ALLOW_EXTERNAL_OUTPUTS` | `false` | 只有明确设为 `true` 时才允许写到输出根目录之外。 |
-| `KEYSHOT_TIMEOUT_MS` | `600000` | 单次 KeyShot 进程超时时间。 |
-| `KEYSHOT_LICENSE_ARGS` | 空 | 可选启动参数；诊断结果不会回显具体内容。 |
-| `KEYSHOT_MATERIAL_PRESETS` | 内置 JSON | 可选的用户材质预设文件。 |
-| `KEYSHOT_CAMERA_PRESETS` | 内置 JSON | 可选的用户相机预设文件。 |
+| 环境变量                         | 默认值                                     | 说明                                             |
+| -------------------------------- | ------------------------------------------ | ------------------------------------------------ |
+| `KEYSHOT_HEADLESS_EXE`           | Windows 上为 `keyshot_headless.exe`        | 完整路径，或系统 `PATH` 中可执行的命令。         |
+| `KEYSHOT_OUTPUT_DIR`             | `<用户目录>/Documents/KeyShot MCP Outputs` | 渲染图和场景副本的根目录。                       |
+| `KEYSHOT_ALLOW_EXTERNAL_OUTPUTS` | `false`                                    | 只有明确设为 `true` 时才允许写到输出根目录之外。 |
+| `KEYSHOT_TIMEOUT_MS`             | `600000`                                   | 单次 KeyShot 进程超时时间。                      |
+| `KEYSHOT_LICENSE_ARGS`           | 空                                         | 可选启动参数；诊断结果不会回显具体内容。         |
+| `KEYSHOT_MATERIAL_PRESETS`       | 内置 JSON                                  | 可选的用户材质预设文件。                         |
+| `KEYSHOT_CAMERA_PRESETS`         | 内置 JSON                                  | 可选的用户相机预设文件。                         |
 
 所有 KeyShot 操作串行执行，减少许可证和文件冲突。输入模型和场景可以位于任意本地
 路径；生成的场景和图片默认只能写入 `KEYSHOT_OUTPUT_DIR`。系统会拒绝 `..`、同名前缀

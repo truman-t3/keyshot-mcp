@@ -3,7 +3,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { ServerConfig } from "../src/config.js";
-import { resolveExecutable, runKeyShotDiagnostics } from "../src/diagnostics.js";
+import {
+  resolveExecutable,
+  runKeyShotDiagnostics,
+} from "../src/diagnostics.js";
 import type { KeyShotResult } from "../src/types.js";
 
 let root: string;
@@ -56,7 +59,7 @@ describe("KeyShot diagnostics", () => {
     };
     expect(result.ok).toBe(true);
     expect(data.ready).toBe(true);
-    expect(data.serverVersion).toBe("0.9.1");
+    expect(data.serverVersion).toBe("0.10.0");
     expect(data.checks).toHaveLength(6);
     expect(data.config.outputDir).toContain("outputs");
     expect(data.availableFunctions).toBeUndefined();
@@ -65,28 +68,50 @@ describe("KeyShot diagnostics", () => {
   });
 
   it("preserves local checks and suggestions when startup fails", async () => {
-    const failed = { ...success, ok: false, error: "License activation failed", errorCode: "LICENSE_UNAVAILABLE", suggestions: ["Activate KeyShot."] };
+    const failed = {
+      ...success,
+      ok: false,
+      error: "License activation failed",
+      errorCode: "LICENSE_UNAVAILABLE",
+      suggestions: ["Activate KeyShot."],
+    };
     const result = await runKeyShotDiagnostics(config(), async () => failed);
-    const data = result.data as { ready: boolean; checks: Array<{ id: string; ok: boolean }> };
+    const data = result.data as {
+      ready: boolean;
+      checks: Array<{ id: string; ok: boolean }>;
+    };
     expect(result.ok).toBe(false);
     expect(data.ready).toBe(false);
-    expect(data.checks.find((check) => check.id === "output-directory")?.ok).toBe(true);
+    expect(
+      data.checks.find((check) => check.id === "output-directory")?.ok,
+    ).toBe(true);
     expect(result.suggestions).toContain("Activate KeyShot.");
   });
 
   it("treats malformed optional presets as warnings, not startup blockers", async () => {
     const malformed = path.join(root, "bad-camera-presets.json");
     writeFileSync(malformed, "{bad");
-    const result = await runKeyShotDiagnostics(config({ cameraPresetsPath: malformed }), async () => success);
-    const data = result.data as { ready: boolean; checks: Array<{ id: string; ok: boolean; severity: string }> };
+    const result = await runKeyShotDiagnostics(
+      config({ cameraPresetsPath: malformed }),
+      async () => success,
+    );
+    const data = result.data as {
+      ready: boolean;
+      checks: Array<{ id: string; ok: boolean; severity: string }>;
+    };
     expect(result.ok).toBe(true);
     expect(data.ready).toBe(true);
-    expect(data.checks.find((check) => check.id === "camera-presets")).toMatchObject({ ok: false, severity: "warning" });
+    expect(
+      data.checks.find((check) => check.id === "camera-presets"),
+    ).toMatchObject({ ok: false, severity: "warning" });
   });
 
   it("does not launch KeyShot when the executable is missing", async () => {
     const runner = vi.fn(async () => success);
-    const result = await runKeyShotDiagnostics(config({ keyshotHeadlessExe: path.join(root, "missing.exe") }), runner);
+    const result = await runKeyShotDiagnostics(
+      config({ keyshotHeadlessExe: path.join(root, "missing.exe") }),
+      runner,
+    );
     expect(result.ok).toBe(false);
     expect(runner).not.toHaveBeenCalled();
   });
@@ -94,10 +119,15 @@ describe("KeyShot diagnostics", () => {
   it("reports an unwritable output path", async () => {
     const outputFile = path.join(root, "not-a-directory");
     writeFileSync(outputFile, "file");
-    const result = await runKeyShotDiagnostics(config({ keyshotOutputDir: outputFile }), async () => success);
+    const result = await runKeyShotDiagnostics(
+      config({ keyshotOutputDir: outputFile }),
+      async () => success,
+    );
     const data = result.data as { checks: Array<{ id: string; ok: boolean }> };
     expect(result.ok).toBe(false);
-    expect(data.checks.find((check) => check.id === "output-directory")?.ok).toBe(false);
+    expect(
+      data.checks.find((check) => check.id === "output-directory")?.ok,
+    ).toBe(false);
   });
 
   it("resolves a bare executable from PATH", async () => {

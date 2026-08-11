@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import path from "node:path";
-import { defaultOutputDir, getConfig, type ServerConfig } from "../src/config.js";
+import {
+  defaultOutputDir,
+  getConfig,
+  type ServerConfig,
+} from "../src/config.js";
 
 const PRESERVED = { ...process.env };
 
@@ -34,14 +38,20 @@ describe("getConfig", () => {
   it("uses sensible defaults when no env vars are set", () => {
     const config = getConfig();
     expect(config.keyshotHeadlessExe).toBe(
-      process.platform === "win32" ? "keyshot_headless.exe" : "keyshot_headless",
+      process.platform === "win32"
+        ? "keyshot_headless.exe"
+        : "keyshot_headless",
     );
     expect(config.keyshotTimeoutMs).toBe(600_000);
     expect(config.keyshotAllowExternalOutputs).toBe(false);
     expect(config.keyshotOutputDir).toBe(path.resolve(defaultOutputDir()));
-    expect(config.bridgeScriptPath).toBe(path.join(config.projectRoot, "scripts", "keyshot_bridge.py"));
+    expect(config.bridgeScriptPath).toBe(
+      path.join(config.projectRoot, "scripts", "keyshot_bridge.py"),
+    );
     expect(config.tmpDir).toBe(path.join(config.projectRoot, "work", "tmp"));
-    expect(config.cameraPresetsPath).toBe(path.join(config.projectRoot, "presets", "cameras.json"));
+    expect(config.cameraPresetsPath).toBe(
+      path.join(config.projectRoot, "presets", "cameras.json"),
+    );
   });
 
   it("enables external outputs only for an explicit true value", () => {
@@ -61,7 +71,9 @@ describe("getConfig", () => {
 
   it("honors KEYSHOT_CAMERA_PRESETS override", () => {
     process.env.KEYSHOT_CAMERA_PRESETS = "D:/presets/my-cameras.json";
-    expect(getConfig().cameraPresetsPath).toBe(path.resolve("D:/presets/my-cameras.json"));
+    expect(getConfig().cameraPresetsPath).toBe(
+      path.resolve("D:/presets/my-cameras.json"),
+    );
   });
 
   it("parses KEYSHOT_TIMEOUT_MS as a positive integer", () => {
@@ -76,7 +88,12 @@ describe("getConfig", () => {
 
   it("splits KEYSHOT_LICENSE_ARGS preserving quotes", () => {
     process.env.KEYSHOT_LICENSE_ARGS = '-user "Jane Doe" -key abc123';
-    expect(getConfig().keyshotLicenseArgs).toEqual(["-user", "Jane Doe", "-key", "abc123"]);
+    expect(getConfig().keyshotLicenseArgs).toEqual([
+      "-user",
+      "Jane Doe",
+      "-key",
+      "abc123",
+    ]);
   });
 
   it("keeps the provided fake config shape for tests", () => {

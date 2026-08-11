@@ -23,7 +23,9 @@ export type MaterialPreset = {
  * A missing file is treated as an empty library (not an error), so the feature
  * works out of the box before the user creates any presets.
  */
-export async function loadMaterialPresets(config: ServerConfig): Promise<MaterialPreset[]> {
+export async function loadMaterialPresets(
+  config: ServerConfig,
+): Promise<MaterialPreset[]> {
   let raw: string;
   try {
     raw = await fs.readFile(config.materialPresetsPath, "utf8");
@@ -35,7 +37,9 @@ export async function loadMaterialPresets(config: ServerConfig): Promise<Materia
   try {
     parsed = JSON.parse(raw);
   } catch {
-    throw new Error(`Material presets file is not valid JSON: ${config.materialPresetsPath}`);
+    throw new Error(
+      `Material presets file is not valid JSON: ${config.materialPresetsPath}`,
+    );
   }
 
   return normalizePresets(parsed);
@@ -53,7 +57,9 @@ export function normalizePresets(parsed: unknown): MaterialPreset[] {
       }
     }
   } else if (parsed && typeof parsed === "object") {
-    for (const [name, value] of Object.entries(parsed as Record<string, unknown>)) {
+    for (const [name, value] of Object.entries(
+      parsed as Record<string, unknown>,
+    )) {
       if (value && typeof value === "object") {
         entries.push(toPreset(name, value as Record<string, unknown>));
       }
@@ -63,12 +69,18 @@ export function normalizePresets(parsed: unknown): MaterialPreset[] {
   return entries.filter((preset) => preset.materialName || preset.materialPath);
 }
 
-function toPreset(name: string, record: Record<string, unknown>): MaterialPreset {
+function toPreset(
+  name: string,
+  record: Record<string, unknown>,
+): MaterialPreset {
   return {
     name,
-    materialName: typeof record.materialName === "string" ? record.materialName : undefined,
-    materialPath: typeof record.materialPath === "string" ? record.materialPath : undefined,
-    description: typeof record.description === "string" ? record.description : undefined,
+    materialName:
+      typeof record.materialName === "string" ? record.materialName : undefined,
+    materialPath:
+      typeof record.materialPath === "string" ? record.materialPath : undefined,
+    description:
+      typeof record.description === "string" ? record.description : undefined,
   };
 }
 

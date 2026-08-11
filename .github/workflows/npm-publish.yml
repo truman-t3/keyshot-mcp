@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to publish (for example 0.9.1); tag v<version> must exist"
+        description: "Version to publish (for example 0.10.0); tag v<version> must exist"
         required: true
         type: string
       registry_metadata_ref:
@@ -17,7 +17,7 @@ on:
       - "v*"
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -69,6 +69,13 @@ jobs:
           pnpm test
           python -m unittest discover -s tests -p "test_*.py"
 
+      - name: Install Ruff and run quality checks
+        run: |
+          python -m pip install ruff==0.12.9
+          pnpm run format:check
+          pnpm run lint:python
+          pnpm run docs:tools:check
+
       - name: Build and inspect package
         run: |
           pnpm run build
@@ -99,11 +106,22 @@ jobs:
           echo "npm package did not become visible in time"
           exit 1
 
+      - name: Create GitHub Release if needed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          tag="v${{ steps.release.outputs.version }}"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "GitHub Release $tag already exists; skipping."
+          else
+            gh release create "$tag" --title "$tag" --generate-notes
+          fi
+
   registry:
     name: Publish official MCP Registry (preview)
     needs: publish
     runs-on: ubuntu-latest
-    continue-on-error: true
     permissions:
       contents: read
       id-token: write
@@ -117,7 +135,8 @@ jobs:
       - name: Install MCP Registry publisher
         shell: bash
         run: |
-          curl -L "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_$(uname -s | tr '[:upper:]' '[:lower:]')_$(uname -m | sed 's/x86_64/amd64/;s/aarch64/arm64/').tar.gz" | tar xz mcp-publisher
+          curl -fL "https://github.com/modelcontextprotocol/registry/releases/download/v1.7.9/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          ./mcp-publisher --version
 
       - name: Check whether MCP Registry version already exists
         id: registry
