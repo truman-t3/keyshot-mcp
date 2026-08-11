@@ -16,7 +16,7 @@ if (checkOnly) {
   const current = fs.existsSync(outputPath)
     ? fs.readFileSync(outputPath, "utf8")
     : "";
-  if (current !== generated) {
+  if (normalizeEol(current) !== normalizeEol(generated)) {
     throw new Error(
       "docs/TOOLS.md is out of date. Run `pnpm docs:tools` and commit the result.",
     );
@@ -28,6 +28,10 @@ if (checkOnly) {
   console.log(
     `Generated ${path.relative(projectRoot, outputPath)} with ${TOOL_CATALOG.length} tools.`,
   );
+}
+
+function normalizeEol(value) {
+  return value.replaceAll("\r\n", "\n");
 }
 
 function renderToolsDocument() {
