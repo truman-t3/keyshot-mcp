@@ -4,6 +4,7 @@ const expected = process.argv[2] || process.env.RELEASE_VERSION;
 const pkg = readJson("../package.json");
 const server = readJson("../server.json");
 const glama = readJson("../glama.json");
+const lobe = readJson("../lhm.plugin.json");
 const versionSource = readText("../src/version.ts");
 const readmeSource = readText("../README.md");
 const skillSource = readText("../skills/keyshot-mcp/SKILL.md");
@@ -26,6 +27,7 @@ const versions = [
   server.packages?.[0]?.version,
   runtimeVersion,
   skillVersion,
+  lobe.version,
 ];
 
 if (expected && versions.some((version) => version !== expected)) {
@@ -45,7 +47,23 @@ if (
 ) {
   throw new Error("glama.json must identify truman-t3 as a maintainer.");
 }
-for (const required of ["skills", "docs", "glama.json", "CHANGELOG.md"]) {
+if (
+  lobe.identifier !== "truman-t3-keyshot-mcp" ||
+  lobe.tools?.length !== 19 ||
+  lobe.resources?.length !== 1 ||
+  lobe.prompts?.length !== 1
+) {
+  throw new Error(
+    "lhm.plugin.json must describe the claimed listing and all public capabilities.",
+  );
+}
+for (const required of [
+  "skills",
+  "docs",
+  "glama.json",
+  "lhm.plugin.json",
+  "CHANGELOG.md",
+]) {
   if (!pkg.files?.includes(required))
     throw new Error(`The npm package must include ${required}.`);
 }
