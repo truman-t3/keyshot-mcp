@@ -59,7 +59,13 @@ describe("KeyShot diagnostics", () => {
     };
     expect(result.ok).toBe(true);
     expect(data.ready).toBe(true);
-    expect(data.serverVersion).toBe("0.10.0");
+    expect(data.serverVersion).toBe("0.11.0");
+    expect(data.interaction).toMatchObject({
+      mode: "saved-scene-headless",
+      realtimeGuiControl: false,
+      requiresSavedScene: true,
+      recommendedSyncTool: "keyshot_sync_saved_scene",
+    });
     expect(data.checks).toHaveLength(6);
     expect(data.config.outputDir).toContain("outputs");
     expect(data.availableFunctions).toBeUndefined();

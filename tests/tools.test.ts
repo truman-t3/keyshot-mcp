@@ -20,7 +20,7 @@ afterEach(async () => {
 });
 
 describe("MCP tool registration", () => {
-  it("lists all 18 public tools through the MCP protocol", async () => {
+  it("lists all 19 public tools through the MCP protocol", async () => {
     const server = createKeyShotServer(testConfig());
     const client = new Client({ name: "keyshot-mcp-test", version: "1.0.0" });
     const [clientTransport, serverTransport] =
@@ -35,7 +35,7 @@ describe("MCP tool registration", () => {
     expect(response.tools.map((tool) => tool.name)).toEqual(
       TOOL_CATALOG.map((tool) => tool.name),
     );
-    expect(response.tools).toHaveLength(18);
+    expect(response.tools).toHaveLength(19);
 
     for (const tool of response.tools) {
       expect(tool.title).toBeTruthy();

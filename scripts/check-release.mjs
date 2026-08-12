@@ -11,6 +11,9 @@ const changelogSource = readText("../CHANGELOG.md");
 const toolsDocSource = readText("../docs/TOOLS.md");
 const resultSource = readText("../src/result.ts");
 const previewSource = readText("../src/preview.ts");
+const logoSource = fs.readFileSync(
+  new URL("../assets/logo-lockup.png", import.meta.url),
+);
 const { TOOL_CATALOG } = await import("../dist/tools/catalog.js");
 
 const runtimeVersion = versionSource.match(
@@ -64,13 +67,16 @@ if (
 if (!changelogSource.includes(`## [${pkg.version}]`))
   throw new Error("CHANGELOG.md must include the release version.");
 if (
-  TOOL_CATALOG.length !== 18 ||
-  new Set(TOOL_CATALOG.map((tool) => tool.name)).size !== 18
+  TOOL_CATALOG.length !== 19 ||
+  new Set(TOOL_CATALOG.map((tool) => tool.name)).size !== 19
 ) {
-  throw new Error("The release must contain 18 unique MCP tools.");
+  throw new Error("The release must contain 19 unique MCP tools.");
 }
 if (!TOOL_CATALOG.some((tool) => tool.name === "keyshot_preview_render")) {
   throw new Error("keyshot_preview_render is missing from the tool catalog.");
+}
+if (!TOOL_CATALOG.some((tool) => tool.name === "keyshot_sync_saved_scene")) {
+  throw new Error("keyshot_sync_saved_scene is missing from the tool catalog.");
 }
 for (const tool of TOOL_CATALOG) {
   if (
@@ -100,6 +106,17 @@ for (const marker of [
 ]) {
   if (!previewSource.includes(marker))
     throw new Error(`Preview safety marker ${marker} is missing.`);
+}
+if (
+  logoSource.length < 8 ||
+  !logoSource
+    .subarray(0, 8)
+    .equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) ||
+  !readmeSource.includes('src="assets/logo-lockup.png"')
+) {
+  throw new Error(
+    "The release must include and display the KeyShot MCP project logo.",
+  );
 }
 console.log(
   `Release metadata is consistent for ${pkg.name}@${pkg.version} with ${TOOL_CATALOG.length} tools.`,

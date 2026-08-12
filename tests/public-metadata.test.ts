@@ -15,6 +15,7 @@ import {
   scenePathSchema,
   setCameraInputSchema,
   setEnvironmentSchema,
+  syncSavedSceneSchema,
 } from "../src/schemas.js";
 
 const publicSchemas = {
@@ -32,6 +33,7 @@ const publicSchemas = {
   scenePathSchema,
   setCameraInputSchema,
   setEnvironmentSchema,
+  syncSavedSceneSchema,
 };
 
 describe("public metadata", () => {
@@ -63,7 +65,7 @@ describe("public metadata", () => {
     );
     expect(skill).toMatch(/^---\r?\n[\s\S]+?\r?\n---/);
     expect(skill).toContain("name: keyshot-mcp");
-    expect(skill).toContain("version: 0.10.0");
+    expect(skill).toContain("version: 0.11.0");
     expect(skill).toContain(
       "Never request, print, store, or upload license credentials.",
     );
@@ -79,6 +81,9 @@ describe("public metadata", () => {
     expect(readme).not.toContain("���");
     expect(readme).toContain("Useful for your KeyShot workflow?");
     expect(readme).toContain("如果它改善了你的 KeyShot 工作流");
-    expect(readme).toContain("keyshot-mcp@0.10.0");
+    expect(readme).toContain("keyshot-mcp@0.11.0");
+    expect(readme).toContain('src="assets/logo-lockup.png"');
+    expect(readme).toContain("Turn product-rendering requests into safe");
+    expect(readme).toContain("### 核心特点");
   });
 });

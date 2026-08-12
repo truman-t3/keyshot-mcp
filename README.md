@@ -1,25 +1,61 @@
-# KeyShot MCP
+<p align="center">
+  <img src="assets/logo-lockup.png" width="620" alt="KeyShot MCP">
+</p>
 
-[![npm version](https://img.shields.io/npm/v/keyshot-mcp.svg)](https://www.npmjs.com/package/keyshot-mcp)
-[![CI](https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+<p align="center"><strong>Turn product-rendering requests into safe, repeatable KeyShot workflows.</strong></p>
 
-[English](#english) | [中文](#中文)
+<p align="center">
+  Inspect scenes, prepare product views, adjust materials, cameras and environments,
+  and return Agent-visible renders through local KeyShot headless scripting.
+</p>
 
-> **Useful for your KeyShot workflow? Star the repository to help other designers discover it.**
->
-> **如果它改善了你的 KeyShot 工作流，欢迎点一个 Star，让更多设计师发现这个项目。**
+<p align="center">
+  <a href="https://www.npmjs.com/package/keyshot-mcp"><img src="https://img.shields.io/npm/v/keyshot-mcp.svg" alt="npm version"></a>
+  <a href="https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml"><img src="https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/tools-19-55E6A5" alt="19 MCP tools">
+</p>
+
+<p align="center">
+  <a href="#quick-start-for-designers">Quick start</a> ·
+  <a href="#highlights">Highlights</a> ·
+  <a href="#common-workflows">Workflows</a> ·
+  <a href="#tools">Tools</a> ·
+  <a href="#configuration">Configuration</a>
+</p>
+
+<p align="center"><a href="#english">English</a> · <a href="#中文">简体中文</a></p>
+
+<p align="center">
+  <strong>Useful for your KeyShot workflow? Star the repository to help other designers discover it.</strong><br>
+  <strong>如果它改善了你的 KeyShot 工作流，欢迎点一个 Star，让更多设计师发现这个项目。</strong>
+</p>
 
 KeyShot MCP connects an MCP-compatible AI agent to a licensed KeyShot installation
-on the same computer. It can inspect scenes, import models, apply materials, set
-cameras and environments, save scene copies, and render images through KeyShot
-headless scripting. KeyShot file processing stays local; however, an MCP client may
-send tool results, scene metadata, or embedded previews to its configured model
+on the same computer. KeyShot file processing stays local; however, an MCP client
+may send tool results, scene metadata, or embedded previews to its configured model
 provider. See [Security](SECURITY.md) before using confidential work.
 
 ![KeyShot MCP workflow](assets/workflow.svg)
 
 ## English
+
+### Highlights
+
+- **Start with a request, not a render-settings checklist.** Use one product tool
+  for model import, object materials, camera, environment, scene copy, and output.
+- **See before committing.** Bounded PNG previews are returned directly to the
+  Agent for composition, material, and lighting feedback.
+- **Keep source scenes protected.** Editing workflows write controlled copies and
+  reject output paths outside the configured safe directory by default.
+- **Continue from the latest save.** Saved-scene sync detects real file changes,
+  creates a collision-safe copy, and avoids duplicate work with fingerprints.
+- **Use focused controls when needed.** Nineteen documented tools cover inspection,
+  presets, cameras, materials, environments, render queues, and all-camera output.
+
+> [!NOTE]
+> Tested on Windows 11 with KeyShot Studio 2025 / KeyShot 14.1. KeyShot and a valid
+> license are required and are not included with this independent project.
 
 ### Quick start for designers
 
@@ -27,9 +63,9 @@ The easiest setup is to send this prompt to an agent that can edit your MCP
 configuration:
 
 ```text
-Install KeyShot MCP 0.10.0 and configure it in my MCP client.
+Install KeyShot MCP 0.11.0 and configure it in my MCP client.
 
-1. Use: npx -y keyshot-mcp@0.10.0
+1. Use: npx -y keyshot-mcp@0.11.0
 2. Find my local keyshot_headless.exe and set KEYSHOT_HEADLESS_EXE to its full path.
 3. Keep outputs in the default KeyShot MCP Outputs folder unless I choose another safe folder.
 4. Keep KEYSHOT_ALLOW_EXTERNAL_OUTPUTS disabled.
@@ -55,9 +91,41 @@ from C:\models\speaker.obj.
   they are not currently verified by this project.
 - KeyShot, its license, materials, and environments are not included.
 
+### Why the stable release does not control the open KeyShot window
+
+The stable server works on saved scene files through KeyShot headless scripting;
+it does not control the currently open, unsaved KeyShot GUI session. This is a
+boundary of the public KeyShot scripting execution model, not an omitted MCP
+connection. KeyShot's Script Runner keeps a GUI script active until that script
+returns. In our Live Companion prototype, keeping a bridge alive also kept the
+Script Runner open and blocked normal interaction with the KeyShot window.
+
+Calling `lux.sync()` can flush pending KeyShot operations, but it does not provide
+a documented background service, GUI event callback, or plugin lifecycle that can
+safely host a persistent MCP bridge. Calling `lux` from an arbitrary worker thread
+would also risk unsafe access to the scene. For that reason, the project does not
+present the experimental bridge as production-ready realtime control.
+
+For a reliable workflow, save the scene first. The Agent can inspect or edit a
+safe copy through headless KeyShot, return a preview, and preserve the original
+file. True realtime GUI control can be reconsidered if KeyShot exposes a supported
+non-blocking GUI extension or main-thread callback API.
+
+Use `keyshot_sync_saved_scene` for the closest stable alternative to realtime
+collaboration. Give it a saved `.bip` file or one folder containing `.bip` files.
+It selects the newest saved scene, computes a content fingerprint, copies it to a
+collision-safe output name, and returns an embedded preview by default. Pass the
+returned fingerprint on the next call; if the user has not saved a new change,
+the tool reports `changed: false` without creating another copy or render.
+
+```text
+I saved my KeyShot scene in C:\projects\speaker. Sync the newest .bip from that
+folder, show me a preview, and do not overwrite the original scene.
+```
+
 ### Install
 
-The current release is `0.10.0`.
+The current release is `0.11.0`.
 
 #### Run with npx
 
@@ -68,7 +136,7 @@ No global npm installation is required:
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.10.0"],
+      "args": ["-y", "keyshot-mcp@0.11.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -80,7 +148,7 @@ No global npm installation is required:
 #### Install globally
 
 ```bash
-npm install -g keyshot-mcp@0.10.0
+npm install -g keyshot-mcp@0.11.0
 ```
 
 ```json
@@ -185,6 +253,7 @@ Lower-level render tools preserve their existing behavior when no preset is give
 | `keyshot_status`                | Diagnose local configuration, output access, presets, and KeyShot startup.    |
 | `keyshot_product_render`        | Prepare, save, and render a model or scene in one process.                    |
 | `keyshot_preview_render`        | Return a temporary or saved PNG directly to the Agent for visual review.      |
+| `keyshot_sync_saved_scene`      | Copy the newest saved scene safely, detect changes, and return a preview.     |
 | `keyshot_inspect_scene`         | List scene metadata, objects, cameras, materials, model sets, and references. |
 | `keyshot_list_cameras`          | Return saved camera names before a selected-camera render.                    |
 | `keyshot_render`                | Render one active or named camera.                                            |
@@ -203,7 +272,7 @@ Lower-level render tools preserve their existing behavior when no preset is give
 
 The server also exposes one MCP Prompt for product rendering and one MCP Resource
 describing the KeyShot headless workflow. The complete generated reference for
-all 18 tools is in [`docs/TOOLS.md`](docs/TOOLS.md). The bundled Agent Skill in
+all 19 tools is available in [`docs/TOOLS.md`](docs/TOOLS.md). The bundled Agent Skill in
 [`skills/keyshot-mcp`](skills/keyshot-mcp) teaches compatible agents how to install,
 diagnose, and use the server safely.
 
@@ -293,14 +362,29 @@ bypass licensing or redistribute proprietary KeyShot software or assets.
 KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具结果、场景元数据或
 内嵌预览发送给它所配置的模型服务。处理保密项目之前请先阅读[安全说明](SECURITY.md)。
 
+### 核心特点
+
+- **从设计需求开始，而不是先填写一堆渲染参数。** 一个产品出图工具即可完成模型导入、
+  指定对象材质、相机、环境、场景副本和渲染输出。
+- **正式出图前先看预览。** 预览 PNG 会直接返回给 Agent，用于检查构图、材质和光线。
+- **保护源场景。** 编辑流程默认生成受控副本，并拒绝向安全输出目录之外写入文件。
+- **从最近一次保存继续。** 保存同步会识别真实文件变化、创建不重名副本，并用内容指纹
+  避免重复处理。
+- **需要精细控制时仍然可用。** 19 个工具覆盖场景检查、预设、相机、材质、环境、
+  渲染队列和全部相机出图。
+
+> [!NOTE]
+> 已实测 Windows 11 + KeyShot Studio 2025 / KeyShot 14.1。使用时需要另行安装并合法
+> 授权 KeyShot；本项目是独立开源项目，不包含 KeyShot 软件或许可证。
+
 ### 设计师快速开始
 
 最简单的安装方式，是把下面这段话发给能够修改 MCP 配置的 Agent：
 
 ```text
-请安装 KeyShot MCP 0.10.0，并配置到我的 MCP 客户端。
+请安装 KeyShot MCP 0.11.0，并配置到我的 MCP 客户端。
 
-1. 使用：npx -y keyshot-mcp@0.10.0
+1. 使用：npx -y keyshot-mcp@0.11.0
 2. 查找本机 keyshot_headless.exe，并把完整路径设置为 KEYSHOT_HEADLESS_EXE。
 3. 默认把结果保存在“文档/KeyShot MCP Outputs”，除非我明确选择其他安全目录。
 4. 保持 KEYSHOT_ALLOW_EXTERNAL_OUTPUTS 关闭。
@@ -324,9 +408,36 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 - 暴露相同脚本 API 的其他 KeyShot 版本可能可用，但本项目暂未完成实机验证。
 - 本项目不包含 KeyShot、许可证、官方材质或环境资源。
 
+### 为什么稳定版不能控制当前打开的 KeyShot 窗口
+
+稳定版通过 KeyShot headless 脚本处理已经保存的场景文件，不能直接控制 KeyShot
+窗口中尚未保存的当前会话。这是 KeyShot 现有公开脚本执行方式的边界，并不是 MCP
+连接功能遗漏。
+
+我们已经制作并实机测试过 Live Companion 原型。为了等待 Agent 指令，Bridge 脚本
+必须长期保持运行；但 KeyShot Script Runner 会一直等待脚本结束，导致脚本窗口持续
+占用并阻挡 KeyShot GUI 的正常交互。`lux.sync()` 只能同步待处理操作，公开文档没有
+提供可安全承载常驻 MCP Bridge 的后台服务、GUI 事件回调或插件生命周期。让普通后台
+线程直接调用 `lux` 也可能造成不安全的场景访问。因此，本项目没有把这个实验方案包装成
+可用于正式工作的“实时控制”。
+
+可靠的工作方式是先保存场景，再让 Agent 使用 headless KeyShot 检查或修改安全副本、
+返回预览并保留原文件。如果 KeyShot 后续公开非阻塞 GUI 扩展接口或主线程回调 API，
+本项目可以重新评估真正的实时 GUI 控制。
+
+`keyshot_sync_saved_scene` 是目前最接近实时协作、同时保持稳定的方案。向它提供一个已
+保存的 `.bip` 文件，或只包含当前项目场景的文件夹。工具会选择最近保存的场景、计算
+内容指纹、复制到不会重名的安全输出路径，并默认返回内嵌预览。下一次调用时传入上次的
+指纹；如果用户没有保存新的修改，工具会返回 `changed: false`，不会重复复制或渲染。
+
+```text
+我已经把 KeyShot 场景保存在 C:\projects\speaker。请同步这个文件夹中最新的 .bip，
+给我看预览，而且不要覆盖原场景。
+```
+
 ### 安装
 
-当前正式版本为 `0.10.0`。
+当前正式版本为 `0.11.0`。
 
 #### 使用 npx 免安装运行
 
@@ -335,7 +446,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.10.0"],
+      "args": ["-y", "keyshot-mcp@0.11.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -347,7 +458,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 #### 全局安装
 
 ```bash
-npm install -g keyshot-mcp@0.10.0
+npm install -g keyshot-mcp@0.11.0
 ```
 
 ```json
@@ -446,6 +557,7 @@ pnpm build
 | `keyshot_status`                | 检查本机配置、输出目录、预设和 KeyShot 启动状态。  |
 | `keyshot_product_render`        | 在一个进程中整理、保存并渲染模型或场景。           |
 | `keyshot_preview_render`        | 将临时或保留的 PNG 直接返回给 Agent 进行视觉检查。 |
+| `keyshot_sync_saved_scene`      | 安全同步最近保存的场景、检测变化并返回预览。       |
 | `keyshot_inspect_scene`         | 查看场景、对象、相机、材质、模型集和外部引用。     |
 | `keyshot_list_cameras`          | 返回场景中的相机名称。                             |
 | `keyshot_render`                | 渲染当前或指定相机。                               |
@@ -463,7 +575,7 @@ pnpm build
 | `keyshot_save_scene`            | 将场景保存到受控输出路径。                         |
 
 服务还提供一个产品渲染 MCP Prompt，以及一个说明 headless 工作流程的 MCP Resource。
-完整的 18 个工具参考由代码自动生成在 [`docs/TOOLS.md`](docs/TOOLS.md)。
+完整的 19 个工具参考由代码自动生成在 [`docs/TOOLS.md`](docs/TOOLS.md)。
 [`skills/keyshot-mcp`](skills/keyshot-mcp) 中的 Agent Skill 会指导兼容的 Agent 安装、
 诊断并安全使用这些工具。
 

@@ -4,6 +4,23 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-08-12
+
+### Added
+
+- `keyshot_sync_saved_scene`, which detects the newest saved `.bip`, copies it to
+  a collision-safe output, returns a content fingerprint, and optionally embeds a
+  preview.
+- Machine-readable interaction-mode diagnostics so Agents can explain that stable
+  tools work on saved scenes rather than an unsaved GUI session.
+- An original KeyShot MCP project mark and a clearer README introduction,
+  navigation, highlights, and bilingual positioning for easier recognition.
+
+### Changed
+
+- README, Agent Skill, and MCP workflow guidance now explain the tested KeyShot
+  Script Runner limitation and recommend the saved-scene synchronization workflow.
+
 ## [0.10.0] - 2026-08-11
 
 ### Added
@@ -22,5 +39,6 @@ All notable changes to KeyShot MCP are documented in this file.
 
 - Documented that scene metadata and preview images may be sent by an MCP client to its configured model provider.
 
-[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.10.0...HEAD
+[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.11.0...HEAD
+[0.11.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.9.1...v0.10.0

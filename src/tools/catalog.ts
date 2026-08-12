@@ -18,6 +18,7 @@ import {
   scenePathSchema,
   setCameraInputSchema,
   setEnvironmentSchema,
+  syncSavedSceneSchema,
 } from "../schemas.js";
 
 export const readOnlyAnnotations = {
@@ -112,6 +113,17 @@ export const previewRenderTool = defineTool({
   inputSchema: previewRenderSchema,
   outputSchema: keyShotResultSchema,
   annotations: readOnly,
+});
+
+export const syncSavedSceneTool = defineTool({
+  name: "keyshot_sync_saved_scene",
+  group: "Inspection",
+  title: "Sync the latest saved KeyShot scene",
+  description:
+    "Find a saved .bip file (or the newest .bip in one folder), detect whether it changed, copy it to a collision-safe output path, and optionally return an Agent-visible preview. This is the stable alternative to unsupported persistent GUI control.",
+  inputSchema: syncSavedSceneSchema,
+  outputSchema: keyShotResultSchema,
+  annotations: writesOutput,
 });
 
 export const renderTool = defineTool({
@@ -263,6 +275,7 @@ export const TOOL_CATALOG = [
   inspectSceneTool,
   listCamerasTool,
   previewRenderTool,
+  syncSavedSceneTool,
   renderTool,
   renderQueueTool,
   batchRenderTool,

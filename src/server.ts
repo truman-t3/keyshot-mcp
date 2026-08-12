@@ -10,6 +10,7 @@ import { VERSION } from "./version.js";
 import { applyRenderQuality } from "./quality.js";
 import { runKeyShotDiagnostics } from "./diagnostics.js";
 import { renderPreview } from "./preview.js";
+import { syncSavedScene } from "./save-sync.js";
 import {
   applyCameraPresetTool,
   applyMaterialPresetTool,
@@ -30,6 +31,7 @@ import {
   setCameraTool,
   setEnvironmentTool,
   statusTool,
+  syncSavedSceneTool,
 } from "./tools/catalog.js";
 import {
   applyMaterialSchema,
@@ -74,6 +76,9 @@ export function createKeyShotServer(
             "2. The MCP client sends a structured tool call to this server.",
             "3. This server runs a temporary Python script through KeyShot headless.",
             "4. KeyShot writes images or scene files and returns structured JSON results.",
+            "5. Stable tools operate on saved files; they do not attach to the currently open, unsaved KeyShot GUI session.",
+            "6. Reason: a persistent bridge tested through KeyShot Script Runner keeps the runner active and blocks normal GUI interaction, while the documented scripting API does not expose a supported non-blocking GUI service or main-thread callback lifecycle.",
+            "7. If realtime GUI control is requested, explain this boundary, ask the user to save the scene, and offer to process a safe copy and return a preview.",
           ].join("\n"),
         },
       ],
@@ -165,6 +170,12 @@ export function createKeyShotServer(
     "keyshot_preview_render",
     registrationOptions(previewRenderTool),
     async (args) => renderPreview(config, args),
+  );
+
+  server.registerTool(
+    "keyshot_sync_saved_scene",
+    registrationOptions(syncSavedSceneTool),
+    async (args) => syncSavedScene(config, args),
   );
 
   server.registerTool(

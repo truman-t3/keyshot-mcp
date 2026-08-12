@@ -128,6 +128,14 @@ export async function runKeyShotDiagnostics(
       availableFunctionCount: availableFunctions.length,
       capabilities: capabilitySummary(availableFunctions),
       serverVersion: VERSION,
+      interaction: {
+        mode: "saved-scene-headless",
+        realtimeGuiControl: false,
+        requiresSavedScene: true,
+        recommendedSyncTool: "keyshot_sync_saved_scene",
+        reason:
+          "Persistent GUI scripts keep KeyShot Script Runner active and block normal GUI interaction; the documented scripting API does not expose a supported non-blocking bridge lifecycle.",
+      },
       ready,
       config: {
         keyshotHeadlessExe: config.keyshotHeadlessExe,

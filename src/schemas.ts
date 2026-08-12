@@ -163,6 +163,61 @@ export const previewRenderInputSchema = previewRenderSchema.superRefine(
   },
 );
 
+export const syncSavedSceneSchema = z.object({
+  sourcePath: requiredPath(
+    "Absolute path to a saved .bip scene or a directory whose newest .bip scene should be synchronized. Directories are searched only at their top level.",
+  ),
+  previousFingerprint: z
+    .string()
+    .min(1)
+    .describe(
+      "Optional fingerprint returned by an earlier sync. When it still matches, no copy or preview is created.",
+    )
+    .optional(),
+  outputScenePath: optionalPath(
+    "Optional destination for the synchronized .bip copy inside KEYSHOT_OUTPUT_DIR. Existing explicit paths are never overwritten; when omitted, a collision-safe name is generated.",
+  ),
+  includePreview: z
+    .boolean()
+    .describe(
+      "Whether to render and embed a temporary PNG from the synchronized copy. Defaults to true.",
+    )
+    .optional(),
+  camera: z
+    .string()
+    .min(1)
+    .describe(
+      "Optional saved camera name for the embedded preview. Omit to use the scene's active camera.",
+    )
+    .optional(),
+  width: previewRenderSchema.shape.width,
+  height: previewRenderSchema.shape.height,
+  samples: previewRenderSchema.shape.samples,
+  maxTimeSeconds: previewRenderSchema.shape.maxTimeSeconds,
+});
+
+export const syncSavedSceneInputSchema = syncSavedSceneSchema.superRefine(
+  (value, context) => {
+    if (value.samples !== undefined && value.maxTimeSeconds !== undefined) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Choose either samples or maxTimeSeconds, not both.",
+        path: ["maxTimeSeconds"],
+      });
+    }
+    if (
+      value.outputScenePath !== undefined &&
+      !value.outputScenePath.toLowerCase().endsWith(".bip")
+    ) {
+      context.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Synchronized outputScenePath must use the .bip extension.",
+        path: ["outputScenePath"],
+      });
+    }
+  },
+);
+
 export const batchRenderSchema = z.object({
   scenePath,
   outputDir: outputDirectory,

@@ -2,7 +2,7 @@
 name: keyshot-mcp
 author: truman-t3
 description: Install, diagnose, and safely use KeyShot MCP for local product visualization, scene editing, camera control, material assignment, and rendering.
-version: 0.10.0
+version: 0.11.0
 ---
 
 # KeyShot MCP
@@ -20,13 +20,22 @@ Respond in the user's language and explain errors in plain, non-technical terms.
 - Do not overwrite an explicit output path unless the user clearly requests it.
 - Use scene copies for editing workflows; do not modify customer source files in place.
 - Do not execute arbitrary Python or simulate KeyShot GUI actions.
+- When the user asks to control the current KeyShot window, selected GUI object,
+  or unsaved scene in realtime, explain the GUI boundary before requesting a file:
+  the stable server uses KeyShot headless on saved scenes. A persistent GUI bridge
+  was prototyped, but KeyShot Script Runner remains active for the lifetime of the
+  script and blocks normal GUI interaction. The public scripting API does not
+  provide a documented non-blocking GUI service or main-thread callback for safely
+  hosting that bridge. Do not describe this as a missing MCP feature.
+- After explaining the boundary, ask the user to save the scene and offer to edit
+  a safe copy, return an Agent-visible preview, and preserve the source file.
 
 ## Installation workflow
 
 1. Confirm Node.js 20 or newer is available.
 2. Confirm KeyShot is installed and locally licensed.
 3. Locate `keyshot_headless.exe`. Prefer its absolute path.
-4. Configure the MCP client to run `npx -y keyshot-mcp@0.10.0` and set
+4. Configure the MCP client to run `npx -y keyshot-mcp@0.11.0` and set
    `KEYSHOT_HEADLESS_EXE`.
 5. Leave `KEYSHOT_OUTPUT_DIR` unset to use
    `<home>/Documents/KeyShot MCP Outputs`, or set a user-approved directory.
@@ -41,7 +50,7 @@ Example configuration:
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.10.0"],
+      "args": ["-y", "keyshot-mcp@0.11.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -58,6 +67,9 @@ Example configuration:
 - Use `keyshot_list_cameras` before rendering selected cameras.
 - Use `keyshot_preview_render` after inspection so the Agent and user can review
   composition, materials, and lighting before a standard or final render.
+- When the user has just saved a GUI scene or asks for the newest saved work, use
+  `keyshot_sync_saved_scene`. Reuse its returned fingerprint on the next check so
+  unchanged saves do not produce duplicate copies or previews.
 - Use `keyshot_render` for one view, `keyshot_batch_render` for selected views,
   `keyshot_render_all_cameras` for every saved view, and `keyshot_render_queue`
   for independent jobs from multiple scenes.
@@ -104,3 +116,9 @@ KeyShot MCP uses KeyShot headless scripting. It does not include KeyShot, a
 license, proprietary materials, environments, or customer assets. Features that
 are not exposed by the installed KeyShot headless API must be reported as
 unsupported rather than silently ignored.
+
+The stable tools do not attach to an open, unsaved KeyShot GUI session. If the
+user expects realtime control, state this before running tools and attribute the
+limitation accurately to the currently documented KeyShot GUI scripting execution
+model. Do not imply that installing or configuring the MCP differently will enable
+realtime GUI control.
