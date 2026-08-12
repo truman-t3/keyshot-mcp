@@ -2,11 +2,15 @@
   <img src="assets/logo-lockup.png" width="620" alt="KeyShot MCP">
 </p>
 
-<p align="center"><strong>Turn product-rendering requests into safe, repeatable KeyShot workflows.</strong></p>
+<p align="center">
+  <strong>Turn product-rendering requests into safe, repeatable KeyShot workflows.</strong><br>
+  <strong>将产品渲染需求转化为安全、可重复执行的 KeyShot 工作流。</strong>
+</p>
 
 <p align="center">
   Inspect scenes, prepare product views, adjust materials, cameras and environments,
-  and return Agent-visible renders through local KeyShot headless scripting.
+  and return Agent-visible renders through local KeyShot headless scripting.<br>
+  检查场景、准备产品视图、调整材质、相机和环境，并通过本地 KeyShot headless 脚本将渲染结果返回给 Agent。
 </p>
 
 <p align="center">
@@ -14,6 +18,10 @@
   <a href="https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml"><img src="https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
   <img src="https://img.shields.io/badge/tools-19-55E6A5" alt="19 MCP tools">
+  <img src="https://img.shields.io/badge/MCP-Model_Context_Protocol-111827" alt="Model Context Protocol">
+  <img src="https://img.shields.io/badge/KeyShot-14.1_tested-00AEEF" alt="KeyShot 14.1 tested">
+  <img src="https://img.shields.io/badge/Node.js-20%2B-339933" alt="Node.js 20 or newer">
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6" alt="TypeScript 5.9">
 </p>
 
 <p align="center">
