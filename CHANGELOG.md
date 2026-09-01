@@ -4,6 +4,22 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-09-01
+
+### Added
+
+- Structured bug and feature request forms, a pull request checklist, support
+  guidance, code ownership, and a bilingual community code of conduct.
+- Weekly Dependabot updates for npm and monthly updates for GitHub Actions.
+- CodeQL analysis for JavaScript and TypeScript changes and a weekly scheduled scan.
+
+### Changed
+
+- Contribution guidance now describes the complete validation suite, real KeyShot
+  testing expectations, compatibility rules, and confidential-asset restrictions.
+- Security guidance now links directly to GitHub private vulnerability reporting.
+- Release validation now checks that required community health files remain present.
+
 ## [0.11.0] - 2026-08-12
 
 ### Added
@@ -39,6 +55,7 @@ All notable changes to KeyShot MCP are documented in this file.
 
 - Documented that scene metadata and preview images may be sent by an MCP client to its configured model provider.
 
-[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.11.0...HEAD
+[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.0...HEAD
+[0.12.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.9.1...v0.10.0

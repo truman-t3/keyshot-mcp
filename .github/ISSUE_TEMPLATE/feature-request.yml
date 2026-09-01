@@ -1,0 +1,44 @@
+name: Feature request
+description: Propose a focused workflow improvement for KeyShot MCP.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the design workflow and user outcome first. Do not attach proprietary
+        KeyShot assets, customer scenes, license information, or confidential renders.
+  - type: textarea
+    id: workflow
+    attributes:
+      label: Design workflow
+      description: What is the designer trying to accomplish?
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current limitation
+      description: What is difficult or repetitive with the current tools?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain the desired result without prescribing an unsafe implementation.
+    validations:
+      required: true
+  - type: dropdown
+    id: interface
+    attributes:
+      label: Affected interface
+      options:
+        - Headless scene workflow
+        - Saved-scene synchronization
+        - Installation and diagnostics
+        - Documentation or Agent guidance
+        - Marketplace metadata
+        - Other
+    validations:
+      required: true
+

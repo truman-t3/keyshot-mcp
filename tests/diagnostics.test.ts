@@ -8,6 +8,7 @@ import {
   runKeyShotDiagnostics,
 } from "../src/diagnostics.js";
 import type { KeyShotResult } from "../src/types.js";
+import { VERSION } from "../src/version.js";
 
 let root: string;
 
@@ -59,7 +60,7 @@ describe("KeyShot diagnostics", () => {
     };
     expect(result.ok).toBe(true);
     expect(data.ready).toBe(true);
-    expect(data.serverVersion).toBe("0.11.0");
+    expect(data.serverVersion).toBe(VERSION);
     expect(data.interaction).toMatchObject({
       mode: "saved-scene-headless",
       realtimeGuiControl: false,

@@ -65,7 +65,7 @@ describe("public metadata", () => {
     );
     expect(skill).toMatch(/^---\r?\n[\s\S]+?\r?\n---/);
     expect(skill).toContain("name: keyshot-mcp");
-    expect(skill).toContain("version: 0.11.0");
+    expect(skill).toContain("version: 0.12.0");
     expect(skill).toContain(
       "Never request, print, store, or upload license credentials.",
     );
@@ -81,9 +81,32 @@ describe("public metadata", () => {
     expect(readme).not.toContain("���");
     expect(readme).toContain("Useful for your KeyShot workflow?");
     expect(readme).toContain("如果它改善了你的 KeyShot 工作流");
-    expect(readme).toContain("keyshot-mcp@0.11.0");
+    expect(readme).toContain("keyshot-mcp@0.12.0");
     expect(readme).toContain('src="assets/logo-lockup.png"');
     expect(readme).toContain("Turn product-rendering requests into safe");
     expect(readme).toContain("### 核心特点");
+  });
+
+  it("ships community support and contribution metadata", () => {
+    for (const relativePath of [
+      "../SUPPORT.md",
+      "../CODE_OF_CONDUCT.md",
+      "../CONTRIBUTING.md",
+      "../.github/CODEOWNERS",
+      "../.github/dependabot.yml",
+      "../.github/pull_request_template.md",
+      "../.github/ISSUE_TEMPLATE/bug-report.yml",
+      "../.github/ISSUE_TEMPLATE/feature-request.yml",
+      "../.github/ISSUE_TEMPLATE/config.yml",
+      "../.github/workflows/codeql.yml",
+    ]) {
+      expect(fs.existsSync(new URL(relativePath, import.meta.url))).toBe(true);
+    }
+
+    const security = fs.readFileSync(
+      new URL("../SECURITY.md", import.meta.url),
+      "utf8",
+    );
+    expect(security).toContain("security/advisories/new");
   });
 });

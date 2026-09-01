@@ -30,8 +30,10 @@ execution.
 
 ### Reporting issues
 
-Report vulnerabilities through a private GitHub security advisory before posting
-technical details publicly.
+Report vulnerabilities through the repository's
+[private vulnerability form](https://github.com/truman-t3/keyshot-mcp/security/advisories/new)
+before posting technical details publicly. Include the affected version, impact,
+reproduction steps, and a safe proof of concept that contains no private assets.
 
 ---
 
@@ -60,4 +62,7 @@ KeyShot MCP 本身不会上传文件、运行远程服务或收集遥测数据�
 
 ### 报告安全问题
 
-请先通过 GitHub 私密安全公告报告漏洞，不要直接公开技术细节。
+请先通过仓库的
+[私密安全报告入口](https://github.com/truman-t3/keyshot-mcp/security/advisories/new)
+报告漏洞，不要直接公开技术细节。请说明受影响版本、影响、复现步骤，并确保验证材料
+不包含私人资产。

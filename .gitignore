@@ -1,6 +1,7 @@
 node_modules/
 dist/
 work/tmp/
+work/tmp-pack-*/
 __pycache__/
 *.pyc
 outputs/*
