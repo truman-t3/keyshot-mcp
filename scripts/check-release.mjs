@@ -9,6 +9,8 @@ const versionSource = readText("../src/version.ts");
 const readmeSource = readText("../README.md");
 const skillSource = readText("../skills/keyshot-mcp/SKILL.md");
 const changelogSource = readText("../CHANGELOG.md");
+const supportSource = readText("../SUPPORT.md");
+const conductSource = readText("../CODE_OF_CONDUCT.md");
 const toolsDocSource = readText("../docs/TOOLS.md");
 const resultSource = readText("../src/result.ts");
 const previewSource = readText("../src/preview.ts");
@@ -63,9 +65,34 @@ for (const required of [
   "glama.json",
   "lhm.plugin.json",
   "CHANGELOG.md",
+  "SUPPORT.md",
+  "CODE_OF_CONDUCT.md",
 ]) {
   if (!pkg.files?.includes(required))
     throw new Error(`The npm package must include ${required}.`);
+}
+for (const requiredCommunityFile of [
+  "../.github/CODEOWNERS",
+  "../.github/dependabot.yml",
+  "../.github/pull_request_template.md",
+  "../.github/ISSUE_TEMPLATE/bug-report.yml",
+  "../.github/ISSUE_TEMPLATE/feature-request.yml",
+  "../.github/ISSUE_TEMPLATE/config.yml",
+  "../.github/workflows/codeql.yml",
+]) {
+  if (!fs.existsSync(new URL(requiredCommunityFile, import.meta.url))) {
+    throw new Error(
+      `Required community file is missing: ${requiredCommunityFile}.`,
+    );
+  }
+}
+if (
+  !supportSource.includes("security/advisories/new") ||
+  !conductSource.includes("Community Code of Conduct")
+) {
+  throw new Error(
+    "Support and community conduct guidance must remain available.",
+  );
 }
 for (const [name, source] of [
   ["README.md", readmeSource],

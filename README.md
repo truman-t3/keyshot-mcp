@@ -71,9 +71,9 @@ The easiest setup is to send this prompt to an agent that can edit your MCP
 configuration:
 
 ```text
-Install KeyShot MCP 0.11.0 and configure it in my MCP client.
+Install KeyShot MCP 0.12.0 and configure it in my MCP client.
 
-1. Use: npx -y keyshot-mcp@0.11.0
+1. Use: npx -y keyshot-mcp@0.12.0
 2. Find my local keyshot_headless.exe and set KEYSHOT_HEADLESS_EXE to its full path.
 3. Keep outputs in the default KeyShot MCP Outputs folder unless I choose another safe folder.
 4. Keep KEYSHOT_ALLOW_EXTERNAL_OUTPUTS disabled.
@@ -133,7 +133,7 @@ folder, show me a preview, and do not overwrite the original scene.
 
 ### Install
 
-The current release is `0.11.0`.
+The current release is `0.12.0`.
 
 #### Run with npx
 
@@ -144,7 +144,7 @@ No global npm installation is required:
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.11.0"],
+      "args": ["-y", "keyshot-mcp@0.12.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -156,7 +156,7 @@ No global npm installation is required:
 #### Install globally
 
 ```bash
-npm install -g keyshot-mcp@0.11.0
+npm install -g keyshot-mcp@0.12.0
 ```
 
 ```json
@@ -334,16 +334,35 @@ directory. A representative result is included below:
 ### Development
 
 ```bash
-pnpm install
-pnpm check
+pnpm install --frozen-lockfile
+pnpm run check
 pnpm test
 python -m unittest discover -s tests -p "test_*.py"
+pnpm run format:check
+python -m ruff check scripts tests
+pnpm run docs:tools:check
+node scripts/check-release.mjs
 npm pack --dry-run
 ```
 
 CI runs on Windows and Ubuntu with Node.js 20 and 24. Linux CI validates the MCP
 server, bridge logic, metadata, and package; it does not claim that KeyShot itself
 was tested on Linux.
+
+### Community and support
+
+- Ask installation and usage questions in
+  [GitHub Discussions](https://github.com/truman-t3/keyshot-mcp/discussions).
+- Use the structured [Bug report](https://github.com/truman-t3/keyshot-mcp/issues/new?template=bug-report.yml)
+  or [Feature request](https://github.com/truman-t3/keyshot-mcp/issues/new?template=feature-request.yml)
+  forms for actionable project work.
+- Report vulnerabilities through
+  [private vulnerability reporting](https://github.com/truman-t3/keyshot-mcp/security/advisories/new).
+- Read [SUPPORT.md](SUPPORT.md), [CONTRIBUTING.md](CONTRIBUTING.md), and
+  [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) before sharing diagnostics or contributing.
+
+Never attach customer scenes, proprietary models, license information, credentials,
+or confidential renders to a public post.
 
 ### Roadmap
 
@@ -390,9 +409,9 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 最简单的安装方式，是把下面这段话发给能够修改 MCP 配置的 Agent：
 
 ```text
-请安装 KeyShot MCP 0.11.0，并配置到我的 MCP 客户端。
+请安装 KeyShot MCP 0.12.0，并配置到我的 MCP 客户端。
 
-1. 使用：npx -y keyshot-mcp@0.11.0
+1. 使用：npx -y keyshot-mcp@0.12.0
 2. 查找本机 keyshot_headless.exe，并把完整路径设置为 KEYSHOT_HEADLESS_EXE。
 3. 默认把结果保存在“文档/KeyShot MCP Outputs”，除非我明确选择其他安全目录。
 4. 保持 KEYSHOT_ALLOW_EXTERNAL_OUTPUTS 关闭。
@@ -445,7 +464,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 
 ### 安装
 
-当前正式版本为 `0.11.0`。
+当前正式版本为 `0.12.0`。
 
 #### 使用 npx 免安装运行
 
@@ -454,7 +473,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.11.0"],
+      "args": ["-y", "keyshot-mcp@0.12.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -466,7 +485,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 #### 全局安装
 
 ```bash
-npm install -g keyshot-mcp@0.11.0
+npm install -g keyshot-mcp@0.12.0
 ```
 
 ```json
@@ -631,15 +650,30 @@ npm run smoke:keyshot
 ### 开发与测试
 
 ```bash
-pnpm install
-pnpm check
+pnpm install --frozen-lockfile
+pnpm run check
 pnpm test
 python -m unittest discover -s tests -p "test_*.py"
+pnpm run format:check
+python -m ruff check scripts tests
+pnpm run docs:tools:check
+node scripts/check-release.mjs
 npm pack --dry-run
 ```
 
 CI 在 Windows 和 Ubuntu 上使用 Node.js 20、24。Linux CI 验证 MCP 服务、bridge、
 元数据和 npm 包，不表示 KeyShot 软件已经在 Linux 上通过实机测试。
+
+### 社区与支持
+
+- 安装和使用问题请在 [GitHub Discussions](https://github.com/truman-t3/keyshot-mcp/discussions) 提问。
+- 可以复现的问题使用 [Bug 报告](https://github.com/truman-t3/keyshot-mcp/issues/new?template=bug-report.yml)，
+  工作流建议使用 [功能建议](https://github.com/truman-t3/keyshot-mcp/issues/new?template=feature-request.yml)。
+- 安全漏洞通过 [私密安全报告](https://github.com/truman-t3/keyshot-mcp/security/advisories/new) 提交。
+- 公开诊断信息或参与贡献前，请阅读 [SUPPORT.md](SUPPORT.md)、
+  [CONTRIBUTING.md](CONTRIBUTING.md) 和 [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)。
+
+不要在公开内容中附加客户场景、专有模型、许可证信息、账号凭据或保密渲染图。
 
 ### 路线图
 

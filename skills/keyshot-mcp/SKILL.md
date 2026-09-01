@@ -2,7 +2,7 @@
 name: keyshot-mcp
 author: truman-t3
 description: Install, diagnose, and safely use KeyShot MCP for local product visualization, scene editing, camera control, material assignment, and rendering.
-version: 0.11.0
+version: 0.12.0
 ---
 
 # KeyShot MCP
@@ -35,7 +35,7 @@ Respond in the user's language and explain errors in plain, non-technical terms.
 1. Confirm Node.js 20 or newer is available.
 2. Confirm KeyShot is installed and locally licensed.
 3. Locate `keyshot_headless.exe`. Prefer its absolute path.
-4. Configure the MCP client to run `npx -y keyshot-mcp@0.11.0` and set
+4. Configure the MCP client to run `npx -y keyshot-mcp@0.12.0` and set
    `KEYSHOT_HEADLESS_EXE`.
 5. Leave `KEYSHOT_OUTPUT_DIR` unset to use
    `<home>/Documents/KeyShot MCP Outputs`, or set a user-approved directory.
@@ -50,7 +50,7 @@ Example configuration:
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.11.0"],
+      "args": ["-y", "keyshot-mcp@0.12.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }

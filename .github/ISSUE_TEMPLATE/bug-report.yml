@@ -1,0 +1,60 @@
+name: Bug report
+description: Report a reproducible KeyShot MCP problem without sharing private assets.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve KeyShot MCP. Remove customer names, license data,
+        private paths, scene files, models, and persistent renders before submitting.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed license credentials, tokens, customer assets, and confidential scene data.
+          required: true
+        - label: I ran `keyshot_status` and reviewed its suggestions.
+          required: true
+  - type: input
+    id: mcp-version
+    attributes:
+      label: KeyShot MCP version
+      placeholder: 0.12.0
+    validations:
+      required: true
+  - type: input
+    id: keyshot-version
+    attributes:
+      label: KeyShot version and operating system
+      placeholder: KeyShot Studio 2025 / 14.1 on Windows 11
+    validations:
+      required: true
+  - type: input
+    id: client
+    attributes:
+      label: MCP client
+      placeholder: Codex, Claude Desktop, or another client
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Use generated or non-confidential test assets when possible.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and redacted diagnostics
+      description: Paste only the relevant, redacted `keyshot_status` result or error.
+    validations:
+      required: true
+

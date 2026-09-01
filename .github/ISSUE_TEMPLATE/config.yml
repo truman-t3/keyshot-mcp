@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Usage questions and installation help
+    url: https://github.com/truman-t3/keyshot-mcp/discussions
+    about: Ask a public, non-confidential question in GitHub Discussions.
+  - name: Private security report
+    url: https://github.com/truman-t3/keyshot-mcp/security/advisories/new
+    about: Report a vulnerability privately. Do not open a public issue.
+
