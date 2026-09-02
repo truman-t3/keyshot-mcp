@@ -1,6 +1,6 @@
 {
   "name": "keyshot-mcp",
-  "version": "0.12.0",
+  "version": "0.12.1",
   "mcpName": "io.github.truman-t3/keyshot-mcp",
   "description": "Local MCP server for KeyShot product visualization, scene editing, camera control, and rendering.",
   "type": "module",
@@ -72,7 +72,7 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.18.1",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "zod": "^3.25.76"
   },
   "devDependencies": {

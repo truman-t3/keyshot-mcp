@@ -4,6 +4,19 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-09-02
+
+### Security
+
+- Updated the MCP SDK dependency baseline to pull patched Hono, Hono Node
+  server, `fast-uri`, and `ip-address` runtime dependencies.
+- Refreshed the development lockfile to use patched PostCSS and Nano ID releases.
+
+### Changed
+
+- Updated the Node.js and Python setup actions used by CI and release workflows.
+- CI and release validation now reject high-severity dependency vulnerabilities.
+
 ## [0.12.0] - 2026-09-01
 
 ### Added
@@ -55,7 +68,8 @@ All notable changes to KeyShot MCP are documented in this file.
 
 - Documented that scene metadata and preview images may be sent by an MCP client to its configured model provider.
 
-[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.0...HEAD
+[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.1...HEAD
+[0.12.1]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.10.0...v0.11.0
 [0.10.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.9.1...v0.10.0

@@ -39,13 +39,16 @@ jobs:
           version: 10.17.1
 
       - name: Setup Node.js
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@v7
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Reject high-severity dependency vulnerabilities
+        run: pnpm audit --audit-level=high
 
       - name: Resolve and validate release version
         id: release

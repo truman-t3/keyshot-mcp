@@ -71,9 +71,9 @@ The easiest setup is to send this prompt to an agent that can edit your MCP
 configuration:
 
 ```text
-Install KeyShot MCP 0.12.0 and configure it in my MCP client.
+Install KeyShot MCP 0.12.1 and configure it in my MCP client.
 
-1. Use: npx -y keyshot-mcp@0.12.0
+1. Use: npx -y keyshot-mcp@0.12.1
 2. Find my local keyshot_headless.exe and set KEYSHOT_HEADLESS_EXE to its full path.
 3. Keep outputs in the default KeyShot MCP Outputs folder unless I choose another safe folder.
 4. Keep KEYSHOT_ALLOW_EXTERNAL_OUTPUTS disabled.
@@ -133,7 +133,7 @@ folder, show me a preview, and do not overwrite the original scene.
 
 ### Install
 
-The current release is `0.12.0`.
+The current release is `0.12.1`.
 
 #### Run with npx
 
@@ -144,7 +144,7 @@ No global npm installation is required:
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.12.0"],
+      "args": ["-y", "keyshot-mcp@0.12.1"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -156,7 +156,7 @@ No global npm installation is required:
 #### Install globally
 
 ```bash
-npm install -g keyshot-mcp@0.12.0
+npm install -g keyshot-mcp@0.12.1
 ```
 
 ```json
@@ -409,9 +409,9 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 最简单的安装方式，是把下面这段话发给能够修改 MCP 配置的 Agent：
 
 ```text
-请安装 KeyShot MCP 0.12.0，并配置到我的 MCP 客户端。
+请安装 KeyShot MCP 0.12.1，并配置到我的 MCP 客户端。
 
-1. 使用：npx -y keyshot-mcp@0.12.0
+1. 使用：npx -y keyshot-mcp@0.12.1
 2. 查找本机 keyshot_headless.exe，并把完整路径设置为 KEYSHOT_HEADLESS_EXE。
 3. 默认把结果保存在“文档/KeyShot MCP Outputs”，除非我明确选择其他安全目录。
 4. 保持 KEYSHOT_ALLOW_EXTERNAL_OUTPUTS 关闭。
@@ -464,7 +464,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 
 ### 安装
 
-当前正式版本为 `0.12.0`。
+当前正式版本为 `0.12.1`。
 
 #### 使用 npx 免安装运行
 
@@ -473,7 +473,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.12.0"],
+      "args": ["-y", "keyshot-mcp@0.12.1"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -485,7 +485,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 #### 全局安装
 
 ```bash
-npm install -g keyshot-mcp@0.12.0
+npm install -g keyshot-mcp@0.12.1
 ```
 
 ```json
