@@ -19,6 +19,19 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # Zod 4 changes public schema types and requires a deliberate migration.
+      - dependency-name: zod
+        update-types:
+          - version-update:semver-major
+      # Keep type checking aligned with the oldest supported Node.js major.
+      - dependency-name: "@types/node"
+        update-types:
+          - version-update:semver-major
+      # Newer Prettier 3 minors rewrite public docs and need a dedicated baseline change.
+      - dependency-name: prettier
+        versions:
+          - ">=3.7.0 <4.0.0"
   - package-ecosystem: github-actions
     directory: /
     schedule:
