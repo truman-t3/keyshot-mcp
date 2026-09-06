@@ -22,6 +22,7 @@
   <img src="https://img.shields.io/badge/KeyShot-14.1_tested-00AEEF" alt="KeyShot 14.1 tested">
   <img src="https://img.shields.io/badge/Node.js-20%2B-339933" alt="Node.js 20 or newer">
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6" alt="TypeScript 5.9">
+  <a href="https://m8ven.ai/mcp/truman-t3-keyshot-mcp-v7af97"><img src="https://m8ven.ai/badge/mcp/truman-t3-keyshot-mcp-v7af97?variant=verified" alt="M8ven Verified"></a>
 </p>
 
 <p align="center">
