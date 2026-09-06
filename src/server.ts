@@ -23,7 +23,6 @@ import {
   listMaterialPresetsTool,
   previewRenderTool,
   productRenderTool,
-  registrationOptions,
   renderAllCamerasTool,
   renderQueueTool,
   renderTool,
@@ -130,7 +129,8 @@ export function createKeyShotServer(
       inputSchema: statusTool.inputSchema,
       outputSchema: statusTool.outputSchema,
       annotations: statusTool.annotations,
-    }, async () => toolResponse(await runKeyShotDiagnostics(config)),
+    },
+    async () => toolResponse(await runKeyShotDiagnostics(config)),
   );
 
   server.registerTool(
@@ -197,7 +197,8 @@ export function createKeyShotServer(
       inputSchema: previewRenderTool.inputSchema,
       outputSchema: previewRenderTool.outputSchema,
       annotations: previewRenderTool.annotations,
-    }, async (args) => renderPreview(config, args),
+    },
+    async (args) => renderPreview(config, args),
   );
 
   server.registerTool(
@@ -208,7 +209,8 @@ export function createKeyShotServer(
       inputSchema: syncSavedSceneTool.inputSchema,
       outputSchema: syncSavedSceneTool.outputSchema,
       annotations: syncSavedSceneTool.annotations,
-    }, async (args) => syncSavedScene(config, args),
+    },
+    async (args) => syncSavedScene(config, args),
   );
 
   server.registerTool(
