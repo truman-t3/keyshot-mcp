@@ -23,7 +23,6 @@ import {
   listMaterialPresetsTool,
   previewRenderTool,
   productRenderTool,
-  registrationOptions,
   renderAllCamerasTool,
   renderQueueTool,
   renderTool,
@@ -124,13 +123,25 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_status",
-    registrationOptions(statusTool),
+    {
+      title: statusTool.title,
+      description: statusTool.description,
+      inputSchema: statusTool.inputSchema,
+      outputSchema: statusTool.outputSchema,
+      annotations: statusTool.annotations,
+    },
     async () => toolResponse(await runKeyShotDiagnostics(config)),
   );
 
   server.registerTool(
     "keyshot_product_render",
-    registrationOptions(productRenderTool),
+    {
+      title: productRenderTool.title,
+      description: productRenderTool.description,
+      inputSchema: productRenderTool.inputSchema,
+      outputSchema: productRenderTool.outputSchema,
+      annotations: productRenderTool.annotations,
+    },
     async (args) => {
       try {
         const parsed = productRenderSchema.parse(args);
@@ -144,7 +155,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_inspect_scene",
-    registrationOptions(inspectSceneTool),
+    {
+      title: inspectSceneTool.title,
+      description: inspectSceneTool.description,
+      inputSchema: inspectSceneTool.inputSchema,
+      outputSchema: inspectSceneTool.outputSchema,
+      annotations: inspectSceneTool.annotations,
+    },
     async (args) =>
       toolResponse(
         await runKeyShotSerialized(config, {
@@ -156,7 +173,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_list_cameras",
-    registrationOptions(listCamerasTool),
+    {
+      title: listCamerasTool.title,
+      description: listCamerasTool.description,
+      inputSchema: listCamerasTool.inputSchema,
+      outputSchema: listCamerasTool.outputSchema,
+      annotations: listCamerasTool.annotations,
+    },
     async (args) =>
       toolResponse(
         await runKeyShotSerialized(config, {
@@ -168,19 +191,37 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_preview_render",
-    registrationOptions(previewRenderTool),
+    {
+      title: previewRenderTool.title,
+      description: previewRenderTool.description,
+      inputSchema: previewRenderTool.inputSchema,
+      outputSchema: previewRenderTool.outputSchema,
+      annotations: previewRenderTool.annotations,
+    },
     async (args) => renderPreview(config, args),
   );
 
   server.registerTool(
     "keyshot_sync_saved_scene",
-    registrationOptions(syncSavedSceneTool),
+    {
+      title: syncSavedSceneTool.title,
+      description: syncSavedSceneTool.description,
+      inputSchema: syncSavedSceneTool.inputSchema,
+      outputSchema: syncSavedSceneTool.outputSchema,
+      annotations: syncSavedSceneTool.annotations,
+    },
     async (args) => syncSavedScene(config, args),
   );
 
   server.registerTool(
     "keyshot_render",
-    registrationOptions(renderTool),
+    {
+      title: renderTool.title,
+      description: renderTool.description,
+      inputSchema: renderTool.inputSchema,
+      outputSchema: renderTool.outputSchema,
+      annotations: renderTool.annotations,
+    },
     async (args) => {
       const parsed = renderInputSchema.parse(args);
       return toolResponse(
@@ -194,7 +235,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_render_queue",
-    registrationOptions(renderQueueTool),
+    {
+      title: renderQueueTool.title,
+      description: renderQueueTool.description,
+      inputSchema: renderQueueTool.inputSchema,
+      outputSchema: renderQueueTool.outputSchema,
+      annotations: renderQueueTool.annotations,
+    },
     async (args) => {
       const parsed = renderQueueInputSchema.parse(args);
       return toolResponse(
@@ -209,7 +256,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_batch_render",
-    registrationOptions(batchRenderTool),
+    {
+      title: batchRenderTool.title,
+      description: batchRenderTool.description,
+      inputSchema: batchRenderTool.inputSchema,
+      outputSchema: batchRenderTool.outputSchema,
+      annotations: batchRenderTool.annotations,
+    },
     async (args) => {
       const parsed = batchRenderInputSchema.parse(args);
       return toolResponse(
@@ -223,7 +276,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_render_all_cameras",
-    registrationOptions(renderAllCamerasTool),
+    {
+      title: renderAllCamerasTool.title,
+      description: renderAllCamerasTool.description,
+      inputSchema: renderAllCamerasTool.inputSchema,
+      outputSchema: renderAllCamerasTool.outputSchema,
+      annotations: renderAllCamerasTool.annotations,
+    },
     async (args) => {
       const parsed = renderAllCamerasInputSchema.parse(args);
       return toolResponse(
@@ -237,7 +296,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_import_model",
-    registrationOptions(importModelTool),
+    {
+      title: importModelTool.title,
+      description: importModelTool.description,
+      inputSchema: importModelTool.inputSchema,
+      outputSchema: importModelTool.outputSchema,
+      annotations: importModelTool.annotations,
+    },
     async (args) =>
       toolResponse(
         await runKeyShotSerialized(config, {
@@ -249,7 +314,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_apply_material",
-    registrationOptions(applyMaterialTool),
+    {
+      title: applyMaterialTool.title,
+      description: applyMaterialTool.description,
+      inputSchema: applyMaterialTool.inputSchema,
+      outputSchema: applyMaterialTool.outputSchema,
+      annotations: applyMaterialTool.annotations,
+    },
     async (args) => {
       const parsed = applyMaterialSchema.parse(args);
       return toolResponse(
@@ -263,7 +334,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_list_material_presets",
-    registrationOptions(listMaterialPresetsTool),
+    {
+      title: listMaterialPresetsTool.title,
+      description: listMaterialPresetsTool.description,
+      inputSchema: listMaterialPresetsTool.inputSchema,
+      outputSchema: listMaterialPresetsTool.outputSchema,
+      annotations: listMaterialPresetsTool.annotations,
+    },
     async () => {
       try {
         const presets = await loadMaterialPresets(config);
@@ -292,7 +369,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_apply_material_preset",
-    registrationOptions(applyMaterialPresetTool),
+    {
+      title: applyMaterialPresetTool.title,
+      description: applyMaterialPresetTool.description,
+      inputSchema: applyMaterialPresetTool.inputSchema,
+      outputSchema: applyMaterialPresetTool.outputSchema,
+      annotations: applyMaterialPresetTool.annotations,
+    },
     async (args) => {
       const parsed = applyMaterialPresetSchema.parse(args);
       let presets;
@@ -327,7 +410,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_set_camera",
-    registrationOptions(setCameraTool),
+    {
+      title: setCameraTool.title,
+      description: setCameraTool.description,
+      inputSchema: setCameraTool.inputSchema,
+      outputSchema: setCameraTool.outputSchema,
+      annotations: setCameraTool.annotations,
+    },
     async (args) => {
       const parsed = setCameraSchema.parse(args);
       return toolResponse(
@@ -341,7 +430,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_list_camera_presets",
-    registrationOptions(listCameraPresetsTool),
+    {
+      title: listCameraPresetsTool.title,
+      description: listCameraPresetsTool.description,
+      inputSchema: listCameraPresetsTool.inputSchema,
+      outputSchema: listCameraPresetsTool.outputSchema,
+      annotations: listCameraPresetsTool.annotations,
+    },
     async () => {
       try {
         const presets = await loadCameraPresets(config);
@@ -366,7 +461,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_apply_camera_preset",
-    registrationOptions(applyCameraPresetTool),
+    {
+      title: applyCameraPresetTool.title,
+      description: applyCameraPresetTool.description,
+      inputSchema: applyCameraPresetTool.inputSchema,
+      outputSchema: applyCameraPresetTool.outputSchema,
+      annotations: applyCameraPresetTool.annotations,
+    },
     async (args) => {
       let presets;
       try {
@@ -419,7 +520,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_set_environment",
-    registrationOptions(setEnvironmentTool),
+    {
+      title: setEnvironmentTool.title,
+      description: setEnvironmentTool.description,
+      inputSchema: setEnvironmentTool.inputSchema,
+      outputSchema: setEnvironmentTool.outputSchema,
+      annotations: setEnvironmentTool.annotations,
+    },
     async (args) =>
       toolResponse(
         await runKeyShotSerialized(config, {
@@ -431,7 +538,13 @@ export function createKeyShotServer(
 
   server.registerTool(
     "keyshot_save_scene",
-    registrationOptions(saveSceneTool),
+    {
+      title: saveSceneTool.title,
+      description: saveSceneTool.description,
+      inputSchema: saveSceneTool.inputSchema,
+      outputSchema: saveSceneTool.outputSchema,
+      annotations: saveSceneTool.annotations,
+    },
     async (args) =>
       toolResponse(
         await runKeyShotSerialized(config, {
