@@ -112,7 +112,10 @@ export function createKeyShotServer(
               args.goal
                 ? `Goal: ${args.goal}`
                 : "Inspect the scene and choose a suitable camera.",
-              "Recommended workflow: run keyshot_status, inspect the scene, call keyshot_preview_render, describe visible composition/material/lighting issues, ask for confirmation, then call keyshot_product_render for the approved standard or final output.",
+              "Run keyshot_status first. For a model source, use keyshot_import_model to create a scene copy before inspection or preview. For an existing scene, inspect the saved scene directly.",
+              "Call keyshot_preview_render and verify that image content was returned before describing visible composition, materials, or lighting. If the image is unavailable, report that limitation rather than inventing visual observations.",
+              "For changes you propose, explain the visible issue, target object or camera, intended parameters, and expected effect; obtain approval before editing. Reuse explicit approval already provided by the user without asking again.",
+              "Apply approved edits to a scene copy, then preview the returned scene path again. Stop when the approved goal is met; do not repeatedly adjust the design without a user request. Use the approved scene for the standard or final render.",
               "Use lower-level tools only when individual steps need manual control.",
             ].join("\n"),
           },

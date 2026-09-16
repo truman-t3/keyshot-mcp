@@ -20,6 +20,40 @@ afterEach(async () => {
 });
 
 describe("MCP tool registration", () => {
+  it("serves product prompts for model, scene, and missing-source requests", async () => {
+    const server = createKeyShotServer(testConfig());
+    const client = new Client({ name: "keyshot-mcp-test", version: "1.0.0" });
+    const [clientTransport, serverTransport] =
+      InMemoryTransport.createLinkedPair();
+    connections.push({ client, server });
+    await Promise.all([
+      server.connect(serverTransport),
+      client.connect(clientTransport),
+    ]);
+    for (const args of [
+      { modelPath: "C:/fixtures/cube.obj", goal: "Preview only" },
+      { scenePath: "C:/fixtures/cube.bip" },
+      {},
+    ]) {
+      const response = await client.getPrompt({
+        name: "keyshot_product_render",
+        arguments: args,
+      });
+      expect(response.messages).toHaveLength(1);
+      const content = response.messages[0].content;
+      expect(content.type).toBe("text");
+      if (content.type !== "text") throw new Error("Expected prompt text");
+      expect(content.text).toContain(
+        args.modelPath ?? args.scenePath ?? "Ask me for either",
+      );
+      expect(content.text.indexOf("keyshot_import_model")).toBeLessThan(
+        content.text.indexOf("keyshot_preview_render"),
+      );
+      expect(content.text).toContain("preview the returned scene path again");
+      if (args.goal) expect(content.text).toContain(args.goal);
+    }
+  });
+
   it("lists all 19 public tools through the MCP protocol", async () => {
     const server = createKeyShotServer(testConfig());
     const client = new Client({ name: "keyshot-mcp-test", version: "1.0.0" });
