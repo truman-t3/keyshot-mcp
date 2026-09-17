@@ -905,5 +905,99 @@ class ProductRenderTest(unittest.TestCase):
             self.assertFalse(data["stages"][-1]["ok"])
 
 
+class SceneInspectionTest(unittest.TestCase):
+    def setUp(self):
+        self.previous_lux = kb.lux
+
+        class Node(FakeObject):
+            def __init__(self, node_id, name, children=None):
+                super().__init__(name, None)
+                self.node_id = node_id
+                self.children = children or []
+
+            def getID(self):
+                return self.node_id
+
+            def getChildren(self):
+                return self.children
+
+            def getMaterial(self):
+                return "Blue"
+
+            def getKind(self):
+                return 2
+
+        self.body = Node(3, "Body")
+        self.other = Node(4, "Body")
+        self.root = Node(0, "Scene", [Node(1, "Model", [self.body, self.other])])
+        self.lux = FakeLux()
+        self.lux.getObjects = lambda: [3, 4]
+        self.lux.getSceneTree = lambda: self.root
+        kb.lux = self.lux
+
+    def tearDown(self):
+        kb.lux = self.previous_lux
+
+    def test_native_ids_resolve_names_materials_and_unique_paths(self):
+        data = kb.inspect_scene()
+        self.assertEqual([obj["name"] for obj in data["objects"]], ["Body", "Body"])
+        self.assertEqual(data["materials"], ["Blue"])
+        self.assertEqual(data["objects"][0]["type"], 2)
+        paths = [obj["path"] for obj in data["objects"]]
+        self.assertNotEqual(*paths)
+        self.assertIs(kb.find_object(None, paths[1]), self.other)
+
+    def test_ambiguous_names_fail_without_modification(self):
+        with self.assertRaisesRegex(RuntimeError, "Ambiguous"):
+            kb.find_object("Body", None)
+
+    def test_explicit_path_does_not_fall_back_to_name(self):
+        self.assertIsNone(kb.find_object("Body", "/missing"))
+
+    def test_missing_tree_and_unresolved_ids_fail_clearly(self):
+        self.lux.getObjects = lambda: [99]
+        with self.assertRaisesRegex(RuntimeError, "could not resolve"):
+            kb.inspect_scene()
+        self.lux.getSceneTree = lambda: None
+        with self.assertRaisesRegex(RuntimeError, "getSceneTree"):
+            kb.inspect_scene()
+
+    def test_empty_scene(self):
+        self.lux.getObjects = lambda: []
+        self.assertEqual(kb.inspect_scene()["objects"], [])
+
+    def test_paths_survive_native_id_changes(self):
+        before = [obj["path"] for obj in kb.inspect_scene()["objects"]]
+        self.root.node_id = 100
+        self.body.node_id = 30
+        self.other.node_id = 40
+        self.lux.getObjects = lambda: [30, 40]
+        self.assertEqual(before, [obj["path"] for obj in kb.inspect_scene()["objects"]])
+
+    def test_leaf_nodes_may_reject_children(self):
+        def reject():
+            raise RuntimeError("Only a group can have children!")
+
+        self.body.getChildren = reject
+        self.assertEqual(len(kb.inspect_scene()["objects"]), 2)
+
+    def test_native_material_assignment_uses_mat_and_obj_id(self):
+        calls = []
+
+        def assign(*, mat, obj):
+            calls.append((mat, obj))
+
+        self.lux.setObjectMaterial = assign
+        path = kb.inspect_scene()["objects"][0]["path"]
+        kb.apply_material_current({"objectPath": path, "materialName": "Blue"}, [])
+        self.assertEqual(calls, [("Blue", 3)])
+
+    def test_false_material_assignment_is_not_success(self):
+        self.lux.setObjectMaterial = lambda *args, **kwargs: False
+        path = kb.inspect_scene()["objects"][0]["path"]
+        with self.assertRaisesRegex(RuntimeError, "returned false"):
+            kb.apply_material_current({"objectPath": path, "materialName": "Blue"}, [])
+
+
 if __name__ == "__main__":
     unittest.main()

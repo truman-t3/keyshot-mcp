@@ -4,6 +4,17 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+### Fixed / 修复
+
+- Resolve native KeyShot object IDs through the scene tree so scene inspection
+  returns actual object names and assigned materials instead of numeric IDs.
+  修复场景检查把对象 ID 当成名称、无法读取已分配材质的问题。
+- Apply materials using KeyShot's material-name and object-ID parameters. Reject
+  ambiguous object names; use the `objectPath` returned by scene inspection to
+  select a specific object. Inspect again after renaming or reorganizing objects.
+  修正材质赋值参数；同名对象需使用场景检查返回的 `objectPath` 精确选择。
+  重命名或调整对象层级后，应重新检查场景以获取路径。
+
 ## [0.12.1] - 2026-09-02
 
 ### Security
