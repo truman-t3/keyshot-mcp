@@ -85,7 +85,7 @@ def status():
 
 
 def inspect_scene():
-    objects = [describe_object(obj) for obj in safe_list_call("getObjects")]
+    objects = [dict(describe_object(obj), path=path) for obj, path in scene_objects()]
     cameras = [serialize_value(camera) for camera in safe_list_call("getCameras")]
     model_sets = [serialize_value(model_set) for model_set in safe_list_call("getModelSets")]
     environments = [serialize_value(environment) for environment in safe_list_call("getEnvironments")]
@@ -584,11 +584,12 @@ def apply_material_current(payload, warnings):
         raise RuntimeError("Object not found. Provide a valid objectName or objectPath.")
 
     material = resolve_material(payload.get("materialName"), payload.get("materialPath"), warnings)
-    call_variants(
+    target_id = first_success(lambda: target.getID(), default=None)
+    call_non_false_variants(
         "set object material",
-        lambda: lux.setObjectMaterial(target, material),
-        lambda: lux.setObjectMaterial(target, payload.get("materialName")),
-        lambda: lux.setObjectMaterial(target, payload.get("materialPath")),
+        lambda: lux.setObjectMaterial(mat=material, obj=target_id if target_id is not None else target),
+        lambda: (lux.setObjectMaterial(material, target_id) if target_id is not None
+                 else lux.setObjectMaterial(target, material)),
     )
 
     return {
@@ -873,11 +874,49 @@ def safe_list_call(name):
         return [value]
 
 
+def scene_objects():
+    raw = safe_list_call("getObjects")
+    if not raw:
+        return []
+    # Older wrappers expose node objects; native KeyShot returns integer IDs.
+    if all(not isinstance(obj, int) for obj in raw):
+        return [(obj, describe_object(obj)["path"]) for obj in raw]
+    root = first_non_none(lambda: lux.getSceneTree())
+    if root is None:
+        raise RuntimeError("Scene inspection is unsupported: getSceneTree is required to resolve object IDs.")
+    wanted = set(raw)
+    found = {}
+    stack = [(root, "")]
+    visited = set()
+    while stack:
+        node, path = stack.pop()
+        node_id = node.getID()
+        if node_id in visited:
+            continue
+        visited.add(node_id)
+        if node_id in wanted:
+            found[node_id] = (node, path)
+        children = first_success(lambda: node.getChildren(), default=[]) or []
+        entries = []
+        occurrences = {}
+        for child in children:
+            name = str(child.getName()).replace("%", "%25").replace("/", "%2F")
+            name = name.replace("[", "%5B").replace("]", "%5D")
+            occurrences[name] = occurrences.get(name, 0) + 1
+            # Native IDs can change across headless launches; paths use sibling order.
+            entries.append((child, "%s/%s[%s]" % (path, name, occurrences[name])))
+        stack.extend(reversed(entries))
+    missing = wanted.difference(found)
+    if missing:
+        raise RuntimeError("Scene inspection could not resolve object IDs: %s" % sorted(missing))
+    return [found[node_id] for node_id in raw]
+
+
 def describe_object(obj):
     return {
         "name": first_success(lambda: obj.getName(), lambda: obj.name(), lambda: obj.name, default=repr(obj)),
         "path": first_success(lambda: obj.getPath(), lambda: obj.path(), lambda: obj.path, default=None),
-        "type": first_success(lambda: obj.getType(), lambda: obj.type(), lambda: obj.type, default=type(obj).__name__),
+        "type": first_success(lambda: obj.getKind(), lambda: obj.getType(), lambda: obj.type(), lambda: obj.type, default=type(obj).__name__),
         "material": serialize_value(
             first_success(lambda: obj.getMaterial(), lambda: obj.material(), lambda: obj.material, default=None)
         ),
@@ -886,13 +925,13 @@ def describe_object(obj):
 
 
 def find_object(name, path):
-    for obj in safe_list_call("getObjects"):
-        description = describe_object(obj)
-        if name and description.get("name") == name:
-            return obj
-        if path and description.get("path") == path:
-            return obj
-    return None
+    matches = []
+    for obj, object_path in scene_objects():
+        if (path and object_path == path) or (not path and name and describe_object(obj)["name"] == name):
+            matches.append(obj)
+    if len(matches) > 1:
+        raise RuntimeError("Ambiguous object name. Inspect the scene and provide a unique objectPath.")
+    return matches[0] if matches else None
 
 
 def resolve_material(material_name, material_path, warnings):
