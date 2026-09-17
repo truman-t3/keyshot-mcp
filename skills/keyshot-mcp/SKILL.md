@@ -104,11 +104,15 @@ Every tool returns `ok`, operation-specific `data`, `outputFiles`, `warnings`,
 ## Recommended feedback loop
 
 1. Run `keyshot_status`.
-2. Inspect the scene and identify the intended camera or object.
+2. For a model input, import it to a scene copy first. Inspect the saved scene and identify the intended camera or object.
 3. Call `keyshot_preview_render` and describe only what is visible in the returned image.
-4. Ask the user to confirm material, camera, and environment changes.
+4. For proposed changes, state the visible issue, target, exact parameters, and expected effect. Obtain approval for new design decisions; reuse explicit approval already given.
 5. Apply approved edits to a scene copy.
-6. Render at `standard` or `final` quality.
+6. Preview the returned scene copy again and compare it with the approved goal. Do not infer visual success from a file path alone. If image content is unavailable, explain that limitation.
+7. Render the approved scene at `standard` or `final` quality. Stop rather than making unsolicited iterative adjustments.
+
+Model comparison tasks and a reusable evaluation record are in
+[`docs/MODEL-EVALUATION.md`](../../docs/MODEL-EVALUATION.md).
 
 ## Boundaries
 
