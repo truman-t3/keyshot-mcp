@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to publish (for example 0.10.0); tag v<version> must exist"
+        description: "Version to publish (for example 0.13.0); tag v<version> must exist"
         required: true
         type: string
       registry_metadata_ref:
@@ -118,7 +118,8 @@ jobs:
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "GitHub Release $tag already exists; skipping."
           else
-            gh release create "$tag" --title "$tag" --generate-notes
+            node scripts/release-notes.mjs "${{ steps.release.outputs.version }}" > "$RUNNER_TEMP/keyshot-release-notes.md"
+            gh release create "$tag" --title "$tag" --notes-file "$RUNNER_TEMP/keyshot-release-notes.md"
           fi
 
   registry:
