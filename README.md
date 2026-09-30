@@ -72,9 +72,9 @@ The easiest setup is to send this prompt to an agent that can edit your MCP
 configuration:
 
 ```text
-Install KeyShot MCP 0.12.1 and configure it in my MCP client.
+Install KeyShot MCP 0.13.0 and configure it in my MCP client.
 
-1. Use: npx -y keyshot-mcp@0.12.1
+1. Use: npx -y keyshot-mcp@0.13.0
 2. Find my local keyshot_headless.exe and set KEYSHOT_HEADLESS_EXE to its full path.
 3. Keep outputs in the default KeyShot MCP Outputs folder unless I choose another safe folder.
 4. Keep KEYSHOT_ALLOW_EXTERNAL_OUTPUTS disabled.
@@ -134,7 +134,17 @@ folder, show me a preview, and do not overwrite the original scene.
 
 ### Install
 
-The current release is `0.12.1`.
+The current release is `0.13.0`.
+
+Version 0.13.0 supports MCP protocol `2026-07-28` over stdio using the official
+TypeScript SDK v2. Existing clients using the `2025-11-25` handshake can still
+connect with the same configuration. All 19 tool names and input parameters are
+preserved. See [upgrade notes](docs/UPGRADING.md) for compatibility and verification.
+
+ChatGPT MCP Events subscriptions are not included in this release. They require
+event methods, persistent subscription storage, authenticated connectivity and
+signed HTTPS callbacks in addition to protocol support. This server continues to
+run locally and process saved KeyShot scenes.
 
 #### Run with npx
 
@@ -145,7 +155,7 @@ No global npm installation is required:
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.12.1"],
+      "args": ["-y", "keyshot-mcp@0.13.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -157,7 +167,7 @@ No global npm installation is required:
 #### Install globally
 
 ```bash
-npm install -g keyshot-mcp@0.12.1
+npm install -g keyshot-mcp@0.13.0
 ```
 
 ```json
@@ -410,9 +420,9 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 最简单的安装方式，是把下面这段话发给能够修改 MCP 配置的 Agent：
 
 ```text
-请安装 KeyShot MCP 0.12.1，并配置到我的 MCP 客户端。
+请安装 KeyShot MCP 0.13.0，并配置到我的 MCP 客户端。
 
-1. 使用：npx -y keyshot-mcp@0.12.1
+1. 使用：npx -y keyshot-mcp@0.13.0
 2. 查找本机 keyshot_headless.exe，并把完整路径设置为 KEYSHOT_HEADLESS_EXE。
 3. 默认把结果保存在“文档/KeyShot MCP Outputs”，除非我明确选择其他安全目录。
 4. 保持 KEYSHOT_ALLOW_EXTERNAL_OUTPUTS 关闭。
@@ -465,7 +475,14 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 
 ### 安装
 
-当前正式版本为 `0.12.1`。
+当前正式版本为 `0.13.0`。
+
+0.13.0 使用官方 TypeScript SDK v2，通过 stdio 支持 MCP `2026-07-28` 协议。
+使用 `2025-11-25` 握手的现有客户端仍可沿用原配置连接，19 个工具的名称和输入参数
+保持兼容。兼容范围和验证方法见[升级说明](docs/UPGRADING.md)。
+
+本版尚未提供 ChatGPT MCP Events 订阅。该能力除新协议外，还需要事件接口、持久化
+订阅、经过认证的连接和签名 HTTPS 回调。服务继续在本机处理已保存的 KeyShot 场景。
 
 #### 使用 npx 免安装运行
 
@@ -474,7 +491,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.12.1"],
+      "args": ["-y", "keyshot-mcp@0.13.0"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -486,7 +503,7 @@ KeyShot MCP 在本机处理 KeyShot 文件；但 MCP 客户端可能会把工具
 #### 全局安装
 
 ```bash
-npm install -g keyshot-mcp@0.12.1
+npm install -g keyshot-mcp@0.13.0
 ```
 
 ```json

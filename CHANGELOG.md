@@ -4,6 +4,29 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-09-30
+
+### Added / 新增
+
+- Support MCP protocol `2026-07-28` over stdio with the official TypeScript SDK v2.
+  Existing SDK v1 clients can continue to connect using `2025-11-25`.
+  使用官方 TypeScript SDK v2，通过 stdio 支持 MCP `2026-07-28`；旧 SDK v1
+  客户端仍可使用 `2025-11-25` 连接。
+- Add child-process protocol tests for both client generations, covering all
+  19 tools, preset results, prompts, resources and invalid tool arguments.
+  新增真实子进程协议测试，覆盖新旧客户端、19 个工具、预设结果、提示词、资源和无效输入。
+
+### Changed / 变更
+
+- Upgrade schema validation to Zod 4 and generate parameter documentation through
+  its public JSON Schema API. Tool names, input parameters and output safety rules
+  remain compatible. Test runs build the stdio entry before exercising it.
+  升级至 Zod 4，使用公开 JSON Schema 接口生成参数文档；工具名称、输入参数和输出安全
+  规则保持兼容。测试会先构建，再检查实际 stdio 入口。
+- Add bilingual upgrade guidance and release notes. MCP Events subscriptions are
+  not implemented in this release; protocol support alone does not enable them.
+  增加双语升级说明和发布说明。本版未实现 MCP Events 订阅，协议升级不会自动开启事件推送。
+
 ### Fixed / 修复
 
 - Resolve native KeyShot object IDs through the scene tree so scene inspection

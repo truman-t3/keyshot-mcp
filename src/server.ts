@@ -1,4 +1,5 @@
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { McpServer } from "@modelcontextprotocol/server";
+import { z } from "zod";
 import { getConfig, type ServerConfig } from "./config.js";
 import { toolResponse, localFailure } from "./result.js";
 import { runKeyShotSerialized } from "./runner.js";
@@ -90,11 +91,11 @@ export function createKeyShotServer(
       title: "Render a KeyShot product scene",
       description:
         "Create a practical prompt for rendering or batch-rendering a KeyShot product scene.",
-      argsSchema: {
+      argsSchema: z.object({
         modelPath: scenePathSchema.shape.scenePath.optional(),
         scenePath: scenePathSchema.shape.scenePath.optional(),
         goal: scenePathSchema.shape.scenePath.optional(),
-      },
+      }),
     },
     async (args) => ({
       messages: [

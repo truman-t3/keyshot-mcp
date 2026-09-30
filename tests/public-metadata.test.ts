@@ -1,4 +1,7 @@
 import fs from "node:fs";
+import { execFileSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { z } from "zod";
 import { describe, expect, it } from "vitest";
 import {
   applyCameraPresetSchema,
@@ -37,11 +40,26 @@ const publicSchemas = {
 };
 
 describe("public metadata", () => {
+  it("extracts bilingual release notes and rejects missing releases", () => {
+    const script = fileURLToPath(
+      new URL("../scripts/release-notes.mjs", import.meta.url),
+    );
+    const notes = execFileSync(process.execPath, [script, "0.13.0"], {
+      encoding: "utf8",
+    });
+    expect(notes).toContain("2026-07-28");
+    expect(notes).toContain("事件推送");
+    expect(notes).not.toContain("## [0.12.1]");
+    expect(() =>
+      execFileSync(process.execPath, [script, "9.9.9"], { stdio: "pipe" }),
+    ).toThrow();
+  });
   it("describes every public input parameter", () => {
     for (const [schemaName, schema] of Object.entries(publicSchemas)) {
-      for (const [parameter, parameterSchema] of Object.entries(schema.shape)) {
+      const properties = z.toJSONSchema(schema, { io: "input" }).properties;
+      for (const parameter of Object.keys(schema.shape)) {
         expect(
-          parameterSchema.description,
+          properties?.[parameter]?.description,
           `${schemaName}.${parameter}`,
         ).toBeTruthy();
       }
@@ -65,7 +83,7 @@ describe("public metadata", () => {
     );
     expect(skill).toMatch(/^---\r?\n[\s\S]+?\r?\n---/);
     expect(skill).toContain("name: keyshot-mcp");
-    expect(skill).toContain("version: 0.12.1");
+    expect(skill).toContain("version: 0.13.0");
     expect(skill).toContain(
       "Never request, print, store, or upload license credentials.",
     );
@@ -81,7 +99,7 @@ describe("public metadata", () => {
     expect(readme).not.toContain("���");
     expect(readme).toContain("Useful for your KeyShot workflow?");
     expect(readme).toContain("如果它改善了你的 KeyShot 工作流");
-    expect(readme).toContain("keyshot-mcp@0.12.1");
+    expect(readme).toContain("keyshot-mcp@0.13.0");
     expect(readme).toContain('src="assets/logo-lockup.png"');
     expect(readme).toContain("Turn product-rendering requests into safe");
     expect(readme).toContain("### 核心特点");

@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { format } from "prettier";
+import { z } from "zod";
 import { TOOL_CATALOG } from "../dist/tools/catalog.js";
 
 const projectRoot = path.resolve(
@@ -79,7 +80,7 @@ function renderToolsDocument() {
       );
       for (const [name, schema] of parameters) {
         lines.push(
-          `| \`${name}\` | ${schema.safeParse(undefined).success ? "No" : "Yes"} | ${schemaType(schema)} | ${escapeCell(schema.description ?? "")} |`,
+          `| \`${name}\` | ${schema.safeParse(undefined).success ? "No" : "Yes"} | ${schemaType(schema)} | ${escapeCell(z.toJSONSchema(schema, { io: "input" }).description ?? "")} |`,
         );
       }
       lines.push("");
@@ -89,19 +90,18 @@ function renderToolsDocument() {
 }
 
 function schemaType(schema) {
-  const typeName = schema?._def?.typeName;
-  if (["ZodOptional", "ZodDefault", "ZodEffects"].includes(typeName)) {
-    return schemaType(schema._def.innerType ?? schema._def.schema);
+  return jsonSchemaType(z.toJSONSchema(schema, { io: "input" }));
+}
+
+function jsonSchemaType(schema) {
+  if (schema.enum)
+    return schema.enum.map((value) => `\`${value}\``).join(" / ");
+  if (schema.type === "array") {
+    if (schema.prefixItems) return "tuple";
+    return `${jsonSchemaType(schema.items ?? {})}[]`;
   }
-  if (typeName === "ZodString") return "string";
-  if (typeName === "ZodNumber") return "number";
-  if (typeName === "ZodBoolean") return "boolean";
-  if (typeName === "ZodArray") return `${schemaType(schema._def.type)}[]`;
-  if (typeName === "ZodTuple") return "tuple";
-  if (typeName === "ZodEnum")
-    return schema._def.values.map((value) => `\`${value}\``).join(" / ");
-  if (typeName === "ZodObject") return "object";
-  return "value";
+  if (schema.type === "integer") return "number";
+  return schema.type ?? "value";
 }
 
 function escapeCell(value) {
