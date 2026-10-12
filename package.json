@@ -72,8 +72,8 @@
   },
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "@modelcontextprotocol/core": "2.2.0",
-    "@modelcontextprotocol/server": "2.2.0",
+    "@modelcontextprotocol/core": "2.3.1",
+    "@modelcontextprotocol/server": "2.3.1",
     "zod": "^4.5.4"
   },
   "devDependencies": {
