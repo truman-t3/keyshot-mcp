@@ -1,5 +1,6 @@
 import json
 import os
+import re
 import sys
 import traceback
 
@@ -585,6 +586,7 @@ def apply_material_current(payload, warnings):
 
     material = resolve_material(payload.get("materialName"), payload.get("materialPath"), warnings)
     target_id = first_success(lambda: target.getID(), default=None)
+    previous_material = read_object_material(target, target_id, required=False)
     call_non_false_variants(
         "set object material",
         lambda: lux.setObjectMaterial(mat=material, obj=target_id if target_id is not None else target),
@@ -592,9 +594,20 @@ def apply_material_current(payload, warnings):
                  else lux.setObjectMaterial(target, material)),
     )
 
+    if hasattr(lux, "sync"):
+        lux.sync()
+    applied_material = read_object_material(target, target_id)
+    if not material_assignment_matches(applied_material, material):
+        raise RuntimeError(
+            "Material assignment not applied: requested '%s', actual '%s'. "
+            "The output scene was not saved." % (material, applied_material)
+        )
+
     return {
         "object": describe_object(target),
         "material": serialize_value(material),
+        "appliedMaterial": applied_material,
+        "previousMaterial": previous_material,
         "presetName": payload.get("presetName"),
     }
 
@@ -936,20 +949,75 @@ def find_object(name, path):
 
 def resolve_material(material_name, material_path, warnings):
     if material_path:
-        if not os.path.exists(material_path):
+        if not os.path.isfile(material_path):
             raise RuntimeError("Material file not found: %s" % material_path)
-        return first_success(
-            lambda: lux.importMaterial(material_path),
+        loaded = call_non_false_variants(
+            "load material file",
+            lambda: lux.loadMaterials(file=material_path),
+            lambda: lux.loadMaterials(material_path),
             lambda: lux.loadMaterial(material_path),
-            default=material_path,
         )
+        names = material_names(loaded)
+        if not names:
+            raise RuntimeError("Material file did not return any loaded material names: %s" % material_path)
+        if len(names) != 1:
+            raise RuntimeError(
+                "Material file contains multiple materials; select a single-material file: %s"
+                % ", ".join(names)
+            )
+        return names[0]
     if material_name:
-        return first_success(
-            lambda: lux.getMaterial(material_name),
-            lambda: lux.findMaterial(material_name),
-            default=material_name,
-        )
+        checked = False
+        errors = []
+        for getter in ("getSceneMaterials", "getLibraryMaterials"):
+            callback = getattr(lux, getter, None)
+            if not callable(callback):
+                continue
+            try:
+                names = material_names(callback())
+                checked = True
+                if material_name in names:
+                    return material_name
+            except Exception as exc:
+                errors.append(str(exc))
+        if errors:
+            raise RuntimeError("Material lookup failed: %s" % " | ".join(errors))
+        if not checked:
+            raise RuntimeError("Material lookup is unsupported: cannot verify scene or library names")
+        raise RuntimeError("Material not found in the scene or KeyShot library: %s" % material_name)
     raise RuntimeError("materialName or materialPath is required")
+
+
+def material_names(value):
+    if isinstance(value, str):
+        return [value] if value else []
+    if not isinstance(value, (list, tuple, set)):
+        return []
+    names = []
+    for item in value:
+        if isinstance(item, str) and item and item not in names:
+            names.append(item)
+    return names
+
+
+def read_object_material(target, target_id, required=True):
+    value = first_non_none(
+        lambda: target.getMaterial(),
+        lambda: lux.getObjectMaterial(obj=target_id),
+        default=None,
+    )
+    if not isinstance(value, str) or not value:
+        if not required:
+            return None
+        raise RuntimeError("Material assignment cannot be verified: object material name is unavailable")
+    return value
+
+
+def material_assignment_matches(actual, requested):
+    if actual == requested:
+        return True
+    # KeyShot creates a numbered duplicate when applying an unlinked material.
+    return re.fullmatch(re.escape(requested) + r" #\d+", actual) is not None
 
 
 def save_to(output_scene_path):

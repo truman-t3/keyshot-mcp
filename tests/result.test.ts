@@ -36,6 +36,26 @@ describe("localFailure", () => {
     expect(result.warnings).toEqual(["careful"]);
     expect(result.data).toEqual({ a: 1 });
   });
+
+  it("explains missing, unconfirmed, and ambiguous material assignments", () => {
+    expect(
+      localFailure("Material not found in the scene or KeyShot library: X")
+        .errorCode,
+    ).toBe("MATERIAL_NOT_FOUND");
+    expect(localFailure("Material file not found: X.mtl").errorCode).toBe(
+      "MATERIAL_NOT_FOUND",
+    );
+    expect(
+      localFailure("Material assignment not applied: requested X, actual Y")
+        .errorCode,
+    ).toBe("MATERIAL_NOT_APPLIED");
+    expect(
+      localFailure("Material assignment cannot be verified").errorCode,
+    ).toBe("MATERIAL_NOT_APPLIED");
+    expect(
+      localFailure("Material file contains multiple materials").errorCode,
+    ).toBe("MATERIAL_AMBIGUOUS");
+  });
 });
 
 describe("toolResponse", () => {

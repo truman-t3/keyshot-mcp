@@ -325,6 +325,8 @@ absolute `position`, `lookAt`, and optional `up` vector.
 Material presets reference a KeyShot library material name or local material file.
 The MCP server reads preset files but does not edit them automatically. See
 [`presets`](presets) for the supported formats.
+For verified assignments, single-material MTL files and failure recovery, see
+[Material Assignment](docs/MATERIALS.md).
 
 ### Reproducible KeyShot demo
 
@@ -650,6 +652,7 @@ pnpm build
 
 材质预设引用 KeyShot 材质库名称或本地材质文件。MCP 只读取预设文件，不自动修改。
 格式示例见 [`presets`](presets)。
+实际材质校验、单材质 MTL 文件及错误处理见[材质应用说明](docs/MATERIALS.md)。
 
 ### 可复现的 KeyShot Demo
 

@@ -4,6 +4,17 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+### Fixed / 修复
+
+- Verify material names and actual object assignments before reporting success.
+  Load single-material MTL files with KeyShot's in-project `loadMaterials` API;
+  reject empty or ambiguous loads instead of treating file paths as material names.
+  Correct the default clear-glass and matte-black-plastic library references while
+  retaining existing preset labels. Add structured material error guidance.
+  返回成功前校验材质名称与对象的实际材质；通过 KeyShot 的 `loadMaterials` 在场景内
+  加载单材质 MTL 文件，空加载或多材质文件明确报错，不再把路径当成材质名称。
+  保留预设名称，修正默认透明玻璃与哑光黑色塑料的材质库引用，并补充结构化修复建议。
+
 ## [0.13.0] - 2026-09-30
 
 ### Added / 新增

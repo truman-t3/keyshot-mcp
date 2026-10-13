@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { normalizePresets, findMaterialPreset } from "../src/presets.js";
 
 describe("normalizePresets", () => {
@@ -59,4 +60,24 @@ describe("findMaterialPreset", () => {
   it("returns undefined when not found", () => {
     expect(findMaterialPreset(presets, "Gold")).toBeUndefined();
   });
+});
+
+it("ships verified KeyShot 14.1 library names without changing preset labels", () => {
+  const presets = normalizePresets(
+    JSON.parse(
+      readFileSync(
+        new URL("../presets/materials.json", import.meta.url),
+        "utf8",
+      ),
+    ),
+  );
+  expect(findMaterialPreset(presets, "Clear Glass")?.materialName).toBe(
+    "Glass Basic White",
+  );
+  expect(findMaterialPreset(presets, "Matte Black Plastic")?.materialName).toBe(
+    "Soft Rough Black",
+  );
+  expect(findMaterialPreset(presets, "Brushed Steel")?.materialName).toBe(
+    "Steel Brushed",
+  );
 });

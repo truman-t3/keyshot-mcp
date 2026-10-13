@@ -271,6 +271,7 @@ class FakeObject:
     def __init__(self, name, path):
         self._name = name
         self._path = path
+        self._material = "Original"
 
     def getName(self):
         return self._name
@@ -282,7 +283,7 @@ class FakeObject:
         return "object"
 
     def getMaterial(self):
-        return None
+        return self._material
 
     def getChildren(self):
         return []
@@ -322,8 +323,15 @@ class ProductRenderLux(StandardCameraLux):
     def getMaterial(self, name):
         return name
 
+    def getSceneMaterials(self):
+        return [obj.getMaterial() for obj in self.objects]
+
+    def getLibraryMaterials(self):
+        return ["Steel", "Rubber"]
+
     def setObjectMaterial(self, target, material):
         self.material_calls.append((target.getName(), material))
+        target._material = material
 
     def renderImage(self, *args, **kwargs):
         if self.active_camera in self.failing:
@@ -861,6 +869,27 @@ class ProductRenderTest(unittest.TestCase):
             self.assertTrue(data["stages"][3]["skipped"])
             self.assertEqual(kb.lux.material_calls, [("Body", "Steel"), ("Trim", "Rubber")])
 
+    def test_missing_material_stops_product_workflow_before_save_or_render(self):
+        kb.lux = ProductRenderLux(cameras=["Hero"])
+        with tempfile.TemporaryDirectory() as d:
+            scene = os.path.join(d, "not-saved.bip")
+            output_files = []
+            data = kb.product_render(
+                {
+                    "scenePath": "source.bip",
+                    "outputScenePath": scene,
+                    "outputPath": os.path.join(d, "not-rendered.png"),
+                    "materialAssignments": [{"objectName": "Body", "materialName": "Missing"}],
+                },
+                output_files,
+                [],
+            )
+            self.assertIn("stage 'materials' failed", data["operationError"])
+            self.assertEqual(output_files, [])
+            self.assertFalse(os.path.exists(scene))
+            self.assertEqual(kb.lux.material_calls, [])
+            self.assertEqual(kb.lux.render_calls, [])
+
     def test_all_camera_failures_return_details_and_keep_saved_scene(self):
         kb.lux = ProductRenderLux(cameras=["Front", "Broken", "Back"], failing=["Broken"])
         with tempfile.TemporaryDirectory() as d:
@@ -933,6 +962,7 @@ class SceneInspectionTest(unittest.TestCase):
         self.lux = FakeLux()
         self.lux.getObjects = lambda: [3, 4]
         self.lux.getSceneTree = lambda: self.root
+        self.lux.getSceneMaterials = lambda: ["Blue"]
         kb.lux = self.lux
 
     def tearDown(self):
