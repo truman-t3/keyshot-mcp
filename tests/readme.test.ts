@@ -57,6 +57,27 @@ describe("designer-facing README", () => {
     }
   });
 
+  it("shows a bilingual request-to-output diagram on desktop and mobile", () => {
+    expect(source).toContain("## From a Request to a Render / 一句话到出图");
+    expect(source).toContain('srcset="assets/workflow-mobile.svg"');
+    expect(source).toContain('src="assets/workflow.svg"');
+    for (const file of ["assets/workflow.svg", "assets/workflow-mobile.svg"]) {
+      const svg = fs.readFileSync(path.join(root, file), "utf8");
+      expect(svg).toContain('aria-labelledby="title desc"');
+      for (const stage of [
+        "Describe the change",
+        "Agent checks",
+        "Edit a scene copy",
+        "Review the preview",
+        "Export after approval",
+        "一句话说出需求",
+        "确认后输出",
+      ])
+        expect(svg).toContain(stage);
+      expect(svg).not.toContain("\uFFFD");
+    }
+  });
+
   it("keeps all local documentation and image links resolvable", () => {
     for (const relative of localDocs) {
       const filename = path.join(root, relative);

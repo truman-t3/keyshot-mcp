@@ -1,48 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="280" viewBox="0 0 1120 280" role="img" aria-labelledby="title desc">
-  <title id="title">KeyShot MCP workflow</title>
-  <desc id="desc">AI prompt goes through MCP, KeyShot headless renders, and output files are returned.</desc>
-  <style>
-    .bg { fill: #0d1117; }
-    .box { fill: #161b22; stroke: #30363d; stroke-width: 1.5; }
-    .title { fill: #f0f6fc; font: 700 22px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    .text { fill: #c9d1d9; font: 15px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    .muted { fill: #8b949e; font: 13px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    .arrow { stroke: #58a6ff; stroke-width: 3; fill: none; marker-end: url(#arrow); }
-    .num { fill: #58a6ff; font: 700 18px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-  </style>
-  <defs>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-      <path d="M 0 0 L 10 5 L 0 10 z" fill="#58a6ff"/>
-    </marker>
-  </defs>
-  <rect class="bg" width="1120" height="280" rx="18"/>
-  <text class="title" x="40" y="52">KeyShot MCP Workflow</text>
-  <g transform="translate(40 92)">
-    <rect class="box" width="190" height="118" rx="12"/>
-    <text class="num" x="20" y="36">1</text>
-    <text class="text" x="20" y="66">AI Prompt</text>
-    <text class="muted" x="20" y="92">Render / inspect / edit</text>
-  </g>
-  <path class="arrow" d="M 252 151 L 334 151"/>
-  <g transform="translate(356 92)">
-    <rect class="box" width="190" height="118" rx="12"/>
-    <text class="num" x="20" y="36">2</text>
-    <text class="text" x="20" y="66">MCP Server</text>
-    <text class="muted" x="20" y="92">Structured tool call</text>
-  </g>
-  <path class="arrow" d="M 568 151 L 650 151"/>
-  <g transform="translate(672 92)">
-    <rect class="box" width="190" height="118" rx="12"/>
-    <text class="num" x="20" y="36">3</text>
-    <text class="text" x="20" y="66">KeyShot Headless</text>
-    <text class="muted" x="20" y="92">Python lux script</text>
-  </g>
-  <path class="arrow" d="M 884 151 L 966 151"/>
-  <g transform="translate(988 92)">
-    <rect class="box" width="110" height="118" rx="12"/>
-    <text class="num" x="16" y="36">4</text>
-    <text class="text" x="16" y="64">Output</text>
-    <text class="muted" x="16" y="88">images</text>
-    <text class="muted" x="16" y="106">scenes / JSON</text>
-  </g>
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="244" viewBox="0 0 1160 244" role="img" aria-labelledby="title desc">
+<title id="title">From a request to a KeyShot render / 从一句话到 KeyShot 出图</title>
+<desc id="desc">Describe the change, let the Agent identify the object and material, edit a saved scene copy, review a preview, then confirm rendering and export. 提出材质替换需求，Agent 确认对象，在已保存场景的副本上修改，查看预览，确认后输出图片与场景副本。</desc>
+<style>text{font-family:Arial,"Microsoft YaHei","Noto Sans CJK SC",sans-serif}.arrow{fill:none;stroke:#0969da;stroke-width:2;marker-end:url(#arrow)}</style>
+<defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 0 L10 5 L0 10Z" fill="#0969da"/></marker></defs>
+<rect width="1160" height="244" fill="#f6f8fa" rx="8"/>
+<g transform="translate(16 32)"><rect width="208" height="168" rx="8" fill="#ffffff" stroke="#d0d7de"/><circle cx="27" cy="27" r="13" fill="#0969da"/><text x="27" y="33" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="700">1</text><text x="16" y="66" fill="#1f2328" font-size="17" font-weight="700">Describe the change</text><text x="16" y="92" fill="#1f2328" font-size="20" font-weight="700">一句话说出需求</text><text x="16" y="121" fill="#57606a" font-size="15">Replace metal only</text><text x="16" y="144" fill="#57606a" font-size="16">只换金属，保留玻璃</text></g>
+<g transform="translate(246 32)"><rect width="208" height="168" rx="8" fill="#ffffff" stroke="#d0d7de"/><circle cx="27" cy="27" r="13" fill="#0969da"/><text x="27" y="33" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="700">2</text><text x="16" y="66" fill="#1f2328" font-size="17" font-weight="700">Agent checks</text><text x="16" y="92" fill="#1f2328" font-size="20" font-weight="700">Agent 确认对象</text><text x="16" y="121" fill="#57606a" font-size="15">Find object + material</text><text x="16" y="144" fill="#57606a" font-size="16">识别对象与可用材质</text></g>
+<g transform="translate(476 32)"><rect width="208" height="168" rx="8" fill="#ffffff" stroke="#d0d7de"/><circle cx="27" cy="27" r="13" fill="#0969da"/><text x="27" y="33" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="700">3</text><text x="16" y="66" fill="#1f2328" font-size="17" font-weight="700">Edit a scene copy</text><text x="16" y="92" fill="#1f2328" font-size="20" font-weight="700">KeyShot 处理副本</text><text x="16" y="121" fill="#57606a" font-size="15">Apply brushed steel</text><text x="16" y="144" fill="#57606a" font-size="16">将金属替换为拉丝钢</text></g>
+<g transform="translate(706 32)"><rect width="208" height="168" rx="8" fill="#ffffff" stroke="#d0d7de"/><circle cx="27" cy="27" r="13" fill="#0969da"/><text x="27" y="33" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="700">4</text><text x="16" y="66" fill="#1f2328" font-size="17" font-weight="700">Review the preview</text><text x="16" y="92" fill="#1f2328" font-size="20" font-weight="700">你查看预览</text><text x="16" y="121" fill="#57606a" font-size="15">Confirm or adjust</text><text x="16" y="144" fill="#57606a" font-size="16">满意就确认，不满意再改</text></g>
+<g transform="translate(936 32)"><rect width="208" height="168" rx="8" fill="#e8f5ef" stroke="#d0d7de"/><circle cx="27" cy="27" r="13" fill="#0969da"/><text x="27" y="33" text-anchor="middle" fill="#ffffff" font-size="16" font-weight="700">5</text><text x="16" y="66" fill="#1f2328" font-size="17" font-weight="700">Export after approval</text><text x="16" y="92" fill="#1f2328" font-size="20" font-weight="700">确认后输出</text><text x="16" y="121" fill="#57606a" font-size="15">PNG + .bip scene copy</text><text x="16" y="144" fill="#57606a" font-size="16">渲染图片与场景副本</text></g>
+<path d="M231 116 h12" class="arrow"/>
+<path d="M461 116 h12" class="arrow"/>
+<path d="M691 116 h12" class="arrow"/>
+<path d="M921 116 h12" class="arrow"/>
 </svg>

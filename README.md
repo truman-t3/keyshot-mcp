@@ -24,6 +24,7 @@
 
 <p align="center">
   <a href="#english">English</a> · <a href="#中文">简体中文</a><br>
+  <a href="#from-a-request-to-a-render--一句话到出图">How it works / 使用流程</a> ·
   <a href="#product-demo--产品实测">Demo / 实测</a> ·
   <a href="#quick-start">Quick start</a> ·
   <a href="#workflows">Workflows</a> ·
@@ -40,6 +41,25 @@
 > **Saved scenes, not realtime GUI control.** KeyShot MCP runs headless on the same
 > computer as KeyShot. It does not read unsaved edits or control the open KeyShot window.
 > **处理已保存的场景，不是实时 GUI 控制。** 服务在本机后台运行 KeyShot，不能读取窗口中尚未保存的修改。
+
+## From a Request to a Render / 一句话到出图
+
+After setup, describe the change to your Agent. It uses KeyShot MCP to perform
+the work on a saved scene copy; you review the preview before final output.
+完成安装后，直接向 Agent 描述需求。它通过 KeyShot MCP 处理已保存场景的副本，
+你看过预览、确认效果后，再正式出图。
+
+> **“Change the lantern's metal to brushed steel, keep the glass unchanged, and show me a preview. Once I approve, export the image and a scene copy.”**
+>
+> **“把灯具的金属换成拉丝钢，玻璃保持不变，先给我看预览。确认后输出图片和场景副本。”**
+
+<picture>
+  <source media="(max-width: 600px)" srcset="assets/workflow-mobile.svg">
+  <img src="assets/workflow.svg" alt="需求 → Agent 确认对象和材质 → KeyShot 修改副本 → 查看预览 → 确认后输出 PNG 与 .bip；Request → Check → Edit copy → Preview → Export" width="1160">
+</picture>
+
+Not happy with the preview? Ask for another adjustment before exporting.
+预览不满意，可以继续说“再调整一下”；原始场景不覆盖，最终文件写入配置的输出目录。
 
 ## Product Demo / 产品实测
 
