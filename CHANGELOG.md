@@ -4,6 +4,17 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+### Changed / 变更
+
+- Reorganize the bilingual README around designer setup, saved-scene workflows and
+  a real component-material comparison. Replace the cube showcase with credited
+  local renders of a Poly Haven CC0 lantern, retain the cube as a test fixture,
+  and document reproduction and GUI boundaries separately. Add documentation,
+  navigation, installation JSON and demo-image checks.
+  围绕设计师安装、已保存场景流程与真实材质对比重整双语 README；展示改用注明来源的
+  Poly Haven CC0 灯具实测图，立方体仅保留为测试夹具。独立补充复现与 GUI 边界说明，
+  增加文档链接、导航、安装 JSON 和演示图片检查。
+
 ### Fixed / 修复
 
 - Verify material names and actual object assignments before reporting success.

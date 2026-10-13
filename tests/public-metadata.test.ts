@@ -101,7 +101,9 @@ describe("public metadata", () => {
     expect(readme).toContain("如果它改善了你的 KeyShot 工作流");
     expect(readme).toContain("keyshot-mcp@0.13.0");
     expect(readme).toContain('src="assets/logo-lockup.png"');
-    expect(readme).toContain("Turn product-rendering requests into safe");
+    expect(readme).toContain(
+      "Product rendering in KeyShot, guided by your AI agent.",
+    );
     expect(readme).toContain("### 核心特点");
   });
 
