@@ -4,6 +4,11 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+### Documentation / 文档
+
+- Add a bilingual request-to-render diagram with desktop and mobile layouts, using an object-level material change as the example.
+- 增加中英文“一句话到出图”流程图，适配桌面和手机，以指定对象的材质替换说明预览、确认和输出流程。
+
 ### Changed / 变更
 
 - Reorganize the bilingual README around designer setup, saved-scene workflows and
