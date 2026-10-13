@@ -101,6 +101,36 @@ function classifyError(error: string): {
 } {
   const normalized = error.toLowerCase();
   if (
+    normalized.includes("material not found") ||
+    normalized.includes("material file not found")
+  ) {
+    return {
+      errorCode: "MATERIAL_NOT_FOUND",
+      suggestions: [
+        "Check the exact material name in the scene or local KeyShot library, or provide an existing single-material MTL file.",
+      ],
+    };
+  }
+  if (
+    normalized.includes("material assignment not applied") ||
+    normalized.includes("material assignment cannot be verified")
+  ) {
+    return {
+      errorCode: "MATERIAL_NOT_APPLIED",
+      suggestions: [
+        "The material change was not confirmed and no output scene was saved. Check the material source and inspect the target object before retrying.",
+      ],
+    };
+  }
+  if (normalized.includes("material file contains multiple")) {
+    return {
+      errorCode: "MATERIAL_AMBIGUOUS",
+      suggestions: [
+        "Use an MTL file containing one material so the target assignment is unambiguous.",
+      ],
+    };
+  }
+  if (
     normalized.includes("headless executable not found") ||
     (normalized.includes("path command") && normalized.includes("not found"))
   ) {
