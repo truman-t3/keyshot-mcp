@@ -101,6 +101,18 @@ function classifyError(error: string): {
 } {
   const normalized = error.toLowerCase();
   if (
+    normalized.includes(
+      "material file did not return any loaded material names",
+    )
+  ) {
+    return {
+      errorCode: "MATERIAL_FILE_INVALID",
+      suggestions: [
+        "Use a native single-material KeyShot MTL file supported by your installation, not a Wavefront OBJ companion MTL. Check that the file opens in KeyShot before retrying.",
+      ],
+    };
+  }
+  if (
     normalized.includes("material not found") ||
     normalized.includes("material file not found")
   ) {

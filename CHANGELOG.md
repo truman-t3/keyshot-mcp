@@ -4,6 +4,17 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+## [0.13.1] - 2026-10-15
+
+### Release Safety / 发布安全
+
+- Validate bilingual release notes, built runtime version and current comparison links before npm publication. Block the release workflow while documentation still marks the version as pending. Add a bilingual 1.0 readiness checklist; external client and user validation remain pending.
+- 在 npm 发布前校验双语更新说明、构建版本和当前比较链接；文档仍标记待发布时阻止正式发布。增加双语 1.0 验收清单，客户端及外部用户验证仍待完成。
+- Add an opt-in material smoke test using generated geometry, an unsupported Wavefront MTL fixture, preset assignments, saved-scene reinspection, invalid-name rejection and source-file hashes. A native KeyShot material file can be tested locally without bundling it.
+- 增加可选材质实机测试，覆盖生成模型、不支持的 Wavefront MTL、预设赋值、保存后复查、错误名称拒绝及源文件哈希保护。可在本地验证 KeyShot 原生材质文件，不随包分发。
+- Classify empty/unsupported material-file loads as `MATERIAL_FILE_INVALID` and explain the difference between KeyShot native MTL and Wavefront companion files.
+- 将空加载或不支持的材质文件归类为 `MATERIAL_FILE_INVALID`，解释 KeyShot 原生 MTL 与 OBJ 配套 Wavefront 文件的区别。
+
 ### Documentation / 文档
 
 - Restore TypeScript and M8ven header badges, preset guidance, import-only and lens/environment examples, task serialization and early privacy reminders after auditing the README redesign.
@@ -132,7 +143,9 @@ All notable changes to KeyShot MCP are documented in this file.
 
 - Documented that scene metadata and preview images may be sent by an MCP client to its configured model provider.
 
-[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.1...HEAD
+[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.1...HEAD
+[0.13.1]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.0...v0.13.1
+[0.13.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.0...v0.12.1
 [0.12.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.11.0...v0.12.0
 [0.11.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.10.0...v0.11.0

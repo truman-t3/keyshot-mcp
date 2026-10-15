@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to publish (for example 0.13.0); tag v<version> must exist"
+        description: "Version to publish (for example 0.13.1); tag v<version> must exist"
         required: true
         type: string
       registry_metadata_ref:
@@ -64,7 +64,11 @@ jobs:
             }
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          node scripts/check-release.mjs "$version"
+          node scripts/check-release.mjs "$version" --ready
+
+      - name: Validate bilingual release notes before publishing
+        shell: bash
+        run: node scripts/release-notes.mjs "${{ steps.release.outputs.version }}" > "$RUNNER_TEMP/keyshot-release-notes.md"
 
       - name: Type check and test
         run: |
@@ -118,7 +122,6 @@ jobs:
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "GitHub Release $tag already exists; skipping."
           else
-            node scripts/release-notes.mjs "${{ steps.release.outputs.version }}" > "$RUNNER_TEMP/keyshot-release-notes.md"
             gh release create "$tag" --title "$tag" --notes-file "$RUNNER_TEMP/keyshot-release-notes.md"
           fi
 

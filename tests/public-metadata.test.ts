@@ -3,6 +3,7 @@ import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { describe, expect, it } from "vitest";
+import { VERSION } from "../src/version.js";
 import {
   applyCameraPresetSchema,
   applyMaterialInputSchema,
@@ -83,7 +84,7 @@ describe("public metadata", () => {
     );
     expect(skill).toMatch(/^---\r?\n[\s\S]+?\r?\n---/);
     expect(skill).toContain("name: keyshot-mcp");
-    expect(skill).toContain("version: 0.13.0");
+    expect(skill).toContain(`version: ${VERSION}`);
     expect(skill).toContain(
       "Never request, print, store, or upload license credentials.",
     );
@@ -99,7 +100,7 @@ describe("public metadata", () => {
     expect(readme).not.toContain("���");
     expect(readme).toContain("Useful for your KeyShot workflow?");
     expect(readme).toContain("如果它改善了你的 KeyShot 工作流");
-    expect(readme).toContain("keyshot-mcp@0.13.0");
+    expect(readme).toContain(`keyshot-mcp@${VERSION}`);
     expect(readme).toContain('src="assets/logo-lockup.png"');
     expect(readme).toContain(
       "Product rendering in KeyShot, guided by your AI agent.",

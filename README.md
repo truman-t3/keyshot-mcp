@@ -111,8 +111,11 @@ licensed KeyShot edition with headless scripting. **Windows 11 + KeyShot Studio
 2025 / KeyShot 14.1 is tested.** Other systems and KeyShot versions are not verified.
 KeyShot software, licenses and library assets are not included.
 
-The current npm release is **0.13.0**. `main` also contains the material-verification
-fix planned for the next patch release; use a source build to test that fix now.
+<!-- release-version: 0.13.1 -->
+
+**Version 0.13.1** includes verified material assignments, clearer material-file
+errors and the updated designer workflow documentation. Installation examples
+below target this version. See the [release validation record and 1.0 checklist](docs/RELEASE-READINESS.md).
 See [Changelog](CHANGELOG.md) and [upgrade notes](docs/UPGRADING.md).
 
 #### Ask Your Agent to Install
@@ -120,7 +123,7 @@ See [Changelog](CHANGELOG.md) and [upgrade notes](docs/UPGRADING.md).
 Send this to an Agent that can edit your client's MCP configuration:
 
 ```text
-Install KeyShot MCP 0.13.0 in my MCP client using npx -y keyshot-mcp@0.13.0.
+Install KeyShot MCP 0.13.1 in my MCP client using npx -y keyshot-mcp@0.13.1.
 Find the full path of my local keyshot_headless.exe and set KEYSHOT_HEADLESS_EXE.
 Keep the default Documents/KeyShot MCP Outputs folder and external outputs disabled.
 Use my client's configuration format, restart or reload it, and run keyshot_status.
@@ -139,7 +142,7 @@ and replace the executable path with the actual path on your computer.
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.13.0"],
+      "args": ["-y", "keyshot-mcp@0.13.1"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -154,7 +157,7 @@ the executable, output access, bridge, presets and a minimal KeyShot startup.
 <details>
 <summary>Global npm installation or source build</summary>
 
-**Global:** run `npm install -g keyshot-mcp@0.13.0`, then use `keyshot-mcp` as the
+**Global:** run `npm install -g keyshot-mcp@0.13.1`, then use `keyshot-mcp` as the
 client command with no `npx` arguments. Keep the same environment settings.
 
 **Source:**
@@ -371,15 +374,16 @@ Community conduct is covered by [Code of Conduct](CODE_OF_CONDUCT.md).
 KeyShot**。已实测 **Windows 11 + KeyShot Studio 2025 / KeyShot 14.1**；其他系统和
 KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方材质库。
 
-当前正式版本为 `0.13.0`。`main` 另有准备在下一补丁版发布的材质校验修复；
-现在要测试该修复，请使用源码运行。版本变更见[更新记录](CHANGELOG.md)和[升级说明](docs/UPGRADING.md)。
+**本版为 `0.13.1`：** 包含材质实际赋值校验、更明确的材质文件错误提示及更新后的设计师工作流文档。
+下方安装示例使用此版本。验证记录与正式版准备见[验收清单](docs/RELEASE-READINESS.md)，
+版本变更见[更新记录](CHANGELOG.md)和[升级说明](docs/UPGRADING.md)。
 
 #### 把安装交给 Agent
 
 将下面这段话发给能够修改客户端 MCP 配置的 Agent：
 
 ```text
-请用 npx -y keyshot-mcp@0.13.0 将 KeyShot MCP 安装到我的 MCP 客户端。
+请用 npx -y keyshot-mcp@0.13.1 将 KeyShot MCP 安装到我的 MCP 客户端。
 找到本机 keyshot_headless.exe 的完整路径，设置 KEYSHOT_HEADLESS_EXE。
 保留默认“文档/KeyShot MCP Outputs”输出目录，关闭外部输出。
 按这个客户端实际支持的格式配置，重启或重新加载后运行 keyshot_status。
@@ -398,7 +402,7 @@ KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方�
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@0.13.0"],
+      "args": ["-y", "keyshot-mcp@0.13.1"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -413,7 +417,7 @@ KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方�
 <details>
 <summary>全局 npm 安装或源码运行</summary>
 
-**全局安装：** 运行 `npm install -g keyshot-mcp@0.13.0`，客户端命令改成 `keyshot-mcp`，
+**全局安装：** 运行 `npm install -g keyshot-mcp@0.13.1`，客户端命令改成 `keyshot-mcp`，
 不再填写 `npx` 参数；环境变量保持一致。
 
 **源码运行：**

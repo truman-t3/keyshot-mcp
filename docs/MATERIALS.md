@@ -8,9 +8,11 @@ confirmed; they do not replace every object's material or change the GUI scene.
 
 - `materialName` must exactly match a material in the scene or local KeyShot
   library. Missing names fail explicitly.
-- `materialPath` must point to a single-material MTL file supported by the local
+- `materialPath` must point to a native single-material KeyShot MTL file supported by the local
   KeyShot installation. The bridge uses `loadMaterials` to load it into the
   current headless project, not into the user's persistent material library.
+  A Wavefront OBJ companion `.mtl` is a different format and cannot be substituted.
+  Empty/unsupported loads return `MATERIAL_FILE_INVALID` with repair guidance.
 - Files that fail to load, return no material names, or contain multiple materials
   are rejected. Export one material per file rather than relying on implicit selection.
 - Results include `previousMaterial` and `appliedMaterial`. KeyShot may append a
@@ -33,8 +35,10 @@ model import does not guarantee perfect material migration.
 生效后才保存输出场景，不批量覆盖所有对象，也不修改用户正在打开的 GUI 场景。
 
 - `materialName` 必须与当前场景或本机 KeyShot 材质库中的名称完全一致，不存在时明确报错。
-- `materialPath` 使用本机支持的单材质 MTL 文件，通过 `loadMaterials` 加载到当前后台
+- `materialPath` 使用本机支持的 KeyShot 原生单材质 MTL 文件，通过 `loadMaterials` 加载到当前后台
   场景，不写入用户的持久材质库。
+  OBJ 配套的 Wavefront `.mtl` 是另一种格式，不能混用；空加载或不支持的文件返回
+  `MATERIAL_FILE_INVALID` 和修复建议。
 - 文件损坏、没有返回材质名称或包含多个材质时停止操作，不默认选择第一项。
 - 结果包含 `previousMaterial`（原材质）与 `appliedMaterial`（实际应用的材质）。
   KeyShot 创建未关联副本时可能自动追加 ` #1` 等编号。

@@ -188,7 +188,9 @@ describe("designer-facing README", () => {
   it("keeps operating boundaries, privacy and unpublished fixes explicit", () => {
     expect(source).toContain("not realtime GUI control");
     expect(source).toContain("may send tool results, scene metadata");
-    expect(source).toContain("下一补丁版");
+    expect(source).toContain("release-version:");
+    if (source.includes("release-status: pending"))
+      expect(source).toContain("尚未发布");
     expect(source).not.toContain("\uFFFD");
   });
 });

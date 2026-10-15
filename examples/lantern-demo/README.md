@@ -18,9 +18,8 @@ Model author: **Rajil Jose Macatangay**. Model and source textures use
 The repository includes only its own KeyShot renders, not the source model or
 official preview artwork. [Credits](../../assets/demo/lantern/ATTRIBUTION.md).
 
-KeyShot and its local material library are separate requirements. The material
-verification patch is currently in `main`, not npm 0.13.0; use the source build
-for verified results until the next patch release is published.
+KeyShot and its local material library are separate requirements. Material verification
+is included in 0.13.1, not 0.13.0. Use 0.13.1 or later for the verified assignment workflow.
 
 ### Ask an Agent
 
@@ -108,8 +107,8 @@ startup environment remain local dependencies; do not redistribute a generated
 不改用项目代码的 MIT 许可。仓库只包含本地生成的渲染图，没有源模型、官方预览图、
 KeyShot 材质库文件或场景包。[素材说明](../../assets/demo/lantern/ATTRIBUTION.md)。
 
-需要本机 KeyShot 和材质库。材质校验修复目前在 `main`，尚未进入 npm 0.13.0；
-下一补丁版发布前，请用源码版验证。
+需要本机 KeyShot 和材质库。材质校验修复包含在 0.13.1 中，旧版 0.13.0 不包含；
+请使用 0.13.1 或更高版本复现材质实际赋值校验流程。
 
 ### 复制给 Agent
 

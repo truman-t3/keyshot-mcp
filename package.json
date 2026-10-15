@@ -1,6 +1,6 @@
 {
   "name": "keyshot-mcp",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "mcpName": "io.github.truman-t3/keyshot-mcp",
   "description": "Local MCP server for KeyShot product visualization, scene editing, camera control, and rendering.",
   "type": "module",
@@ -27,7 +27,8 @@
     "format:check": "prettier --check \"src/**/*.ts\" \"tests/**/*.ts\" \"scripts/*.mjs\" \"*.json\" \"*.md\" \"docs/**/*.md\" \"skills/**/*.md\"",
     "lint:python": "python -m ruff check scripts tests",
     "status": "node ./dist/cli/status.js",
-    "smoke:keyshot": "tsc -p tsconfig.json && node ./scripts/keyshot-smoke.mjs"
+    "smoke:keyshot": "tsc -p tsconfig.json && node ./scripts/keyshot-smoke.mjs",
+    "smoke:keyshot:materials": "tsc -p tsconfig.json && node ./scripts/keyshot-material-smoke.mjs"
   },
   "keywords": [
     "mcp",
@@ -50,6 +51,7 @@
     "scripts/keyshot_bridge.py",
     "scripts/clean.mjs",
     "scripts/keyshot-smoke.mjs",
+    "scripts/keyshot-material-smoke.mjs",
     "examples",
     "assets",
     "presets",

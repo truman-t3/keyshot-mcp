@@ -1,6 +1,9 @@
 import fs from "node:fs";
+import { validateReleaseReadiness } from "./release-changelog.mjs";
 
-const expected = process.argv[2] || process.env.RELEASE_VERSION;
+const expected =
+  process.argv.slice(2).find((argument) => !argument.startsWith("--")) ||
+  process.env.RELEASE_VERSION;
 const pkg = readJson("../package.json");
 const server = readJson("../server.json");
 const glama = readJson("../glama.json");
@@ -18,6 +21,7 @@ const logoSource = fs.readFileSync(
   new URL("../assets/logo-lockup.png", import.meta.url),
 );
 const { TOOL_CATALOG } = await import("../dist/tools/catalog.js");
+const { VERSION: builtVersion } = await import("../dist/version.js");
 
 const runtimeVersion = versionSource.match(
   /VERSION\s*=\s*["']([^"']+)["']/,
@@ -28,6 +32,7 @@ const versions = [
   server.version,
   server.packages?.[0]?.version,
   runtimeVersion,
+  builtVersion,
   skillVersion,
   lobe.version,
 ];
@@ -67,9 +72,19 @@ for (const required of [
   "CHANGELOG.md",
   "SUPPORT.md",
   "CODE_OF_CONDUCT.md",
+  "scripts/keyshot-material-smoke.mjs",
 ]) {
   if (!pkg.files?.includes(required))
     throw new Error(`The npm package must include ${required}.`);
+}
+for (const relativePath of [
+  "../examples/demo/unsupported-wavefront.mtl",
+  "../docs/RELEASE-READINESS.md",
+]) {
+  if (!fs.existsSync(new URL(relativePath, import.meta.url)))
+    throw new Error(
+      `Required release validation asset is missing: ${relativePath}.`,
+    );
 }
 for (const requiredCommunityFile of [
   "../.github/CODEOWNERS",
@@ -101,16 +116,12 @@ for (const [name, source] of [
   if (source.includes("\uFFFD") || source.includes("���"))
     throw new Error(`${name} contains Unicode replacement characters.`);
 }
-if (
-  !readmeSource.includes(`keyshot-mcp@${pkg.version}`) ||
-  !readmeSource.includes(`当前正式版本为 \`${pkg.version}\``)
-) {
-  throw new Error(
-    "README installation examples must match the release version.",
-  );
-}
-if (!changelogSource.includes(`## [${pkg.version}]`))
-  throw new Error("CHANGELOG.md must include the release version.");
+validateReleaseReadiness(
+  readmeSource,
+  changelogSource,
+  pkg.version,
+  process.argv.includes("--ready"),
+);
 if (
   TOOL_CATALOG.length !== 19 ||
   new Set(TOOL_CATALOG.map((tool) => tool.name)).size !== 19

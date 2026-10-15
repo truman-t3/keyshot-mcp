@@ -1,5 +1,36 @@
 # Upgrading KeyShot MCP / KeyShot MCP 升级说明
 
+## 0.13.1: Material Reliability Patch
+
+Update the pinned package to
+`keyshot-mcp@0.13.1`, restart the MCP server, run `keyshot_status`, then inspect and
+preview a scene copy. Version 0.13.0 does not contain these newer material checks.
+
+All 19 tool names and inputs remain compatible. `Clear Glass` and `Matte Black Plastic`
+keep their preset labels but now reference the tested local library names. Material
+tools verify actual assignments before returning success. Single-material MTL files
+are loaded explicitly; files exposing zero or multiple materials are rejected.
+Failures include structured error guidance and do not save a purportedly successful
+scene. Refer to [material rules](MATERIALS.md) and the [readiness checklist](RELEASE-READINESS.md).
+
+To roll back, restore the previous pinned npm version and restart the server.
+Use a fresh copy of the original scene when retesting. No rollback changes the
+user's KeyShot installation, library or license; version 0.13.0 does not contain
+the material reliability fixes.
+
+## 0.13.1：材质可靠性补丁
+
+将固定版本改为 `keyshot-mcp@0.13.1`，重启服务，运行 `keyshot_status`，
+再检查并预览场景副本。旧版 0.13.0 不含本次材质校验。
+
+19 个工具名称和输入保持兼容。`Clear Glass` 和 `Matte Black Plastic` 保留预设名称，
+修正其本机材质库引用。材质工具返回成功前会验证实际赋值；MTL 必须只包含一个可加载
+材质，空加载或多材质会明确报错。错误带结构化建议，不会把失败当成功并保存。
+详见[材质规则](MATERIALS.md)与[验收清单](RELEASE-READINESS.md)。
+
+需要回退时恢复此前的 npm 固定版本并重启服务，重测使用原始场景的新副本。
+回退不会改变用户 KeyShot、材质库或许可证；旧版 0.13.0 不含本次材质可靠性修复。
+
 ## 0.13.0: MCP protocol update
 
 KeyShot MCP 0.13.0 serves MCP `2026-07-28` over stdio through the official
