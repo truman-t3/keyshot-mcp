@@ -4,6 +4,32 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+### Publication Privacy / 发布隐私
+
+- Add a redacted public-content check to CI and publication, including credential
+  patterns, private paths, file names and PNG metadata. Reject unreviewed binary
+  assets; extend ignore rules for local environment, credential, scene and license files.
+- 为 CI 与发布流程增加脱敏的公开内容检查，覆盖疑似凭据、私人路径、文件名及 PNG 元数据；
+  拦截未经复核的二进制素材，补全本地环境、凭据、场景和许可证文件忽略规则。
+- Bound preview file reads before allocation and while reading, reject special-file
+  output destinations, and check case variants and malformed PNG metadata containers.
+- 预览读取在分配内存前和读取过程中均限制大小，拒绝特殊文件输出目标，并补查文件名
+  大小写变体及损坏的 PNG 元数据容器。
+
+### Output Safety / 输出安全
+
+- Apply default no-overwrite protection to single renders, queued jobs, imports,
+  scene edits and saves. Add optional `overwrite` to low-level writing tools without
+  renaming tools or removing inputs. Declared input files and linked aliases remain
+  protected even with overwrite enabled; scene and image outputs must be distinct.
+- 将默认不覆盖保护统一到单张渲染、队列、导入、场景编辑与保存。底层写入工具增加可选
+  `overwrite`，不改工具名称或删除参数；即使允许覆盖，也不能替换本次声明的输入文件及其
+  链接别名，场景与图片不能写入同一文件。
+- Recheck every generated camera output inside the bridge, protect every queue input,
+  disambiguate selected-camera filenames and avoid deleting rejected preview outputs.
+- bridge 在逐相机写入前重新检查路径，保护整个队列的输入场景，为清理后同名的指定相机
+  生成不同文件名，并避免误删被拒绝的预览输出。
+
 ### Documentation / 文档
 
 - Clarify the roles of the MCP client's Agent, client configuration and model provider in privacy notices; distinguish client-managed transmission from the local KeyShot MCP service.

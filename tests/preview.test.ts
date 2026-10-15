@@ -136,6 +136,12 @@ describe("preview response", () => {
     });
     expect(second.isError).toBe(true);
     expect(second.structuredContent.errorCode).toBe("OUTPUT_EXISTS");
+    expect(second.structuredContent.suggestions?.join(" ")).toContain(
+      "Previews never overwrite",
+    );
+    expect(second.structuredContent.suggestions?.join(" ")).not.toContain(
+      "overwrite=true",
+    );
   });
 
   it("rejects paths outside the safe output directory", async () => {
@@ -178,6 +184,37 @@ describe("preview response", () => {
     );
   });
 
+  it("rejects an oversized preview before reading its contents", async () => {
+    const handle = {
+      stat: vi.fn(async () => ({
+        isFile: () => true,
+        size: MAX_PREVIEW_BYTES + 1,
+      })),
+      read: vi.fn(),
+      close: vi.fn(async () => undefined),
+    };
+    vi.spyOn(fs, "open").mockResolvedValue(handle as never);
+    await expect(readPreviewPng("oversized.png")).rejects.toThrow("8 MiB");
+    expect(handle.read).not.toHaveBeenCalled();
+    expect(handle.close).toHaveBeenCalledOnce();
+  });
+
+  it("bounds reading when a preview grows after its initial size check", async () => {
+    let readBytes = 0;
+    const handle = {
+      stat: vi.fn(async () => ({ isFile: () => true, size: 8 })),
+      read: vi.fn(async (buffer: Buffer) => {
+        readBytes += buffer.length;
+        return { bytesRead: buffer.length, buffer };
+      }),
+      close: vi.fn(async () => undefined),
+    };
+    vi.spyOn(fs, "open").mockResolvedValue(handle as never);
+    await expect(readPreviewPng("growing.png")).rejects.toThrow("8 MiB");
+    expect(readBytes).toBe(MAX_PREVIEW_BYTES + 1);
+    expect(handle.close).toHaveBeenCalledOnce();
+  });
+
   it("reports and locates a temporary preview when cleanup fails", async () => {
     const config = await makeConfig();
     const remove = vi
@@ -197,6 +234,47 @@ describe("preview response", () => {
     expect(response.structuredContent.data).toMatchObject({
       preview: { saved: false, imageEmbedded: true },
     });
+  });
+
+  it("does not delete a file rejected by the runner as an existing output", async () => {
+    const config = await makeConfig();
+    let retained = "";
+    const response = await renderPreview(
+      config,
+      { scenePath: "scene.bip" },
+      async (_config, request) => {
+        retained = String(request.outputPath);
+        await fs.writeFile(retained, "belongs to another writer");
+        return {
+          ...success([]),
+          ok: false,
+          error: "Output already exists and overwrite is false",
+          errorCode: "OUTPUT_EXISTS",
+        };
+      },
+    );
+    expect(response.isError).toBe(true);
+    expect(await fs.readFile(retained, "utf8")).toBe(
+      "belongs to another writer",
+    );
+    expect(response.structuredContent.warnings.join(" ")).toContain(retained);
+  });
+
+  it("cleans only a temporary file reported as produced by a failed render", async () => {
+    const config = await makeConfig();
+    let temporary = "";
+    const response = await renderPreview(
+      config,
+      { scenePath: "scene.bip" },
+      async (_config, request) => {
+        temporary = String(request.outputPath);
+        await fs.writeFile(temporary, "partial image");
+        return { ...success([temporary]), ok: false, error: "render failed" };
+      },
+    );
+    expect(response.isError).toBe(true);
+    expect(response.structuredContent.outputFiles).toEqual([]);
+    await expect(fs.access(temporary)).rejects.toThrow();
   });
 });
 

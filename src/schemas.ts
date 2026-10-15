@@ -18,8 +18,14 @@ const scenePath = requiredPath(
   "Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.",
 );
 const outputScenePath = requiredPath(
-  "Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled.",
+  "Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled.",
 );
+const overwrite = z
+  .boolean()
+  .describe(
+    "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true.",
+  )
+  .optional();
 const outputDirectory = requiredPath(
   "Directory for generated render files. Relative paths resolve inside KEYSHOT_OUTPUT_DIR; external paths are rejected by default.",
 );
@@ -65,6 +71,7 @@ export const listCamerasSchema = z.object({
 
 export const renderSchema = z.object({
   scenePath,
+  overwrite,
   outputPath: optionalPath(
     "Destination image path. When omitted, a PNG name is generated inside KEYSHOT_OUTPUT_DIR.",
   ),
@@ -283,6 +290,7 @@ export const renderAllCamerasInputSchema = renderAllCamerasSchema.refine(
 );
 
 export const importModelSchema = z.object({
+  overwrite,
   modelPath: requiredPath(
     "Absolute path to a model file supported by KeyShot, such as OBJ, FBX, STL, or glTF.",
   ),
@@ -317,6 +325,7 @@ export const importModelSchema = z.object({
 });
 
 export const applyMaterialInputSchema = z.object({
+  overwrite,
   scenePath,
   objectName: z
     .string()
@@ -656,6 +665,7 @@ export const productRenderSchema = productRenderInputSchema.superRefine(
 );
 
 const setCameraBaseSchema = z.object({
+  overwrite,
   scenePath,
   cameraName: z
     .string()
@@ -736,6 +746,7 @@ export const setCameraInputSchema = setCameraBaseSchema;
 export const listCameraPresetsSchema = z.object({});
 
 export const applyCameraPresetSchema = z.object({
+  overwrite,
   scenePath,
   presetName: z
     .string()
@@ -752,6 +763,7 @@ export const applyCameraPresetSchema = z.object({
 });
 
 export const setEnvironmentSchema = z.object({
+  overwrite,
   scenePath,
   environmentName: z
     .string()
@@ -780,12 +792,14 @@ export const setEnvironmentSchema = z.object({
 });
 
 export const saveSceneSchema = z.object({
+  overwrite,
   scenePath,
   outputScenePath,
 });
 
 // --- Render queue ---
 export const renderJobSchema = z.object({
+  overwrite,
   scenePath,
   outputPath: optionalPath(
     "Destination image path for this queue job. A safe output name is generated when omitted.",
@@ -842,6 +856,7 @@ export const renderQueueInputSchema = z.object({
 export const listMaterialPresetsSchema = z.object({});
 
 export const applyMaterialPresetInputSchema = z.object({
+  overwrite,
   scenePath,
   presetName: z
     .string()

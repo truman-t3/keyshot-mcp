@@ -11,6 +11,7 @@ export type RenderJob = {
   samples?: number;
   maxTimeSeconds?: number;
   format?: string;
+  overwrite?: boolean;
 };
 
 export type RenderQueueOptions = {
@@ -72,7 +73,11 @@ export async function runRenderQueue(
       continue;
     }
 
-    const result = await runFn(config, { operation: "render", ...job });
+    const result = await runFn(config, {
+      operation: "render",
+      ...job,
+      _protectedInputPaths: jobs.map((entry) => entry.scenePath),
+    });
     results.push({
       index,
       scenePath: job.scenePath,

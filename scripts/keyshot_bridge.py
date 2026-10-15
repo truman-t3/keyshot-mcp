@@ -136,6 +136,7 @@ def camera_names():
 
 def render(payload, output_files, warnings):
     output_path = payload.get("outputPath") or default_output_path(payload, "render", payload.get("format") or "png")
+    assert_output_file_safe(output_path, payload, "outputPath")
     ensure_parent(output_path)
 
     camera = payload.get("camera")
@@ -204,10 +205,10 @@ def batch_render(payload, output_files, warnings):
 
     os.makedirs(output_dir, exist_ok=True)
     rendered = []
+    used_stems = set()
 
     for camera in cameras:
-        safe_camera = safe_filename(camera)
-        output_path = os.path.join(output_dir, "%s.%s" % (safe_camera, image_format))
+        output_path = unique_camera_output_path(output_dir, camera, image_format, used_stems)
         if os.path.exists(output_path) and not overwrite:
             raise RuntimeError("Output already exists and overwrite is false: %s" % output_path)
 
@@ -389,7 +390,7 @@ def product_render(payload, output_files, warnings):
     try:
         if not output_scene_path:
             raise RuntimeError("outputScenePath is required")
-        save_to(output_scene_path)
+        save_to(output_scene_path, payload)
         output_files.append(output_scene_path)
         result["savedScene"] = output_scene_path
         stages.append(product_stage("save", True, {"savedScene": output_scene_path}))
@@ -399,6 +400,7 @@ def product_render(payload, output_files, warnings):
     try:
         if result["renderMode"] == "allCameras":
             render_payload = dict(payload)
+            render_payload["_protectedInputPaths"] = input_file_paths(payload)
             render_payload["scenePath"] = output_scene_path
             render_data = render_all_cameras_current(render_payload, output_files, warnings)
             result["renders"] = render_data.get("results", [])
@@ -482,7 +484,7 @@ def import_model(payload, output_files, warnings):
     output_scene_path = payload.get("outputScenePath")
     if not output_scene_path:
         raise RuntimeError("outputScenePath is required")
-    save_to(output_scene_path)
+    save_to(output_scene_path, payload)
     output_files.append(output_scene_path)
     data["savedScene"] = output_scene_path
     return data
@@ -573,7 +575,7 @@ def apply_material(payload, output_files, warnings):
     output_scene_path = payload.get("outputScenePath")
     if not output_scene_path:
         raise RuntimeError("outputScenePath is required")
-    save_to(output_scene_path)
+    save_to(output_scene_path, payload)
     output_files.append(output_scene_path)
     data["savedScene"] = output_scene_path
     return data
@@ -728,7 +730,7 @@ def set_camera(payload, output_files, warnings, persist=True):
     if persist:
         if not output_scene_path:
             raise RuntimeError("outputScenePath is required")
-        save_to(output_scene_path)
+        save_to(output_scene_path, payload)
         output_files.append(output_scene_path)
         data["savedScene"] = output_scene_path
     return data
@@ -780,7 +782,7 @@ def set_standard_camera(payload, output_files, warnings, persist=True):
     if persist:
         if not output_scene_path:
             raise RuntimeError("outputScenePath is required")
-        save_to(output_scene_path)
+        save_to(output_scene_path, payload)
         output_files.append(output_scene_path)
         data["savedScene"] = output_scene_path
     return data
@@ -849,7 +851,7 @@ def set_environment(payload, output_files, warnings, persist=True):
     if persist:
         if not output_scene_path:
             raise RuntimeError("outputScenePath is required")
-        save_to(output_scene_path)
+        save_to(output_scene_path, payload)
         output_files.append(output_scene_path)
         data["savedScene"] = output_scene_path
     return data
@@ -867,7 +869,7 @@ def active_environment():
 
 def save_scene(payload, output_files, warnings):
     output_scene_path = payload.get("outputScenePath")
-    save_to(output_scene_path)
+    save_to(output_scene_path, payload)
     output_files.append(output_scene_path)
     return {"savedScene": output_scene_path}
 
@@ -1020,9 +1022,62 @@ def material_assignment_matches(actual, requested):
     return re.fullmatch(re.escape(requested) + r" #\d+", actual) is not None
 
 
-def save_to(output_scene_path):
+def input_file_paths(value):
+    if isinstance(value, list):
+        return [item for entry in value for item in input_file_paths(entry)]
+    if not isinstance(value, dict):
+        return []
+    paths = []
+    for key, entry in value.items():
+        if key in ("scenePath", "sourcePath", "modelPath", "baseScenePath", "materialPath", "environmentPath") and isinstance(entry, str):
+            paths.append(entry)
+        elif key == "_protectedInputPaths" and isinstance(entry, list):
+            paths.extend(item for item in entry if isinstance(item, str))
+        else:
+            paths.extend(input_file_paths(entry))
+    return paths
+
+
+def same_file(first, second):
+    if os.path.normcase(os.path.realpath(first)) == os.path.normcase(os.path.realpath(second)):
+        return True
+    try:
+        return os.path.samefile(first, second)
+    except FileNotFoundError:
+        return False
+
+
+def assert_output_file_safe(output_path, payload, field):
+    defaults = payload.get("defaults") or {}
+    root = defaults.get("outputDir")
+    if root and defaults.get("allowExternalOutputs") is not True:
+        root = os.path.normcase(os.path.realpath(root))
+        resolved = os.path.normcase(os.path.realpath(output_path))
+        try:
+            inside = os.path.commonpath([root, resolved]) == root
+        except ValueError:
+            inside = False
+        if not inside:
+            raise RuntimeError("Output path must stay inside KEYSHOT_OUTPUT_DIR: %s" % output_path)
+    for input_path in input_file_paths(payload):
+        if same_file(output_path, input_path):
+            raise RuntimeError("Output must not replace an input file: %s" % output_path)
+    other_field = "outputScenePath" if field == "outputPath" else "outputPath"
+    other_output = payload.get(other_field)
+    if other_output and same_file(output_path, other_output):
+        raise RuntimeError("Output paths must refer to different files: %s" % output_path)
+    if os.path.isdir(output_path):
+        raise RuntimeError("Output file path is a directory: %s" % output_path)
+    if os.path.lexists(output_path) and not os.path.isfile(output_path):
+        raise RuntimeError("Output file path must be a regular file: %s" % output_path)
+    if os.path.lexists(output_path) and payload.get("overwrite") is not True:
+        raise RuntimeError("Output already exists and overwrite is false: %s" % output_path)
+
+
+def save_to(output_scene_path, payload=None):
     if not output_scene_path:
         raise RuntimeError("outputScenePath is required")
+    assert_output_file_safe(output_scene_path, payload or {}, "outputScenePath")
     ensure_parent(output_scene_path)
     call_variants(
         "save scene",

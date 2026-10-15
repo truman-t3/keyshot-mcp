@@ -7,6 +7,7 @@ body:
       value: |
         Thanks for helping improve KeyShot MCP. Remove customer names, license data,
         private paths, scene files, models, and persistent renders before submitting.
+        提交前请同时检查截图、文件名和诊断内容，删除个人路径、客户名称及授权信息。
   - type: checkboxes
     id: privacy
     attributes:
@@ -20,7 +21,7 @@ body:
     id: mcp-version
     attributes:
       label: KeyShot MCP version
-      placeholder: 0.12.1
+      placeholder: Copy serverVersion from keyshot_status
     validations:
       required: true
   - type: input

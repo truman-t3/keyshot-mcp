@@ -78,10 +78,9 @@
       "title": "Check KeyShot MCP status",
       "description": "Diagnose the local installation, output access, presets, bridge files, and a minimal KeyShot headless startup without modifying a user scene.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
-        "properties": {},
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "properties": {}
       },
       "outputSchema": {
         "type": "object",
@@ -91,26 +90,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -127,9 +117,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -149,15 +137,14 @@
         "idempotentHint": true,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_product_render",
       "title": "Prepare and render a product",
       "description": "Run a complete product workflow in one headless process: open or import, assign materials, configure camera and environment, save a scene copy, and render one or all cameras.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "modelPath": {
@@ -181,10 +168,10 @@
             "description": "Destination for the prepared scene. A safe numbered name is generated when omitted."
           },
           "renderMode": {
+            "default": "single",
             "type": "string",
             "enum": ["single", "allCameras"],
-            "description": "Render one active or named camera, or discover and render every saved camera. Defaults to single.",
-            "default": "single"
+            "description": "Render one active or named camera, or discover and render every saved camera. Defaults to single."
           },
           "outputPath": {
             "type": "string",
@@ -242,8 +229,7 @@
                   "minLength": 1,
                   "description": "Absolute path to a native single-material KeyShot MTL file, not a Wavefront OBJ companion MTL. Choose one material source."
                 }
-              },
-              "additionalProperties": false
+              }
             },
             "description": "Object-specific material changes applied before camera and environment setup."
           },
@@ -259,53 +245,38 @@
           },
           "position": {
             "type": "array",
+            "items": [
+              { "type": "number" },
+              { "type": "number" },
+              { "type": "number" }
+            ],
+            "additionalItems": false,
             "minItems": 3,
             "maxItems": 3,
-            "items": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "number"
-              }
-            ],
             "description": "Camera position [x, y, z]. Must be provided together with lookAt."
           },
           "lookAt": {
             "type": "array",
+            "items": [
+              { "type": "number" },
+              { "type": "number" },
+              { "type": "number" }
+            ],
+            "additionalItems": false,
             "minItems": 3,
             "maxItems": 3,
-            "items": [
-              {
-                "$ref": "#/properties/position/items/0"
-              },
-              {
-                "$ref": "#/properties/position/items/1"
-              },
-              {
-                "$ref": "#/properties/position/items/2"
-              }
-            ],
             "description": "Camera target [x, y, z]. Must be provided together with position."
           },
           "up": {
             "type": "array",
+            "items": [
+              { "type": "number" },
+              { "type": "number" },
+              { "type": "number" }
+            ],
+            "additionalItems": false,
             "minItems": 3,
             "maxItems": 3,
-            "items": [
-              {
-                "$ref": "#/properties/position/items/0"
-              },
-              {
-                "$ref": "#/properties/position/items/1"
-              },
-              {
-                "$ref": "#/properties/position/items/2"
-              }
-            ],
             "description": "Optional camera up direction [x, y, z]. Requires position and lookAt."
           },
           "distance": {
@@ -349,16 +320,19 @@
           "width": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Render width in pixels. Overrides the selected quality preset when provided."
           },
           "height": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Render height in pixels. Overrides the selected quality preset when provided."
           },
           "samples": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Maximum render samples. Cannot be combined with maxTimeSeconds and overrides preset sampling when provided."
           },
           "maxTimeSeconds": {
@@ -377,18 +351,16 @@
             "description": "Render quality preset: preview (960x540, 16 samples), standard (1920x1080, 64 samples), or final (3840x2160, 256 samples)."
           },
           "overwrite": {
+            "default": false,
             "type": "boolean",
-            "description": "Allow replacement of explicitly selected output files. Defaults to false.",
-            "default": false
+            "description": "Allow replacement of explicitly selected output files. Defaults to false."
           },
           "continueOnError": {
+            "default": true,
             "type": "boolean",
-            "description": "In allCameras mode, continue after one camera fails. Defaults to true.",
-            "default": true
+            "description": "In allCameras mode, continue after one camera fails. Defaults to true."
           }
-        },
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        }
       },
       "outputSchema": {
         "type": "object",
@@ -398,26 +370,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -434,9 +397,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -456,15 +417,14 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_inspect_scene",
       "title": "Inspect a KeyShot scene",
       "description": "Open a scene read-only and return metadata, objects, cameras, material assignments, model sets, and external references.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "scenePath": {
@@ -473,9 +433,7 @@
             "description": "Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory."
           }
         },
-        "required": ["scenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -485,26 +443,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -521,9 +470,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -543,15 +490,14 @@
         "idempotentHint": true,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_list_cameras",
       "title": "List scene cameras",
       "description": "Return saved camera names without saving changes. Use this before selected-camera rendering when names are unknown.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "scenePath": {
@@ -560,9 +506,7 @@
             "description": "Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory."
           }
         },
-        "required": ["scenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -572,26 +516,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -608,9 +543,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -630,15 +563,14 @@
         "idempotentHint": true,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_preview_render",
       "title": "Render an Agent-visible preview",
       "description": "Render a bounded PNG preview from an existing scene and return it directly as MCP image content. Temporary previews are deleted after embedding; an optional safe output path preserves a copy.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "scenePath": {
@@ -681,9 +613,7 @@
             "description": "Optional .png destination inside KEYSHOT_OUTPUT_DIR. Existing files are never overwritten. When omitted, a temporary preview is embedded and deleted."
           }
         },
-        "required": ["scenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -693,26 +623,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -729,9 +650,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -751,15 +670,14 @@
         "idempotentHint": true,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_sync_saved_scene",
       "title": "Sync the latest saved KeyShot scene",
       "description": "Find a saved .bip file (or the newest .bip in one folder), detect whether it changed, copy it to a collision-safe output path, and optionally return an Agent-visible preview. This is the stable alternative to unsupported persistent GUI control.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "sourcePath": {
@@ -811,9 +729,7 @@
             "description": "Time-based preview limit in seconds. Replaces the default sample mode and cannot be combined with an explicit samples value; maximum is 60."
           }
         },
-        "required": ["sourcePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["sourcePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -823,26 +739,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -859,9 +766,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -881,21 +786,24 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_render",
       "title": "Render one KeyShot view",
       "description": "Render the active or a named camera from an existing scene to an image file.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "scenePath": {
             "type": "string",
             "minLength": 1,
             "description": "Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory."
+          },
+          "overwrite": {
+            "type": "boolean",
+            "description": "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true."
           },
           "outputPath": {
             "type": "string",
@@ -905,16 +813,19 @@
           "width": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Render width in pixels. Overrides the selected quality preset when provided."
           },
           "height": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Render height in pixels. Overrides the selected quality preset when provided."
           },
           "samples": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Maximum render samples. Cannot be combined with maxTimeSeconds and overrides preset sampling when provided."
           },
           "maxTimeSeconds": {
@@ -938,9 +849,7 @@
             "description": "Render quality preset: preview (960x540, 16 samples), standard (1920x1080, 64 samples), or final (3840x2160, 256 samples)."
           }
         },
-        "required": ["scenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -950,26 +859,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -986,9 +886,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -1008,22 +906,26 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_render_queue",
       "title": "Run a sequential render queue",
       "description": "Render independent scene and camera jobs sequentially so KeyShot processes do not compete for a license or output files.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "jobs": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
+                "overwrite": {
+                  "type": "boolean",
+                  "description": "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true."
+                },
                 "scenePath": {
                   "type": "string",
                   "minLength": 1,
@@ -1042,16 +944,19 @@
                 "width": {
                   "type": "integer",
                   "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
                   "description": "Render width in pixels. Overrides the selected quality preset when provided."
                 },
                 "height": {
                   "type": "integer",
                   "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
                   "description": "Render height in pixels. Overrides the selected quality preset when provided."
                 },
                 "samples": {
                   "type": "integer",
                   "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991,
                   "description": "Maximum render samples. Cannot be combined with maxTimeSeconds and overrides preset sampling when provided."
                 },
                 "maxTimeSeconds": {
@@ -1070,10 +975,8 @@
                   "description": "Render quality preset: preview (960x540, 16 samples), standard (1920x1080, 64 samples), or final (3840x2160, 256 samples)."
                 }
               },
-              "required": ["scenePath"],
-              "additionalProperties": false
+              "required": ["scenePath"]
             },
-            "minItems": 1,
             "description": "Render jobs executed sequentially to avoid KeyShot license and output conflicts."
           },
           "continueOnError": {
@@ -1081,9 +984,7 @@
             "description": "Continue with later jobs after a failure. Defaults to false."
           }
         },
-        "required": ["jobs"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["jobs"]
       },
       "outputSchema": {
         "type": "object",
@@ -1093,26 +994,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -1129,9 +1021,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -1151,15 +1041,14 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_batch_render",
       "title": "Render selected cameras",
       "description": "Render an explicit list of saved cameras from one scene into an output directory.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "scenePath": {
@@ -1173,27 +1062,27 @@
             "description": "Directory for generated render files. Relative paths resolve inside KEYSHOT_OUTPUT_DIR; external paths are rejected by default."
           },
           "cameras": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "minLength": 1
-            },
             "minItems": 1,
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
             "description": "Saved camera names to render in order. Use keyshot_list_cameras first when names are unknown."
           },
           "width": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Render width in pixels. Overrides the selected quality preset when provided."
           },
           "height": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Render height in pixels. Overrides the selected quality preset when provided."
           },
           "samples": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Maximum render samples. Cannot be combined with maxTimeSeconds and overrides preset sampling when provided."
           },
           "maxTimeSeconds": {
@@ -1216,9 +1105,7 @@
             "description": "Whether existing image files may be replaced. Defaults to false."
           }
         },
-        "required": ["scenePath", "outputDir", "cameras"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath", "outputDir", "cameras"]
       },
       "outputSchema": {
         "type": "object",
@@ -1228,26 +1115,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -1264,9 +1142,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -1286,15 +1162,14 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_render_all_cameras",
       "title": "Render all scene cameras",
       "description": "Discover every saved camera and render each view in one headless process with collision-safe file names and per-camera results.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
           "scenePath": {
@@ -1310,16 +1185,19 @@
           "width": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Render width in pixels. Overrides the selected quality preset when provided."
           },
           "height": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Render height in pixels. Overrides the selected quality preset when provided."
           },
           "samples": {
             "type": "integer",
             "exclusiveMinimum": 0,
+            "maximum": 9007199254740991,
             "description": "Maximum render samples. Cannot be combined with maxTimeSeconds and overrides preset sampling when provided."
           },
           "maxTimeSeconds": {
@@ -1342,14 +1220,12 @@
             "description": "Whether existing image files may be replaced. Defaults to false."
           },
           "continueOnError": {
+            "default": true,
             "type": "boolean",
-            "description": "Continue rendering remaining cameras after one camera fails. Defaults to true.",
-            "default": true
+            "description": "Continue rendering remaining cameras after one camera fails. Defaults to true."
           }
         },
-        "required": ["scenePath", "outputDir"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath", "outputDir"]
       },
       "outputSchema": {
         "type": "object",
@@ -1359,26 +1235,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -1395,9 +1262,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -1417,17 +1282,20 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_import_model",
       "title": "Import a model into KeyShot",
       "description": "Import a supported local model into an empty or base scene, apply requested composition options, and save a new scene.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
+          "overwrite": {
+            "type": "boolean",
+            "description": "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true."
+          },
           "modelPath": {
             "type": "string",
             "minLength": 1,
@@ -1441,7 +1309,7 @@
           "outputScenePath": {
             "type": "string",
             "minLength": 1,
-            "description": "Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
+            "description": "Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
           },
           "centerGeometry": {
             "type": "boolean",
@@ -1460,9 +1328,7 @@
             "description": "Ask KeyShot to adjust the environment to the imported geometry when supported."
           }
         },
-        "required": ["modelPath", "outputScenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["modelPath", "outputScenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -1472,26 +1338,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -1508,9 +1365,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -1530,17 +1385,20 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_apply_material",
       "title": "Apply a KeyShot material",
       "description": "Apply a KeyShot library material or local material file to a specific object, then save the edited scene.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
+          "overwrite": {
+            "type": "boolean",
+            "description": "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true."
+          },
           "scenePath": {
             "type": "string",
             "minLength": 1,
@@ -1569,12 +1427,10 @@
           "outputScenePath": {
             "type": "string",
             "minLength": 1,
-            "description": "Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
+            "description": "Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
           }
         },
-        "required": ["scenePath", "outputScenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath", "outputScenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -1584,26 +1440,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -1620,9 +1467,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -1642,19 +1487,16 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_list_material_presets",
       "title": "List material presets",
       "description": "Read the configured local material preset JSON and return valid preset names and material sources without opening KeyShot.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
-        "properties": {},
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "properties": {}
       },
       "outputSchema": {
         "type": "object",
@@ -1664,26 +1506,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -1700,9 +1533,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -1722,17 +1553,20 @@
         "idempotentHint": true,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_apply_material_preset",
       "title": "Apply a material preset",
       "description": "Resolve a configured material preset, apply it to one scene object, and save a new scene.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
+          "overwrite": {
+            "type": "boolean",
+            "description": "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true."
+          },
           "scenePath": {
             "type": "string",
             "minLength": 1,
@@ -1756,12 +1590,10 @@
           "outputScenePath": {
             "type": "string",
             "minLength": 1,
-            "description": "Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
+            "description": "Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
           }
         },
-        "required": ["scenePath", "presetName", "outputScenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath", "presetName", "outputScenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -1771,26 +1603,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -1807,9 +1630,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -1829,17 +1650,20 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_set_camera",
       "title": "Set a KeyShot camera",
       "description": "Create or update a named camera using position, target, distance, field of view, or focal length, then save the edited scene.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
+          "overwrite": {
+            "type": "boolean",
+            "description": "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true."
+          },
           "scenePath": {
             "type": "string",
             "minLength": 1,
@@ -1852,53 +1676,38 @@
           },
           "position": {
             "type": "array",
+            "items": [
+              { "type": "number" },
+              { "type": "number" },
+              { "type": "number" }
+            ],
+            "additionalItems": false,
             "minItems": 3,
             "maxItems": 3,
-            "items": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "number"
-              },
-              {
-                "type": "number"
-              }
-            ],
             "description": "Camera position [x, y, z]. Must be provided together with lookAt."
           },
           "lookAt": {
             "type": "array",
+            "items": [
+              { "type": "number" },
+              { "type": "number" },
+              { "type": "number" }
+            ],
+            "additionalItems": false,
             "minItems": 3,
             "maxItems": 3,
-            "items": [
-              {
-                "$ref": "#/properties/position/items/0"
-              },
-              {
-                "$ref": "#/properties/position/items/1"
-              },
-              {
-                "$ref": "#/properties/position/items/2"
-              }
-            ],
             "description": "Camera target [x, y, z]. Must be provided together with position."
           },
           "up": {
             "type": "array",
+            "items": [
+              { "type": "number" },
+              { "type": "number" },
+              { "type": "number" }
+            ],
+            "additionalItems": false,
             "minItems": 3,
             "maxItems": 3,
-            "items": [
-              {
-                "$ref": "#/properties/position/items/0"
-              },
-              {
-                "$ref": "#/properties/position/items/1"
-              },
-              {
-                "$ref": "#/properties/position/items/2"
-              }
-            ],
             "description": "Optional camera up direction [x, y, z]. Requires position and lookAt."
           },
           "distance": {
@@ -1921,12 +1730,10 @@
           "outputScenePath": {
             "type": "string",
             "minLength": 1,
-            "description": "Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
+            "description": "Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
           }
         },
-        "required": ["scenePath", "outputScenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath", "outputScenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -1936,26 +1743,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -1972,9 +1770,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -1994,19 +1790,16 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_list_camera_presets",
       "title": "List camera presets",
       "description": "Read the configured camera preset JSON and return valid standard or absolute camera presets without opening KeyShot.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
-        "properties": {},
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "properties": {}
       },
       "outputSchema": {
         "type": "object",
@@ -2016,26 +1809,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -2052,9 +1836,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -2074,17 +1856,20 @@
         "idempotentHint": true,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_apply_camera_preset",
       "title": "Apply a camera preset",
       "description": "Create or update a saved camera from a configured standard-view or absolute camera preset, then save the edited scene.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
+          "overwrite": {
+            "type": "boolean",
+            "description": "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true."
+          },
           "scenePath": {
             "type": "string",
             "minLength": 1,
@@ -2103,12 +1888,10 @@
           "outputScenePath": {
             "type": "string",
             "minLength": 1,
-            "description": "Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
+            "description": "Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
           }
         },
-        "required": ["scenePath", "presetName", "outputScenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath", "presetName", "outputScenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -2118,26 +1901,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -2154,9 +1928,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -2176,17 +1948,20 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_set_environment",
       "title": "Set the KeyShot environment",
       "description": "Select an environment by library name or local file, optionally change brightness and rotation, and save the edited scene.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
+          "overwrite": {
+            "type": "boolean",
+            "description": "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true."
+          },
           "scenePath": {
             "type": "string",
             "minLength": 1,
@@ -2216,12 +1991,10 @@
           "outputScenePath": {
             "type": "string",
             "minLength": 1,
-            "description": "Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
+            "description": "Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
           }
         },
-        "required": ["scenePath", "outputScenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath", "outputScenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -2231,26 +2004,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -2267,9 +2031,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -2289,17 +2051,20 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     },
     {
       "name": "keyshot_save_scene",
       "title": "Save a KeyShot scene copy",
       "description": "Open an existing scene and save a copy to a requested path inside the configured safe output directory.",
       "inputSchema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "properties": {
+          "overwrite": {
+            "type": "boolean",
+            "description": "Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true."
+          },
           "scenePath": {
             "type": "string",
             "minLength": 1,
@@ -2308,12 +2073,10 @@
           "outputScenePath": {
             "type": "string",
             "minLength": 1,
-            "description": "Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
+            "description": "Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled."
           }
         },
-        "required": ["scenePath", "outputScenePath"],
-        "additionalProperties": false,
-        "$schema": "http://json-schema.org/draft-07/schema#"
+        "required": ["scenePath", "outputScenePath"]
       },
       "outputSchema": {
         "type": "object",
@@ -2323,26 +2086,17 @@
             "description": "True when the requested operation completed successfully."
           },
           "data": {
-            "anyOf": [
-              {},
-              {
-                "type": "null"
-              }
-            ],
+            "anyOf": [{}, { "type": "null" }],
             "description": "Operation-specific structured result data, or null when unavailable."
           },
           "outputFiles": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Absolute paths of images or scene files created by the operation."
           },
           "warnings": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Non-fatal conditions the user or agent should review."
           },
           "keyshotStdoutTail": {
@@ -2359,9 +2113,7 @@
           },
           "suggestions": {
             "type": "array",
-            "items": {
-              "type": "string"
-            },
+            "items": { "type": "string" },
             "description": "Actionable recovery steps for the user or agent."
           }
         },
@@ -2381,9 +2133,7 @@
         "idempotentHint": false,
         "openWorldHint": false
       },
-      "execution": {
-        "taskSupport": "forbidden"
-      }
+      "execution": { "taskSupport": "forbidden" }
     }
   ],
   "version": "0.13.1"

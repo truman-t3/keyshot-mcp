@@ -50,6 +50,9 @@ jobs:
       - name: Reject high-severity dependency vulnerabilities
         run: pnpm audit --audit-level=high
 
+      - name: Reject private publication content
+        run: pnpm run check:public-safety
+
       - name: Resolve and validate release version
         id: release
         shell: bash
