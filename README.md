@@ -19,7 +19,9 @@
   <img src="https://img.shields.io/badge/tools-19-55E6A5" alt="19 MCP tools">
   <img src="https://img.shields.io/badge/KeyShot-14.1_tested-00AEEF" alt="KeyShot 14.1 tested">
   <img src="https://img.shields.io/badge/Node.js-20%2B-339933" alt="Node.js 20 or newer">
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6" alt="TypeScript 5.9">
   <img src="https://img.shields.io/badge/MCP-2026--07--28-111827" alt="MCP protocol 2026-07-28">
+  <a href="https://m8ven.ai/mcp/truman-t3-keyshot-mcp-v7af97"><img src="https://m8ven.ai/badge/mcp/truman-t3-keyshot-mcp-v7af97?variant=verified" alt="M8ven external verification"></a>
 </p>
 
 <p align="center">
@@ -41,6 +43,10 @@
 > **Saved scenes, not realtime GUI control.** KeyShot MCP runs headless on the same
 > computer as KeyShot. It does not read unsaved edits or control the open KeyShot window.
 > **处理已保存的场景，不是实时 GUI 控制。** 服务在本机后台运行 KeyShot，不能读取窗口中尚未保存的修改。
+>
+> File processing is local, but your client may send scene metadata and previews
+> to its model provider. Review [privacy and security](SECURITY.md) before confidential work.
+> 文件处理在本机完成，但客户端可能把场景信息和预览发送给模型服务；保密项目请先阅读[隐私与安全说明](SECURITY.md)。
 
 ## From a Request to a Render / 一句话到出图
 
@@ -119,6 +125,7 @@ Find the full path of my local keyshot_headless.exe and set KEYSHOT_HEADLESS_EXE
 Keep the default Documents/KeyShot MCP Outputs folder and external outputs disabled.
 Use my client's configuration format, restart or reload it, and run keyshot_status.
 Explain failed checks in plain language. Do not request or upload license keys.
+Do not upload or publish my scenes or retained render files.
 Before showing confidential scene metadata or previews to a model service, ask me first.
 ```
 
@@ -220,6 +227,24 @@ if one camera fails, and do not overwrite existing images.
 
 For selected cameras use `keyshot_batch_render`; for different scenes use `keyshot_render_queue`.
 
+#### Prepare a Model Without Rendering
+
+```text
+Import C:\models\speaker.obj, center it, place it on the ground and adjust the
+camera target and environment. Save a scene copy; do not render an image yet.
+```
+
+Use `keyshot_import_model` when only a prepared `.bip` is needed.
+
+#### Adjust the Lens and Environment
+
+```text
+Set the Product Hero camera to a 55 mm focal length, rotate the current
+environment to 45 degrees, save a scene copy and show a preview.
+```
+
+Use `keyshot_set_camera` and `keyshot_set_environment` for focused changes.
+
 ### Render Quality
 
 | Preset     |  Resolution | Samples | Typical Use                     |
@@ -232,6 +257,7 @@ Explicit dimensions and samples override presets. `maxTimeSeconds` switches to
 time-based rendering and cannot be combined with explicit `samples`.
 `fieldOfView` and `focalLength` are mutually exclusive; camera `position` and
 `lookAt` must be supplied together. A quality preset does not guarantee the final look.
+Lower-level rendering tools keep their existing defaults when `qualityPreset` is omitted.
 
 ### Tool Reference
 
@@ -252,6 +278,17 @@ The server also provides a product-render MCP Prompt and a workflow MCP Resource
 The bundled [Agent Skill](skills/keyshot-mcp/SKILL.md) covers setup, diagnosis and
 safe tool selection. These are separate interfaces, not extra render tools.
 
+### Camera and Material Presets
+
+The bundled camera presets are **Front, Back, Left, Right, Top, Bottom and Isometric**.
+Custom camera JSON supports a `standardView` or absolute `position`, `lookAt` and
+optional `up`. Both object and array formats are supported; see the [preset files](presets).
+
+Material presets reference a local KeyShot library name or material file, not bundled
+proprietary materials. The server only reads preset JSON; it does not edit it.
+Use `KEYSHOT_CAMERA_PRESETS` and `KEYSHOT_MATERIAL_PRESETS` for custom files.
+See [material assignment and error guidance](docs/MATERIALS.md).
+
 ### Configuration and Safety
 
 | Variable                         | Default                                | Purpose                                                  |
@@ -268,6 +305,8 @@ Inputs can come from any trusted local path. Output traversal and symlink/juncti
 escapes are rejected by default. Automatically named product outputs use `-2`,
 `-3`, etc. on collision; explicit paths are not silently renamed. Enable `overwrite`
 only where supported and when replacement is intentional. Prefer scene copies.
+KeyShot headless tasks run sequentially within each server instance to reduce
+license and file conflicts; this does not coordinate separate MCP server processes.
 
 Processing is local, **but your MCP client may send tool results, scene metadata
 and preview images to its selected model provider**. Review privacy settings
@@ -345,6 +384,7 @@ KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方�
 保留默认“文档/KeyShot MCP Outputs”输出目录，关闭外部输出。
 按这个客户端实际支持的格式配置，重启或重新加载后运行 keyshot_status。
 用普通设计师能理解的语言解释失败检查，不索取或上传许可证密钥。
+不要上传或发布我的场景或保留的渲染文件。
 如果要把保密场景的元数据或预览发送给模型服务，请先取得我的确认。
 ```
 
@@ -441,6 +481,24 @@ pnpm run build
 
 指定相机用 `keyshot_batch_render`；不同场景用 `keyshot_render_queue`。
 
+#### 只整理模型，不渲染
+
+```text
+导入 C:\models\speaker.obj，居中贴地，调整相机观察点和环境。
+保存场景副本，暂时不要渲染图片。
+```
+
+只需要整理好的 `.bip` 时使用 `keyshot_import_model`。
+
+#### 调整镜头与环境
+
+```text
+把 Product Hero 相机设为 55 mm 焦距，将当前环境旋转到 45 度，
+保存场景副本并给我看预览。
+```
+
+使用 `keyshot_set_camera` 和 `keyshot_set_environment` 分别调整相机与环境。
+
 ### 渲染质量
 
 | 预设       |      分辨率 | 采样 | 常用场景         |
@@ -452,6 +510,7 @@ pnpm run build
 显式宽高和采样会覆盖预设值。`maxTimeSeconds` 改用限时渲染，不能与显式 `samples`
 同时使用。`fieldOfView` 与 `focalLength` 互斥；`position` 与 `lookAt` 必须成对提供。
 效果仍需检查，不能把质量预设理解为“保证最终效果”。
+底层渲染工具未填写 `qualityPreset` 时，保留各自原有的默认行为。
 
 ### 工具参考
 
@@ -461,6 +520,16 @@ pnpm run build
 
 另有产品渲染 Prompt、工作流 Resource 和 [Agent Skill](skills/keyshot-mcp/SKILL.md)。
 它们用于指导流程，不是额外的渲染工具。无需记住全部名称，可直接描述设计需求。
+
+### 相机与材质预设
+
+内置七个相机视角：**Front、Back、Left、Right、Top、Bottom 和 Isometric**。
+自定义相机 JSON 可填写 `standardView`，或绝对坐标 `position`、`lookAt` 与可选 `up`；
+支持对象和数组格式，参见[预设文件](presets)。
+
+材质预设引用本机 KeyShot 材质库名称或材质文件，不附带专有材质资源。
+服务只读取预设 JSON，不自动修改。自定义文件分别通过 `KEYSHOT_CAMERA_PRESETS`
+和 `KEYSHOT_MATERIAL_PRESETS` 配置，材质规则及错误处理见[材质应用说明](docs/MATERIALS.md)。
 
 ### 配置与安全
 
@@ -477,6 +546,8 @@ pnpm run build
 输入可以来自任意可信本地路径。默认拒绝越界路径及软链接/目录联接逃逸。
 产品工具自动命名的输出重名时使用 `-2`、`-3` 等编号，显式路径不被静默改名。
 仅在工具支持且确实要替换文件时开启 `overwrite`，平时使用场景副本。
+同一个服务实例内的 KeyShot 后台任务按顺序执行，以减少许可证和文件冲突；
+多个独立 MCP 服务进程之间不共享这一排队机制。
 
 处理在本机完成，**但 MCP 客户端可能把工具结果、场景元数据和预览图发送给所选模型
 服务**。保密项目请先核对隐私设置。项目不提供许可证绕过或任意 Python 执行。

@@ -6,6 +6,9 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ### Documentation / 文档
 
+- Restore TypeScript and M8ven header badges, preset guidance, import-only and lens/environment examples, task serialization and early privacy reminders after auditing the README redesign.
+- 核对改版前后内容，补回 TypeScript、M8ven 徽章，预设说明、仅导入及镜头/环境示例、任务串行说明，并前置隐私提醒。
+
 - Add a bilingual request-to-render diagram with desktop and mobile layouts, using an object-level material change as the example.
 - 增加中英文“一句话到出图”流程图，适配桌面和手机，以指定对象的材质替换说明预览、确认和输出流程。
 

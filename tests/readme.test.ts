@@ -15,12 +15,76 @@ const localDocs = [
 ];
 
 describe("designer-facing README", () => {
+  it("retains project header badges without reintroducing rating badges", () => {
+    const header = source.split("## From a Request to a Render")[0];
+    for (const label of [
+      "npm version",
+      "CI status",
+      "MIT License",
+      "19 MCP tools",
+      "KeyShot 14.1 tested",
+      "Node.js 20 or newer",
+      "TypeScript 5.9",
+      "MCP protocol 2026-07-28",
+      "M8ven external verification",
+    ])
+      expect(header).toContain(`alt="${label}"`);
+    expect(header).toContain(
+      "https://m8ven.ai/badge/mcp/truman-t3-keyshot-mcp-v7af97?variant=verified",
+    );
+    expect(header).not.toMatch(/lobehub\.com\/badge|glama\.ai\/.*badge/);
+  });
+
   it("keeps every tool discoverable without duplicating the full reference", () => {
     for (const tool of TOOL_CATALOG)
       expect(source).toContain("`" + tool.name + "`");
     expect(source).toContain("docs/TOOLS.md");
     expect(source).toContain("## English");
     expect(source).toContain("## 中文");
+  });
+
+  it("retains setup, preset and workflow details after restructuring", () => {
+    for (const name of [
+      "KEYSHOT_HEADLESS_EXE",
+      "KEYSHOT_OUTPUT_DIR",
+      "KEYSHOT_ALLOW_EXTERNAL_OUTPUTS",
+      "KEYSHOT_TIMEOUT_MS",
+      "KEYSHOT_LICENSE_ARGS",
+      "KEYSHOT_CAMERA_PRESETS",
+      "KEYSHOT_MATERIAL_PRESETS",
+    ])
+      expect(source.split(`\`${name}\``).length - 1).toBeGreaterThanOrEqual(2);
+    for (const name of [
+      "Front",
+      "Back",
+      "Left",
+      "Right",
+      "Top",
+      "Bottom",
+      "Isometric",
+    ])
+      expect(source).toContain(name);
+    for (const detail of [
+      "### Camera and Material Presets",
+      "### 相机与材质预设",
+      "#### Prepare a Model Without Rendering",
+      "#### 只整理模型，不渲染",
+      "#### Adjust the Lens and Environment",
+      "#### 调整镜头与环境",
+      "sequentially within each server instance",
+      "多个独立 MCP 服务进程",
+      "does not edit it",
+      "不自动修改",
+      "Do not upload or publish my scenes",
+      "不要上传或发布我的场景",
+      "CONTRIBUTING.md",
+      "docs/GUI-LIMITATIONS.md",
+      "docs/TOOLS.md",
+    ])
+      expect(source).toContain(detail);
+    const introduction = source.split("## From a Request to a Render")[0];
+    expect(introduction).toContain("model provider");
+    expect(introduction).toContain("模型服务");
   });
 
   it("uses the approved local renders with source attribution", () => {
