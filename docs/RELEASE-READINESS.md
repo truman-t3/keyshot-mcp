@@ -1,5 +1,44 @@
 # Release Readiness / 正式版验收
 
+## Unreleased: Output Safety / 未发布：输出安全
+
+Local validation on 2026-10-15; this is not a published release. Remote CI results
+are tracked in the pull request checks.
+2026-10-15 本地验证；此变更尚未正式发布，远端 CI 结果在 PR 检查项中追踪。
+
+- Default no-overwrite protection covers low-level saves, edits, renders and queue
+  jobs; explicit overwrite never permits declared input-file or linked-alias replacement.
+  / 默认不覆盖扩展到底层保存、编辑、渲染和队列；允许覆盖也不能替换本次声明的输入文件及其链接。
+- TypeScript: 208 tests passed. Python: 79 tests, 77 passed; file-symlink permission
+  and POSIX named-pipe tests skipped on Windows. Windows junction and hard-link
+  checks passed separately.
+  / TypeScript 208 项通过；Python 79 项中 77 项通过，Windows 上跳过文件软链接权限和
+  POSIX 命名管道两项；目录联接和硬链接检查单独通过。
+- KeyShot 14.1.0.154: output-protection smoke and all 14 original smoke steps passed;
+  input scene and generated OBJ hashes stayed unchanged. Glass/plastic presets and
+  a local native MTL passed saved-scene reinspection; invalid material inputs were
+  rejected. / 输出保护和原有 14 步实机测试通过，输入场景及生成 OBJ 哈希未变；玻璃、塑料
+  预设及本地原生 MTL 保存后复查通过，无效材质输入被拒绝。
+- Follow-up preview review: embedded and explicitly saved 320x240 PNGs passed in
+  KeyShot 14.1; temporary files were removed and the source hash was unchanged.
+  Oversized and growing-file reads are bounded by automated tests.
+  / 追加预览复核：KeyShot 14.1 返回并保存 320x240 PNG，临时文件已清理，源文件哈希
+  不变；自动测试覆盖超大文件与读取期间增长的大小限制。
+- Build, formatting, Ruff, tool/platform input-schema drift checks, release metadata,
+  dependency audit and npm pack passed locally. / 构建、格式、Ruff、工具文档与平台输入
+  Schema 漂移检查、发布元数据、依赖审计及 npm 打包本地通过。
+- Public-content scanning covers filenames, private paths, known credential formats,
+  unreviewed binary assets and PNG metadata. It is a prevention rule set, not proof
+  that Git history or previously published artifacts contain no private information.
+  / 公开内容扫描覆盖文件名、私人路径、常见凭据格式、未经复核的二进制素材和 PNG 元数据；
+  这是预防规则，不代表历史提交或过去的发布资产已无私人信息。
+- Remote Windows/Ubuntu Node.js 20/24 CI and CodeQL must pass before merging.
+  / 合并前必须通过 Windows/Ubuntu、Node.js 20/24 CI 与 CodeQL。
+
+This is not a 1.0 acceptance result. Fresh installations, two real MCP clients,
+independent designer feedback and representative framing checks remain outstanding.
+这不是 1.0 验收通过结论；干净安装、两款真实客户端、独立设计师反馈及代表性构图仍待验证。
+
 ## 0.13.1 Validation Record / 版本验证记录
 
 **Validation baseline: 2026-10-15. Publication results are tracked separately. / 验证基线：2026-10-15；发布结果独立追踪。**

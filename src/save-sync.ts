@@ -217,6 +217,12 @@ async function allocateSyncPath(
 
 function syncSuggestions(error: string): string[] {
   const normalized = error.toLowerCase();
+  if (normalized.includes("output already exists")) {
+    return [
+      "Choose another outputScenePath or omit it for an automatically numbered copy. Saved-scene sync never overwrites existing files.",
+      "请换一个场景副本路径，或省略 outputScenePath 自动编号；保存同步不覆盖已有文件。",
+    ];
+  }
   if (normalized.includes("changed while it was being copied")) {
     return [
       "Wait until KeyShot finishes saving the scene, then call keyshot_sync_saved_scene again.",

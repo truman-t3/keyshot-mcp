@@ -311,8 +311,11 @@ See [material assignment and error guidance](docs/MATERIALS.md).
 
 Inputs can come from any trusted local path. Output traversal and symlink/junction
 escapes are rejected by default. Automatically named product outputs use `-2`,
-`-3`, etc. on collision; explicit paths are not silently renamed. Enable `overwrite`
-only where supported and when replacement is intentional. Prefer scene copies.
+`-3`, etc. on collision; explicit paths are not silently renamed. Writing tools reject
+existing files by default. Set `overwrite: true` only to replace a distinct output
+intentionally; it never permits replacing this request's input scene, model, material
+or environment, including linked aliases. Preview and saved-scene sync never overwrite.
+Keep scene and image destinations separate. Prefer scene copies.
 KeyShot headless tasks run sequentially within each server instance to reduce
 license and file conflicts; this does not coordinate separate MCP server processes.
 
@@ -555,7 +558,9 @@ pnpm run build
 
 输入可以来自任意可信本地路径。默认拒绝越界路径及软链接/目录联接逃逸。
 产品工具自动命名的输出重名时使用 `-2`、`-3` 等编号，显式路径不被静默改名。
-仅在工具支持且确实要替换文件时开启 `overwrite`，平时使用场景副本。
+写入工具默认拒绝覆盖已有文件。只有确实要替换另一个输出文件时才设置
+`overwrite: true`；即使开启，也不能覆盖本次调用的输入场景、模型、材质或环境文件，
+包括指向它们的链接。预览与保存同步始终不覆盖。场景和图片必须使用不同路径，平时使用场景副本。
 同一个服务实例内的 KeyShot 后台任务按顺序执行，以减少许可证和文件冲突；
 多个独立 MCP 服务进程之间不共享这一排队机制。
 

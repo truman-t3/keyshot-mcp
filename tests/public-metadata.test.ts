@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import { z } from "zod";
 import { describe, expect, it } from "vitest";
 import { VERSION } from "../src/version.js";
+import { TOOL_CATALOG } from "../src/tools/catalog.js";
 import {
   applyCameraPresetSchema,
   applyMaterialInputSchema,
@@ -41,6 +42,19 @@ const publicSchemas = {
 };
 
 describe("public metadata", () => {
+  it("keeps platform input schemas identical to the public tool catalog", () => {
+    const platform = JSON.parse(
+      fs.readFileSync(new URL("../lhm.plugin.json", import.meta.url), "utf8"),
+    );
+    for (const tool of TOOL_CATALOG) {
+      const entry = platform.tools.find(
+        (item: { name: string }) => item.name === tool.name,
+      );
+      expect(entry?.inputSchema, tool.name).toEqual(
+        z.toJSONSchema(tool.inputSchema, { io: "input", target: "draft-7" }),
+      );
+    }
+  });
   it("extracts bilingual release notes and rejects missing releases", () => {
     const script = fileURLToPath(
       new URL("../scripts/release-notes.mjs", import.meta.url),

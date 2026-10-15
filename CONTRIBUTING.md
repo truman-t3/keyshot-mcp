@@ -22,6 +22,7 @@ Requirements: Node.js 20 or newer, pnpm 10, and Python 3.11 or newer.
 ```bash
 pnpm install --frozen-lockfile
 pnpm run check
+pnpm run check:public-safety
 pnpm test
 python -m unittest discover -s tests -p "test_*.py"
 pnpm run format:check
@@ -38,6 +39,10 @@ reinspection, invalid-name rejection and an unsupported Wavefront MTL fixture.
 Optionally pass `--material-file "<native KeyShot MTL>"` to test a trusted local
 single-material file. The native file is read only, never copied into the repository.
 Tests use generated geometry and a new output subfolder, not user scenes.
+Run `pnpm run smoke:keyshot:outputs` to check existing-file rejection, source hashes,
+explicit replacement of a distinct copy and PNG output in a new test subfolder.
+Use a fresh `KEYSHOT_OUTPUT_DIR` when repeating the full smoke test, which uses fixed names.
+`pnpm docs:tools` also synchronizes the platform manifest's input schemas.
 CI on Linux validates the MCP and bridge logic; it does not verify KeyShot itself.
 
 ### Pull requests
@@ -53,6 +58,9 @@ CI on Linux validates the MCP and bridge logic; it does not verify KeyShot itsel
 Never include proprietary KeyShot scenes, license data, customer assets, credentials,
 private paths, or unpublished renders in Issues, Discussions, commits, or pull requests.
 Report vulnerabilities through GitHub's private security reporting form.
+
+Use a GitHub no-reply commit email. Check filenames and image metadata as well as
+visible content; new public images require review in `scripts/check-public-safety.mjs`.
 
 ## 中文
 
@@ -74,6 +82,7 @@ Report vulnerabilities through GitHub's private security reporting form.
 ```bash
 pnpm install --frozen-lockfile
 pnpm run check
+pnpm run check:public-safety
 pnpm test
 python -m unittest discover -s tests -p "test_*.py"
 pnpm run format:check
@@ -89,6 +98,9 @@ KeyShot。
 运行 `pnpm run smoke:keyshot:materials` 可验证材质预设、保存后复查、无效名称及不支持的
 Wavefront MTL 拒绝；可选传入 `--material-file "<KeyShot 原生 MTL>"` 检查可信本地单材质文件。
 原生文件只读，不复制进仓库；测试仅使用生成模型和新输出子目录，不覆盖用户场景。
+运行 `pnpm run smoke:keyshot:outputs` 可验证重名拒绝、源文件哈希、明确覆盖另一份副本及
+PNG 输出，文件保存在新测试子目录。完整 smoke 使用固定文件名，重复运行时请设置新的
+`KEYSHOT_OUTPUT_DIR`。`pnpm docs:tools` 同时同步平台清单中的输入 Schema。
 
 ### Pull Request
 
@@ -100,3 +112,6 @@ Wavefront MTL 拒绝；可选传入 `--material-file "<KeyShot 原生 MTL>"` 检
 
 不要在 Issue、Discussion、提交或 PR 中包含专有 KeyShot 场景、许可证数据、客户资产、
 账号凭据、私人路径或未公开渲染图。安全漏洞请通过 GitHub 私密安全报告提交。
+
+提交使用 GitHub no-reply 邮箱；除可见内容外，也检查文件名和图片元数据。
+新增公开图片需要在 `scripts/check-public-safety.mjs` 中完成复核登记。

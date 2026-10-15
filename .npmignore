@@ -4,3 +4,13 @@ outputs/*
 !outputs/.gitkeep
 *.log
 .env
+.env.*
+.npmrc
+.pypirc
+*.bip
+*.ksp
+*.lic
+*.pem
+*.key
+*.p12
+*.pfx

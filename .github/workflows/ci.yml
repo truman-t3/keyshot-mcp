@@ -45,6 +45,9 @@ jobs:
       - name: Type check
         run: pnpm run check
 
+      - name: Reject private publication content
+        run: pnpm run check:public-safety
+
       - name: TypeScript tests
         run: pnpm test
 

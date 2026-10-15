@@ -73,6 +73,7 @@ for (const required of [
   "SUPPORT.md",
   "CODE_OF_CONDUCT.md",
   "scripts/keyshot-material-smoke.mjs",
+  "scripts/keyshot-output-smoke.mjs",
 ]) {
   if (!pkg.files?.includes(required))
     throw new Error(`The npm package must include ${required}.`);

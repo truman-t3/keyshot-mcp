@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import type { ServerConfig } from "./config.js";
 import { localFailure, withErrorGuidance } from "./result.js";
-import { normalizeOutputPaths } from "./output-paths.js";
+import { assertOutputFilesSafe, normalizeOutputPaths } from "./output-paths.js";
 import { allocateAutomaticProductOutputs } from "./output-collisions.js";
 import type { KeyShotRequest, KeyShotResult } from "./types.js";
 
@@ -53,6 +53,15 @@ async function runKeyShot(
       normalizedRequest =
         await allocateAutomaticProductOutputs(normalizedRequest);
     }
+    normalizedRequest._protectedInputPaths = [
+      ...(Array.isArray(request._protectedInputPaths)
+        ? request._protectedInputPaths
+        : []),
+      config.bridgeScriptPath,
+      config.materialPresetsPath,
+      config.cameraPresetsPath,
+    ];
+    await assertOutputFilesSafe(normalizedRequest);
   } catch (error) {
     return localFailure(errorMessage(error));
   }
@@ -66,19 +75,6 @@ async function runKeyShot(
         );
       }
     }
-    if (normalizedRequest.overwrite !== true) {
-      const protectedOutputs = [
-        normalizedRequest.outputScenePath,
-        normalizedRequest.outputPath,
-      ];
-      for (const output of protectedOutputs) {
-        if (typeof output === "string" && (await exists(output))) {
-          return localFailure(
-            `Output already exists and overwrite is false: ${output}`,
-          );
-        }
-      }
-    }
   }
 
   const id = `${Date.now()}-${randomUUID()}`;
@@ -88,6 +84,7 @@ async function runKeyShot(
     ...normalizedRequest,
     defaults: {
       outputDir: config.keyshotOutputDir,
+      allowExternalOutputs: config.keyshotAllowExternalOutputs,
     },
   };
 

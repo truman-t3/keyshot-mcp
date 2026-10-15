@@ -12,6 +12,20 @@ const projectRoot = path.resolve(
 const outputPath = path.join(projectRoot, "docs", "TOOLS.md");
 const checkOnly = process.argv.includes("--check");
 const generated = await format(renderToolsDocument(), { parser: "markdown" });
+const platformPath = path.join(projectRoot, "lhm.plugin.json");
+const platform = JSON.parse(fs.readFileSync(platformPath, "utf8"));
+for (const tool of TOOL_CATALOG) {
+  const entry = platform.tools.find((item) => item.name === tool.name);
+  if (!entry)
+    throw new Error(`Platform tool metadata is missing ${tool.name}.`);
+  entry.inputSchema = z.toJSONSchema(tool.inputSchema, {
+    io: "input",
+    target: "draft-7",
+  });
+}
+const generatedPlatform = await format(JSON.stringify(platform), {
+  parser: "json",
+});
 
 if (checkOnly) {
   const current = fs.existsSync(outputPath)
@@ -22,10 +36,18 @@ if (checkOnly) {
       "docs/TOOLS.md is out of date. Run `pnpm docs:tools` and commit the result.",
     );
   }
+  if (
+    normalizeEol(fs.readFileSync(platformPath, "utf8")) !==
+    normalizeEol(generatedPlatform)
+  )
+    throw new Error(
+      "lhm.plugin.json input schemas are out of date. Run `pnpm docs:tools`.",
+    );
   console.log("docs/TOOLS.md matches the tool catalog.");
 } else {
   fs.mkdirSync(path.dirname(outputPath), { recursive: true });
   fs.writeFileSync(outputPath, generated, "utf8");
+  fs.writeFileSync(platformPath, generatedPlatform, "utf8");
   console.log(
     `Generated ${path.relative(projectRoot, outputPath)} with ${TOOL_CATALOG.length} tools.`,
   );

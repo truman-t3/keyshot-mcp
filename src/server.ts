@@ -407,6 +407,7 @@ export function createKeyShotServer(
           materialName: preset.materialName,
           materialPath: preset.materialPath,
           outputScenePath: parsed.outputScenePath,
+          overwrite: parsed.overwrite,
         }),
       );
     },
@@ -497,6 +498,7 @@ export function createKeyShotServer(
               operation: "set_standard_camera" as const,
               scenePath: args.scenePath,
               standardView: preset.standardView,
+              overwrite: args.overwrite,
               cameraName: args.cameraName ?? preset.name,
               outputScenePath: args.outputScenePath,
             }
@@ -505,6 +507,7 @@ export function createKeyShotServer(
               scenePath: args.scenePath,
               cameraName: args.cameraName ?? preset.name,
               position: preset.position,
+              overwrite: args.overwrite,
               lookAt: preset.lookAt,
               up: preset.up,
               outputScenePath: args.outputScenePath,

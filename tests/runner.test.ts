@@ -10,6 +10,8 @@ import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { ServerConfig } from "../src/config.js";
+import type { KeyShotOperation } from "../src/types.js";
+import { runRenderQueue } from "../src/queue.js";
 import {
   MAX_CAPTURE_CHARS,
   runKeyShotSerialized,
@@ -133,6 +135,79 @@ describe("runner", () => {
     expect(first.ok).toBe(true);
     expect(second.ok).toBe(true);
     expect(Date.now() - start).toBeGreaterThanOrEqual(220);
+  });
+
+  it.each<KeyShotOperation>([
+    "render",
+    "import_model",
+    "apply_material",
+    "set_camera",
+    "set_standard_camera",
+    "set_environment",
+    "save_scene",
+  ])(
+    "protects existing outputs for %s before starting KeyShot",
+    async (operation) => {
+      const outputDir = join(tmpRoot, `protect-${operation}`);
+      mkdirSync(outputDir, { recursive: true });
+      const output = join(outputDir, "existing.bip");
+      writeFileSync(output, "keep");
+      const result = await runKeyShotSerialized(
+        makeConfig({ keyshotOutputDir: outputDir }),
+        {
+          operation,
+          [operation === "render" ? "outputPath" : "outputScenePath"]: output,
+        },
+      );
+      expect(result.errorCode).toBe("OUTPUT_EXISTS");
+      expect(result.keyshotStdoutTail).toBe("");
+    },
+  );
+
+  it("rejects input replacement even when external output and overwrite are enabled", async () => {
+    const input = join(tmpRoot, "original-input.bip");
+    writeFileSync(input, "original");
+    const result = await runKeyShotSerialized(
+      makeConfig({ keyshotAllowExternalOutputs: true }),
+      {
+        operation: "save_scene",
+        scenePath: input,
+        outputScenePath: input,
+        overwrite: true,
+      },
+    );
+    expect(result.errorCode).toBe("OUTPUT_IS_INPUT");
+  });
+
+  it("allows an intentional overwrite of a distinct output", async () => {
+    const output = join(tmpRoot, "outputs", "replace.bip");
+    writeFileSync(output, "copy");
+    const result = await runKeyShotSerialized(makeConfig(), {
+      operation: "save_scene",
+      outputScenePath: output,
+      overwrite: true,
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("does not let an earlier queue job overwrite a later job's input", async () => {
+    const first = join(tmpRoot, "outputs", "first-job.bip");
+    const later = join(tmpRoot, "outputs", "later-job.bip");
+    writeFileSync(first, "first");
+    writeFileSync(later, "later");
+    const result = await runRenderQueue(makeConfig(), [
+      { scenePath: first, outputPath: later, overwrite: true },
+      { scenePath: later, outputPath: "later.png" },
+    ]);
+    expect(result.ok).toBe(false);
+    expect(result.data).toMatchObject({
+      failed: 1,
+      skipped: 1,
+      results: [
+        { error: expect.stringContaining("Output must not replace an input") },
+        { skipped: true },
+      ],
+    });
   });
 
   it("times out a long-running process", async () => {
