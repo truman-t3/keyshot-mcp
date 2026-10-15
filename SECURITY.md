@@ -7,11 +7,12 @@ model, material, and environment files and can write rendered images or scene co
 
 ### Model-provider data flow
 
-MCP clients normally send tool inputs and results to the model service selected by
-the user. Scene metadata returned by inspection tools and images returned by
-`keyshot_preview_render` may therefore leave the local computer through that MCP
-client. Review the client and model provider's privacy settings before using private
-or customer work.
+The Agent in an MCP client receives tool results, including scene metadata and
+images returned by `keyshot_preview_render`. Depending on the client's implementation
+and settings, those results may be sent to the user's selected model service.
+The MCP client controls this data transmission; it is not an upload initiated by
+KeyShot MCP. Review the client and model provider's privacy settings before using
+private or customer work.
 
 KeyShot MCP itself does not upload files, run a remote service, or collect telemetry.
 It never requires license keys in prompts and does not expose arbitrary Python
@@ -44,9 +45,10 @@ KeyShot MCP 在本机运行 KeyShot headless。它可以读取本地场景、模
 
 ### 模型服务的数据流
 
-MCP 客户端通常会把工具输入和结果发送给用户选择的模型服务。因此，场景检查工具
-返回的元数据，以及 `keyshot_preview_render` 返回的预览图片，可能通过 MCP 客户端
-离开本机。处理私有项目或客户项目之前，请先确认 MCP 客户端和模型服务商的隐私设置。
+MCP 客户端中的 Agent 会接收工具结果，包括场景检查返回的元数据和
+`keyshot_preview_render` 返回的预览图片。这些内容可能根据客户端的实现与配置发送给
+用户选择的模型服务。数据传输由 MCP 客户端处理，不是 KeyShot MCP 主动上传。
+处理私有项目或客户项目之前，请先确认 MCP 客户端和模型服务商的隐私设置。
 
 KeyShot MCP 本身不会上传文件、运行远程服务或收集遥测数据。它不会要求用户在提示词
 中提供许可证密钥，也不开放任意 Python 执行。

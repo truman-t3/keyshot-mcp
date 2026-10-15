@@ -85,6 +85,10 @@ describe("designer-facing README", () => {
     const introduction = source.split("## From a Request to a Render")[0];
     expect(introduction).toContain("model provider");
     expect(introduction).toContain("模型服务");
+    expect(introduction).toContain("The Agent in your MCP client");
+    expect(introduction).toContain("MCP 客户端中的 Agent");
+    expect(introduction).toContain("client's implementation and settings");
+    expect(introduction).toContain("KeyShot MCP 本身不主动上传");
   });
 
   it("uses the approved local renders with source attribution", () => {
