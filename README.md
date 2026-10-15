@@ -44,9 +44,14 @@
 > computer as KeyShot. It does not read unsaved edits or control the open KeyShot window.
 > **处理已保存的场景，不是实时 GUI 控制。** 服务在本机后台运行 KeyShot，不能读取窗口中尚未保存的修改。
 >
-> File processing is local, but your client may send scene metadata and previews
-> to its model provider. Review [privacy and security](SECURITY.md) before confidential work.
-> 文件处理在本机完成，但客户端可能把场景信息和预览发送给模型服务；保密项目请先阅读[隐私与安全说明](SECURITY.md)。
+> **Client Agent and privacy.** The Agent in your MCP client receives scene information
+> and previews returned by tools. Depending on the client's implementation and settings,
+> these results may be sent to its configured model provider. KeyShot MCP itself does
+> not upload them. Review [privacy and security](SECURITY.md) before confidential work.
+>
+> **客户端 Agent 与隐私。** MCP 客户端中的 Agent 会接收工具返回的场景信息和预览；
+> 这些内容可能根据客户端的实现与配置发送给其所选模型服务。KeyShot MCP 本身不主动上传这些内容。
+> 保密项目请先阅读[隐私与安全说明](SECURITY.md)。
 
 ## From a Request to a Render / 一句话到出图
 
@@ -311,10 +316,11 @@ only where supported and when replacement is intentional. Prefer scene copies.
 KeyShot headless tasks run sequentially within each server instance to reduce
 license and file conflicts; this does not coordinate separate MCP server processes.
 
-Processing is local, **but your MCP client may send tool results, scene metadata
-and preview images to its selected model provider**. Review privacy settings
-before confidential work. No license bypass or arbitrary Python execution is
-provided. See [Security](SECURITY.md).
+Processing is local. When an Agent in your MCP client uses these tools, **the client
+may send tool results, scene metadata and preview images to its selected model provider**,
+depending on the client's implementation and settings. KeyShot MCP itself does not
+upload these results. Review privacy settings before confidential work. No license
+bypass or arbitrary Python execution is provided. See [Security](SECURITY.md).
 
 ### Questions and Support
 
@@ -553,8 +559,9 @@ pnpm run build
 同一个服务实例内的 KeyShot 后台任务按顺序执行，以减少许可证和文件冲突；
 多个独立 MCP 服务进程之间不共享这一排队机制。
 
-处理在本机完成，**但 MCP 客户端可能把工具结果、场景元数据和预览图发送给所选模型
-服务**。保密项目请先核对隐私设置。项目不提供许可证绕过或任意 Python 执行。
+处理在本机完成。**MCP 客户端中的 Agent 使用工具时，返回的工具结果、场景元数据和
+预览图可能根据客户端的实现与配置发送给所选模型服务。** KeyShot MCP 本身不主动上传
+这些内容。保密项目请先核对隐私设置。项目不提供许可证绕过或任意 Python 执行。
 更多说明见 [SECURITY.md](SECURITY.md)。
 
 ### 常见问题与支持

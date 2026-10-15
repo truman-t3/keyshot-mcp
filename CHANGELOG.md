@@ -4,6 +4,11 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+### Documentation / 文档
+
+- Clarify the roles of the MCP client's Agent, client configuration and model provider in privacy notices; distinguish client-managed transmission from the local KeyShot MCP service.
+- 明确隐私提示中 MCP 客户端 Agent、客户端配置与模型服务的职责，区分客户端处理的数据传输与本机 KeyShot MCP 服务。
+
 ## [0.13.1] - 2026-10-15
 
 ### Release Safety / 发布安全
