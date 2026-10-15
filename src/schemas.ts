@@ -340,7 +340,7 @@ export const applyMaterialInputSchema = z.object({
     )
     .optional(),
   materialPath: optionalPath(
-    "Absolute path to a local KeyShot material file. Provide either materialPath or materialName.",
+    "Absolute path to a native single-material KeyShot MTL file, not a Wavefront OBJ companion MTL. Provide either materialPath or materialName.",
   ),
   outputScenePath,
 });
@@ -388,7 +388,7 @@ export const productMaterialAssignmentSchema = z
       )
       .optional(),
     materialPath: optionalPath(
-      "Absolute path to a local KeyShot material file. Choose one material source.",
+      "Absolute path to a native single-material KeyShot MTL file, not a Wavefront OBJ companion MTL. Choose one material source.",
     ),
   })
   .superRefine((value, context) => {

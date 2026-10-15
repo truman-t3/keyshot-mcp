@@ -33,6 +33,11 @@ npm pack --dry-run
 
 Run `pnpm run smoke:keyshot` only on a computer with a supported, licensed KeyShot
 installation. Record the KeyShot version and operating system in the pull request.
+Run `pnpm run smoke:keyshot:materials` to verify preset assignments, saved-scene
+reinspection, invalid-name rejection and an unsupported Wavefront MTL fixture.
+Optionally pass `--material-file "<native KeyShot MTL>"` to test a trusted local
+single-material file. The native file is read only, never copied into the repository.
+Tests use generated geometry and a new output subfolder, not user scenes.
 CI on Linux validates the MCP and bridge logic; it does not verify KeyShot itself.
 
 ### Pull requests
@@ -81,6 +86,9 @@ npm pack --dry-run
 只有在本机已安装并合法授权 KeyShot 时才运行 `pnpm run smoke:keyshot`，并在 PR 中
 注明操作系统和 KeyShot 版本。Linux CI 只验证 MCP 与 Bridge 逻辑，不代表已经实测
 KeyShot。
+运行 `pnpm run smoke:keyshot:materials` 可验证材质预设、保存后复查、无效名称及不支持的
+Wavefront MTL 拒绝；可选传入 `--material-file "<KeyShot 原生 MTL>"` 检查可信本地单材质文件。
+原生文件只读，不复制进仓库；测试仅使用生成模型和新输出子目录，不覆盖用户场景。
 
 ### Pull Request
 

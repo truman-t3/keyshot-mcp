@@ -260,14 +260,14 @@ Apply a KeyShot library material or local material file to a specific object, th
 
 Safety: writes output; potentially destructive; local only.
 
-| Parameter         | Required | Type   | Description                                                                                                                                |
-| ----------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scenePath`       | Yes      | string | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                       |
-| `objectName`      | No       | string | Scene object name to modify. Provide either objectName or the more specific objectPath.                                                    |
-| `objectPath`      | No       | string | Full scene-tree path of the object to modify. Use this instead of objectName when names are duplicated.                                    |
-| `materialName`    | No       | string | Material name from the local KeyShot library. Provide either materialName or materialPath.                                                 |
-| `materialPath`    | No       | string | Absolute path to a local KeyShot material file. Provide either materialPath or materialName.                                               |
-| `outputScenePath` | Yes      | string | Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
+| Parameter         | Required | Type   | Description                                                                                                                                 |
+| ----------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scenePath`       | Yes      | string | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                        |
+| `objectName`      | No       | string | Scene object name to modify. Provide either objectName or the more specific objectPath.                                                     |
+| `objectPath`      | No       | string | Full scene-tree path of the object to modify. Use this instead of objectName when names are duplicated.                                     |
+| `materialName`    | No       | string | Material name from the local KeyShot library. Provide either materialName or materialPath.                                                  |
+| `materialPath`    | No       | string | Absolute path to a native single-material KeyShot MTL file, not a Wavefront OBJ companion MTL. Provide either materialPath or materialName. |
+| `outputScenePath` | Yes      | string | Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled.  |
 
 ### `keyshot_list_material_presets`
 

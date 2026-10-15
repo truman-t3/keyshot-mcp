@@ -1,0 +1,4 @@
+# Original negative test fixture: Wavefront format, not native KeyShot MTL.
+newmtl MCP Unsupported Wavefront
+Kd 0.2 0.5 0.7
+illum 2

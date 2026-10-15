@@ -240,7 +240,7 @@
                 "materialPath": {
                   "type": "string",
                   "minLength": 1,
-                  "description": "Absolute path to a local KeyShot material file. Choose one material source."
+                  "description": "Absolute path to a native single-material KeyShot MTL file, not a Wavefront OBJ companion MTL. Choose one material source."
                 }
               },
               "additionalProperties": false
@@ -1564,7 +1564,7 @@
           "materialPath": {
             "type": "string",
             "minLength": 1,
-            "description": "Absolute path to a local KeyShot material file. Provide either materialPath or materialName."
+            "description": "Absolute path to a native single-material KeyShot MTL file, not a Wavefront OBJ companion MTL. Provide either materialPath or materialName."
           },
           "outputScenePath": {
             "type": "string",
@@ -2386,5 +2386,5 @@
       }
     }
   ],
-  "version": "0.13.0"
+  "version": "0.13.1"
 }

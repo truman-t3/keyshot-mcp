@@ -6,6 +6,16 @@ import {
 } from "../src/result.js";
 
 describe("localFailure", () => {
+  it("explains invalid native material files without confusing them with missing files", () => {
+    const result = localFailure(
+      "Material file did not return any loaded material names: companion.mtl",
+    );
+    expect(result.errorCode).toBe("MATERIAL_FILE_INVALID");
+    expect(result.suggestions?.[0]).toContain(
+      "native single-material KeyShot MTL",
+    );
+    expect(result.suggestions?.[0]).toContain("Wavefront");
+  });
   it("produces a well-formed failure result", () => {
     const result = localFailure("boom");
     expect(result.ok).toBe(false);
