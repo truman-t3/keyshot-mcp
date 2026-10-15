@@ -3,11 +3,9 @@ export function extractReleaseNotes(changelog, version) {
     throw new Error("Provide a release version, for example 0.13.1.");
   }
   const lines = changelog.split(/\r?\n/);
-  const heading = new RegExp(
-    `^## \\[${version.replaceAll(".", "\\.")}\\](?:\\s|$)`,
-  );
+  const heading = `## [${version}]`;
   const starts = lines.flatMap((line, index) =>
-    heading.test(line) ? [index] : [],
+    line === heading || line.startsWith(`${heading} `) ? [index] : [],
   );
   if (starts.length !== 1)
     throw new Error(
@@ -51,11 +49,15 @@ export function validateReleaseReadiness(
       "The Unreleased comparison must start at the current version.",
     );
   const pending = /<!--\s*release-status:\s*pending\s*-->/.test(readme);
-  const datedHeading = new RegExp(
-    `^## \\[${version.replaceAll(".", "\\.")}\\] - \\d{4}-\\d{2}-\\d{2}\\s*$`,
-    "m",
-  );
-  if (ready && (pending || !datedHeading.test(changelog)))
+  const datedPrefix = `## [${version}] - `;
+  const datedHeading = changelog
+    .split(/\r?\n/)
+    .some(
+      (line) =>
+        line.startsWith(datedPrefix) &&
+        /^\d{4}-\d{2}-\d{2}$/.test(line.slice(datedPrefix.length).trim()),
+    );
+  if (ready && (pending || !datedHeading))
     throw new Error(
       "Release is pending: remove the pending notice and date the changelog before publishing.",
     );

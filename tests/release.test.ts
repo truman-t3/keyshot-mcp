@@ -36,6 +36,24 @@ describe("release readiness", () => {
     ).toThrow("found 2");
   });
 
+  it("matches version headings literally without executing a supplied pattern", () => {
+    expect(() =>
+      extractReleaseNotes(
+        changelog().replace("[1.2.3] -", "[1X2X3] -"),
+        "1.2.3",
+      ),
+    ).toThrow("found 0");
+    expect(() => extractReleaseNotes(changelog(), "(a+)+$")).toThrow(
+      "Provide a release version",
+    );
+    expect(() =>
+      extractReleaseNotes(
+        changelog().replace("[1.2.3] -", "[1.2.3]suffix -"),
+        "1.2.3",
+      ),
+    ).toThrow("found 0");
+  });
+
   it.each(["### Fixed / 修复\n- English only.", "### Changed\n- 仅中文。", ""])(
     "does not count headings or links as translated notes",
     (body) => {
