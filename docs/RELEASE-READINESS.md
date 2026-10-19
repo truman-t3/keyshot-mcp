@@ -1,6 +1,12 @@
 # Release Readiness / 正式版验收
 
-## Unreleased: Output Safety / 未发布：输出安全
+## 0.13.5 Candidate / 0.13.5 发布候选版
+
+This batch consolidates output protection, publication privacy, bounded previews,
+Windows installation reliability and startup diagnostic recovery. Versions
+0.13.2 through 0.13.4 are intentionally skipped; they were not published.
+Pending final validation and release approval. / 本批次集中修复输出保护、发布隐私、
+预览限制、Windows 安装及启动诊断。跳过未发布的 0.13.2 至 0.13.4，等待最终验证及发布批准。
 
 Local validation on 2026-10-15; this is not a published release. Remote CI results
 are tracked in the pull request checks.
@@ -9,10 +15,10 @@ are tracked in the pull request checks.
 - Default no-overwrite protection covers low-level saves, edits, renders and queue
   jobs; explicit overwrite never permits declared input-file or linked-alias replacement.
   / 默认不覆盖扩展到底层保存、编辑、渲染和队列；允许覆盖也不能替换本次声明的输入文件及其链接。
-- TypeScript: 209 tests passed. Python: 79 tests, 77 passed; file-symlink permission
+- TypeScript: 213 tests passed. Python: 79 tests, 77 passed; file-symlink permission
   and POSIX named-pipe tests skipped on Windows. Windows junction and hard-link
   checks passed separately.
-  / TypeScript 209 项通过；Python 79 项中 77 项通过，Windows 上跳过文件软链接权限和
+  / TypeScript 213 项通过；Python 79 项中 77 项通过，Windows 上跳过文件软链接权限和
   POSIX 命名管道两项；目录联接和硬链接检查单独通过。
 - KeyShot 14.1.0.154: output-protection smoke and all 14 original smoke steps passed;
   input scene and generated OBJ hashes stayed unchanged. Glass/plastic presets and
@@ -66,6 +72,12 @@ installation, npm/npx installation acceptance, two graphical client tests or
 independent designer validation. / 这是维护者执行的安装包集成验证，不等于干净系统、
 npm/npx 安装、两款图形客户端或独立设计师验收通过。
 
+The 0.13.5 candidate was separately packed and reinstalled on the same date. Its
+14-step KeyShot smoke and SDK stdio preview checks passed again with the new
+temporary-request isolation and seventh diagnostic check enabled.
+同日已单独打包并重装 0.13.5 候选版；启用独立临时请求及第七项诊断后，完整 14 步
+KeyShot 测试和 SDK stdio 预览检查再次通过。
+
 ## 0.13.1 Validation Record / 版本验证记录
 
 **Validation baseline: 2026-10-15. Publication results are tracked separately. / 验证基线：2026-10-15；发布结果独立追踪。**
@@ -104,8 +116,8 @@ Native materials were read from the local installation only; no library file was
 3. Before final release approval, remove the README pending marker and replace its
    candidate notices with release wording; update the upgrade/demo notices and this
    checklist, and set the actual release date in Changelog.
-4. Run `node scripts/check-release.mjs 0.13.1 --ready`. Until step 3 it must fail.
-5. With explicit authorization, merge and tag `v0.13.1`. The existing OIDC workflow
+4. Run `node scripts/check-release.mjs 0.13.5 --ready`. Until step 3 it must fail.
+5. With explicit authorization, merge and tag `v0.13.5`. The existing OIDC workflow
    publishes npm, creates bilingual GitHub notes and then publishes MCP Registry.
 6. Verify all three versions separately. Registry/platform failures must be reported,
    not described as complete. Third-party directory cache refresh is non-blocking.
@@ -115,8 +127,8 @@ Native materials were read from the local installation only; no library file was
 1. 完成本地检查和 KeyShot 实机验证，仅使用生成资产。
 2. 获准后推送发布 PR，并等待全部 CI 通过。
 3. 最终发布批准前，移除 README 待发布标记，更新升级说明、演示文档和本清单的待发布提示；Changelog 填实际发布日期。
-4. 运行 `node scripts/check-release.mjs 0.13.1 --ready`；第 3 步完成前应被阻止。
-5. 经明确授权后合并并打 `v0.13.1` 标签，现有 OIDC 流程发布 npm、创建双语 Release，
+4. 运行 `node scripts/check-release.mjs 0.13.5 --ready`；第 3 步完成前应被阻止。
+5. 经明确授权后合并并打 `v0.13.5` 标签，现有 OIDC 流程发布 npm、创建双语 Release，
    随后登记 MCP Registry。
 6. 分别核对三个版本，失败必须如实报告；第三方目录缓存更新不阻塞正式发布。
 

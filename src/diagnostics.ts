@@ -7,6 +7,7 @@ import { loadMaterialPresets } from "./presets.js";
 import { runKeyShotSerialized } from "./runner.js";
 import type { KeyShotResult } from "./types.js";
 import { VERSION } from "./version.js";
+import { localFailure } from "./result.js";
 
 export type DiagnosticCheck = {
   id: string;
@@ -51,6 +52,14 @@ export async function runKeyShotDiagnostics(
   );
   checks.push(await outputWriteCheck(config.keyshotOutputDir));
   checks.push(
+    await outputWriteCheck(
+      config.tmpDir,
+      "temporary-directory",
+      "Temporary directory",
+      "Check that your system temporary directory is writable, then restart the MCP client. 请检查系统临时目录写入权限，然后重启 MCP 客户端。",
+    ),
+  );
+  checks.push(
     await presetCheck(
       "camera-presets",
       "Camera presets",
@@ -70,9 +79,19 @@ export async function runKeyShotDiagnostics(
   let keyshotResult: KeyShotResult;
   if (
     resolvedExecutable &&
-    checks.find((check) => check.id === "bridge-script")?.ok
+    checks.every((check) => check.severity !== "error" || check.ok)
   ) {
-    keyshotResult = await runStatus(config, { operation: "status" });
+    try {
+      keyshotResult = await runStatus(config, { operation: "status" });
+    } catch (error) {
+      keyshotResult = localFailure(errorMessage(error), {
+        errorCode: "KEYSHOT_STARTUP_FAILED",
+        suggestions: [
+          "Check local folder permissions and KeyShot startup, then retry keyshot_status.",
+          "请检查本地目录权限及 KeyShot 能否启动，然后重试 keyshot_status。",
+        ],
+      });
+    }
   } else {
     keyshotResult = {
       ok: false,
@@ -81,7 +100,7 @@ export async function runKeyShotDiagnostics(
       warnings: [],
       keyshotStdoutTail: "",
       error:
-        "KeyShot startup was skipped because a required local file was not available.",
+        "KeyShot startup was skipped because a required local check failed.",
       errorCode: "DIAGNOSTIC_PREREQUISITE_FAILED",
       suggestions: [],
     };
@@ -143,6 +162,7 @@ export async function runKeyShotDiagnostics(
         outputDir: config.keyshotOutputDir,
         allowExternalOutputs: config.keyshotAllowExternalOutputs,
         timeoutMs: config.keyshotTimeoutMs,
+        temporaryDir: config.tmpDir,
         licenseArgsConfigured: config.keyshotLicenseArgs.length > 0,
         bridgeScriptPath: config.bridgeScriptPath,
         cameraPresetsPath: config.cameraPresetsPath,
@@ -224,29 +244,33 @@ async function fileCheck(
   };
 }
 
-async function outputWriteCheck(outputDir: string): Promise<DiagnosticCheck> {
+async function outputWriteCheck(
+  outputDir: string,
+  id = "output-directory",
+  label = "Output directory",
+  suggestion = "Set KEYSHOT_OUTPUT_DIR to a local folder where the current user can create files.",
+): Promise<DiagnosticCheck> {
   const probe = path.join(outputDir, `.keyshot-mcp-write-test-${randomUUID()}`);
   try {
     await fs.mkdir(outputDir, { recursive: true });
     await fs.writeFile(probe, "ok", "utf8");
     await fs.rm(probe, { force: true });
     return {
-      id: "output-directory",
-      label: "Output directory",
+      id,
+      label,
       ok: true,
       severity: "error",
-      message: `Output directory is writable: ${outputDir}`,
+      message: `${label} is writable: ${outputDir}`,
     };
   } catch (error) {
     await fs.rm(probe, { force: true }).catch(() => undefined);
     return {
-      id: "output-directory",
-      label: "Output directory",
+      id,
+      label,
       ok: false,
       severity: "error",
-      message: `Output directory is not writable: ${outputDir} (${errorMessage(error)})`,
-      suggestion:
-        "Set KEYSHOT_OUTPUT_DIR to a local folder where the current user can create files.",
+      message: `${label} is not writable: ${outputDir} (${errorMessage(error)})`,
+      suggestion,
     };
   }
 }

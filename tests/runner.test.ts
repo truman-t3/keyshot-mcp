@@ -64,10 +64,21 @@ describe("runner", () => {
   it("removes the temporary args/result files after a run", async () => {
     const tmpDir = join(tmpRoot, "work", "tmp");
     await runKeyShotSerialized(makeConfig({ tmpDir }), { operation: "status" });
-    const leftovers = readdirSync(tmpDir).filter(
-      (f) => f.endsWith(".args.json") || f.endsWith(".result.json"),
-    );
+    const leftovers = readdirSync(tmpDir);
     expect(leftovers).toEqual([]);
+  });
+
+  it("returns a structured failure and recovers after temporary storage fails", async () => {
+    const blocked = join(tmpRoot, "blocked-temporary-root");
+    writeFileSync(blocked, "keep");
+    const result = await runKeyShotSerialized(makeConfig({ tmpDir: blocked }), {
+      operation: "status",
+    });
+    expect(result.ok).toBe(false);
+    expect(result.error).toBeTruthy();
+    expect(
+      (await runKeyShotSerialized(makeConfig(), { operation: "status" })).ok,
+    ).toBe(true);
   });
 
   it("reports a local failure when the headless exe is missing", async () => {
@@ -79,6 +90,22 @@ describe("runner", () => {
     );
     expect(result.ok).toBe(false);
     expect(result.error).toContain("not found");
+  });
+
+  it("isolates each request and restricts POSIX temporary file permissions", async () => {
+    const result = await runKeyShotSerialized(makeConfig(), {
+      operation: "status",
+      inspectTemporaryFiles: true,
+    });
+    expect(result.ok).toBe(true);
+    expect(result.data).toMatchObject({ isolated: true });
+    if (process.platform !== "win32") {
+      expect(result.data).toMatchObject({
+        directoryMode: 0o700,
+        argsMode: 0o600,
+      });
+    }
+    expect(readdirSync(makeConfig().tmpDir)).toEqual([]);
   });
 
   it("allows a bare executable name to be resolved from PATH", async () => {

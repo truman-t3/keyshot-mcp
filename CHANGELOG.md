@@ -4,6 +4,13 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+## [0.13.5] - Pending / 待发布
+
+### Installation and Diagnostics / 安装与诊断
+
+- Isolate each bridge request in a private temporary subdirectory, clean it after execution, and return structured failures for local filesystem errors. Preserve completed diagnostic checks when startup throws; check temporary storage before launching KeyShot.
+- 每次桥接请求使用独立临时子目录并在执行后清理；本地文件系统出错时返回结构化结果。启动抛异常时保留已完成的诊断，并在启动 KeyShot 前检查临时目录。
+
 - Store bridge request/result files in the system temporary directory instead of the installed package, avoiding Windows path-length failures in nested installations.
 - 将桥接请求与结果文件移到系统临时目录，避免 Windows 嵌套安装路径过长导致 KeyShot 无法写回结果。
 
@@ -177,7 +184,8 @@ All notable changes to KeyShot MCP are documented in this file.
 
 - Documented that scene metadata and preview images may be sent by an MCP client to its configured model provider.
 
-[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.1...HEAD
+[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.5...HEAD
+[0.13.5]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.1...v0.13.5
 [0.13.1]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.1...v0.13.0
 [0.12.1]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.0...v0.12.1
