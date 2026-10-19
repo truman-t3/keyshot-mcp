@@ -9,10 +9,10 @@ are tracked in the pull request checks.
 - Default no-overwrite protection covers low-level saves, edits, renders and queue
   jobs; explicit overwrite never permits declared input-file or linked-alias replacement.
   / 默认不覆盖扩展到底层保存、编辑、渲染和队列；允许覆盖也不能替换本次声明的输入文件及其链接。
-- TypeScript: 208 tests passed. Python: 79 tests, 77 passed; file-symlink permission
+- TypeScript: 209 tests passed. Python: 79 tests, 77 passed; file-symlink permission
   and POSIX named-pipe tests skipped on Windows. Windows junction and hard-link
   checks passed separately.
-  / TypeScript 208 项通过；Python 79 项中 77 项通过，Windows 上跳过文件软链接权限和
+  / TypeScript 209 项通过；Python 79 项中 77 项通过，Windows 上跳过文件软链接权限和
   POSIX 命名管道两项；目录联接和硬链接检查单独通过。
 - KeyShot 14.1.0.154: output-protection smoke and all 14 original smoke steps passed;
   input scene and generated OBJ hashes stayed unchanged. Glass/plastic presets and
@@ -38,6 +38,33 @@ are tracked in the pull request checks.
 This is not a 1.0 acceptance result. Fresh installations, two real MCP clients,
 independent designer feedback and representative framing checks remain outstanding.
 这不是 1.0 验收通过结论；干净安装、两款真实客户端、独立设计师反馈及代表性构图仍待验证。
+
+### Isolated Package Check / 独立安装包检查
+
+On 2026-10-19, a local tarball was installed with pnpm 10.17.1 and lifecycle
+scripts disabled into a separate directory on Windows 11 / Node.js 24.19.0.
+The first KeyShot run failed because result paths beneath the nested package
+directory exceeded the embedded Python path limit. Bridge exchange files now use
+the system temporary directory. With the fix, the installed package passed all
+14 KeyShot 14.1 smoke steps, including two cameras, standard/preview quality and
+numbered repeated outputs. SDK stdio checks also returned all 19 tools and an
+embedded preview PNG; the temporary image was removed and the source hash stayed
+unchanged. No development server files were substituted into the installation.
+The installed output-protection smoke also passed, covering existing outputs,
+source preservation and explicit replacement of copies only.
+
+2026-10-19，使用 pnpm 10.17.1 禁用生命周期脚本，将本地打包文件安装到独立目录，
+测试环境为 Windows 11 / Node.js 24.19.0。首次启动发现包目录嵌套过深，使 KeyShot
+内嵌 Python 无法写回结果；现已将通信文件移到系统临时目录。修复后的安装包通过
+KeyShot 14.1 全部 14 步测试，包括双相机、标准及预览质量、重复输出自动编号。
+SDK stdio 检查返回全部 19 个工具及预览 PNG，临时图片已删除，源场景哈希不变。
+未用开发目录文件替换安装包内容。
+安装包的输出保护实测也已通过，包括已有文件冲突、输入文件保护和仅明确覆盖副本。
+
+This is maintainer-run package integration evidence, not a clean operating-system
+installation, npm/npx installation acceptance, two graphical client tests or
+independent designer validation. / 这是维护者执行的安装包集成验证，不等于干净系统、
+npm/npx 安装、两款图形客户端或独立设计师验收通过。
 
 ## 0.13.1 Validation Record / 版本验证记录
 

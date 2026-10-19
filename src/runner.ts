@@ -175,7 +175,7 @@ async function runKeyShot(
 
     return withErrorGuidance(parsed);
   } finally {
-    // Best-effort cleanup so work/tmp does not accumulate args/result files.
+    // Best-effort cleanup of temporary request and result files.
     await cleanupTmp([argsPath, resultPath]).catch(() => undefined);
   }
 }

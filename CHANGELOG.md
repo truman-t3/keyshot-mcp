@@ -4,6 +4,9 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+- Store bridge request/result files in the system temporary directory instead of the installed package, avoiding Windows path-length failures in nested installations.
+- 将桥接请求与结果文件移到系统临时目录，避免 Windows 嵌套安装路径过长导致 KeyShot 无法写回结果。
+
 ### Publication Privacy / 发布隐私
 
 - Add a redacted public-content check to CI and publication, including credential
