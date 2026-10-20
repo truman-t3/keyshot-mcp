@@ -24,6 +24,7 @@ export async function renderPreview(
 ): Promise<PreviewResponse> {
   let explicitOutput = false;
   let previewPath: string | undefined;
+  let createdPreview = false;
 
   try {
     const args = previewRenderInputSchema.parse(rawArgs);
@@ -40,6 +41,7 @@ export async function renderPreview(
       return toolResponse(
         localFailure(
           `Output already exists and overwrite is false: ${previewPath}`,
+          { suggestions: previewSuggestions("Output already exists") },
         ),
       );
     }
@@ -61,8 +63,28 @@ export async function renderPreview(
       format: "png",
     });
 
+    createdPreview = result.outputFiles.includes(previewPath);
     if (!result.ok) {
-      await cleanupFailedTemporaryPreview(previewPath, explicitOutput);
+      if (result.errorCode === "OUTPUT_EXISTS")
+        result.suggestions = previewSuggestions("Output already exists");
+      if (!explicitOutput) {
+        if (createdPreview) {
+          try {
+            await fs.rm(previewPath, { force: true });
+            result.outputFiles = result.outputFiles.filter(
+              (file) => file !== previewPath,
+            );
+          } catch (error) {
+            result.warnings.push(
+              `Could not delete temporary preview; retained at ${previewPath}: ${errorMessage(error)}`,
+            );
+          }
+        } else if (await fileExists(previewPath)) {
+          result.warnings.push(
+            `Temporary preview path retained because file ownership is unconfirmed: ${previewPath}`,
+          );
+        }
+      }
       return toolResponse(result);
     }
 
@@ -105,10 +127,11 @@ export async function renderPreview(
     return toolImageResponse(responseResult, image.toString("base64"));
   } catch (error) {
     const failure = localFailure(errorMessage(error), {
-      outputFiles: explicitOutput && previewPath ? [previewPath] : [],
+      outputFiles:
+        explicitOutput && previewPath && createdPreview ? [previewPath] : [],
       suggestions: previewSuggestions(errorMessage(error)),
     });
-    if (!explicitOutput && previewPath) {
+    if (!explicitOutput && previewPath && createdPreview) {
       try {
         await fs.rm(previewPath, { force: true });
       } catch (cleanupError) {
@@ -123,11 +146,29 @@ export async function renderPreview(
 }
 
 export async function readPreviewPng(filePath: string): Promise<Buffer> {
-  const image = await fs.readFile(filePath);
-  if (image.byteLength > MAX_PREVIEW_BYTES) {
-    throw new Error(
-      `Preview PNG exceeds the 8 MiB MCP image limit (${image.byteLength} bytes).`,
-    );
+  const handle = await fs.open(filePath, "r");
+  let image: Buffer;
+  try {
+    const stat = await handle.stat();
+    if (!stat.isFile())
+      throw new Error("Preview output is not a regular PNG file.");
+    if (stat.size > MAX_PREVIEW_BYTES) throw previewSizeError();
+    const chunks: Buffer[] = [];
+    let total = 0;
+    // Bound reads too: another writer can grow a file after the size check.
+    while (total <= MAX_PREVIEW_BYTES) {
+      const chunk = Buffer.alloc(
+        Math.min(64 * 1024, MAX_PREVIEW_BYTES + 1 - total),
+      );
+      const { bytesRead } = await handle.read(chunk, 0, chunk.length, null);
+      if (bytesRead === 0) break;
+      total += bytesRead;
+      if (total > MAX_PREVIEW_BYTES) throw previewSizeError();
+      chunks.push(chunk.subarray(0, bytesRead));
+    }
+    image = Buffer.concat(chunks, total);
+  } finally {
+    await handle.close();
   }
   if (
     image.byteLength < PNG_SIGNATURE.byteLength ||
@@ -138,8 +179,18 @@ export async function readPreviewPng(filePath: string): Promise<Buffer> {
   return image;
 }
 
+function previewSizeError(): Error {
+  return new Error("Preview PNG exceeds the 8 MiB MCP image limit.");
+}
+
 function previewSuggestions(error: string): string[] {
   const normalized = error.toLowerCase();
+  if (normalized.includes("output already exists")) {
+    return [
+      "Choose another outputPath or omit it for a temporary preview. Previews never overwrite existing files.",
+      "请换一个输出路径，或省略 outputPath 使用临时预览；预览不覆盖已有文件。",
+    ];
+  }
   if (
     normalized.includes("8 mib") ||
     normalized.includes("valid png") ||
@@ -150,14 +201,6 @@ function previewSuggestions(error: string): string[] {
     return ["Retry with a smaller width and height, or use fewer samples."];
   }
   return localFailure(error).suggestions ?? [];
-}
-
-async function cleanupFailedTemporaryPreview(
-  filePath: string,
-  explicitOutput: boolean,
-): Promise<void> {
-  if (!explicitOutput)
-    await fs.rm(filePath, { force: true }).catch(() => undefined);
 }
 
 async function fileExists(filePath: string): Promise<boolean> {

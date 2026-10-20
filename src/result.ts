@@ -100,6 +100,28 @@ function classifyError(error: string): {
   suggestions: string[];
 } {
   const normalized = error.toLowerCase();
+  if (normalized.includes("output must not replace an input file")) {
+    return {
+      errorCode: "OUTPUT_IS_INPUT",
+      suggestions: [
+        "Save to a different file. Input scenes, models, materials, and environments cannot be replaced, even with overwrite=true.",
+        "请另存为新文件；即使开启 overwrite，也不能覆盖本次输入的场景、模型、材质或环境文件。",
+      ],
+    };
+  }
+  if (
+    normalized.includes("output paths must refer to different files") ||
+    normalized.includes("output file path is a directory") ||
+    normalized.includes("output file path must be a regular file")
+  ) {
+    return {
+      errorCode: "OUTPUT_CONFLICT",
+      suggestions: [
+        "Use a separate file path for each output, not an existing directory.",
+        "请为每个输出选择不同的文件路径，不要填写已有文件夹。",
+      ],
+    };
+  }
   if (
     normalized.includes(
       "material file did not return any loaded material names",

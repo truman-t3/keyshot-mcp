@@ -1,10 +1,9 @@
 import { spawn } from "node:child_process";
-import { randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import type { ServerConfig } from "./config.js";
 import { localFailure, withErrorGuidance } from "./result.js";
-import { normalizeOutputPaths } from "./output-paths.js";
+import { assertOutputFilesSafe, normalizeOutputPaths } from "./output-paths.js";
 import { allocateAutomaticProductOutputs } from "./output-collisions.js";
 import type { KeyShotRequest, KeyShotResult } from "./types.js";
 
@@ -14,7 +13,9 @@ export function runKeyShotSerialized(
   config: ServerConfig,
   request: KeyShotRequest,
 ): Promise<KeyShotResult> {
-  const run = queue.then(() => runKeyShot(config, request));
+  const run = queue
+    .then(() => runKeyShot(config, request))
+    .catch((error) => localFailure(errorMessage(error)));
   queue = run.catch(() => undefined);
   return run;
 }
@@ -43,7 +44,7 @@ async function runKeyShot(
     return localFailure(`Scene file not found: ${request.scenePath}`);
   }
 
-  await fs.mkdir(config.tmpDir, { recursive: true });
+  await fs.mkdir(config.tmpDir, { recursive: true, mode: 0o700 });
   await fs.mkdir(config.keyshotOutputDir, { recursive: true });
 
   let normalizedRequest: KeyShotRequest;
@@ -53,6 +54,15 @@ async function runKeyShot(
       normalizedRequest =
         await allocateAutomaticProductOutputs(normalizedRequest);
     }
+    normalizedRequest._protectedInputPaths = [
+      ...(Array.isArray(request._protectedInputPaths)
+        ? request._protectedInputPaths
+        : []),
+      config.bridgeScriptPath,
+      config.materialPresetsPath,
+      config.cameraPresetsPath,
+    ];
+    await assertOutputFilesSafe(normalizedRequest);
   } catch (error) {
     return localFailure(errorMessage(error));
   }
@@ -66,32 +76,18 @@ async function runKeyShot(
         );
       }
     }
-    if (normalizedRequest.overwrite !== true) {
-      const protectedOutputs = [
-        normalizedRequest.outputScenePath,
-        normalizedRequest.outputPath,
-      ];
-      for (const output of protectedOutputs) {
-        if (typeof output === "string" && (await exists(output))) {
-          return localFailure(
-            `Output already exists and overwrite is false: ${output}`,
-          );
-        }
-      }
-    }
   }
 
-  const id = `${Date.now()}-${randomUUID()}`;
-  const argsPath = path.join(config.tmpDir, `${id}.args.json`);
-  const resultPath = path.join(config.tmpDir, `${id}.result.json`);
+  const requestDir = await fs.mkdtemp(path.join(config.tmpDir, "run-"));
+  const argsPath = path.join(requestDir, "args.json");
+  const resultPath = path.join(requestDir, "result.json");
   const payload = {
     ...normalizedRequest,
     defaults: {
       outputDir: config.keyshotOutputDir,
+      allowExternalOutputs: config.keyshotAllowExternalOutputs,
     },
   };
-
-  await fs.writeFile(argsPath, JSON.stringify(payload, null, 2), "utf8");
 
   const args = [
     ...config.keyshotLicenseArgs,
@@ -104,6 +100,11 @@ async function runKeyShot(
   ];
 
   try {
+    await fs.writeFile(argsPath, JSON.stringify(payload, null, 2), {
+      encoding: "utf8",
+      mode: 0o600,
+      flag: "wx",
+    });
     const processResult = await spawnWithTimeout(
       config.keyshotHeadlessExe,
       args,
@@ -178,8 +179,9 @@ async function runKeyShot(
 
     return withErrorGuidance(parsed);
   } finally {
-    // Best-effort cleanup so work/tmp does not accumulate args/result files.
+    // Best-effort cleanup of temporary request and result files.
     await cleanupTmp([argsPath, resultPath]).catch(() => undefined);
+    await fs.rmdir(requestDir).catch(() => undefined);
   }
 }
 

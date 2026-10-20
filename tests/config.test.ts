@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import path from "node:path";
+import os from "node:os";
 import {
   defaultOutputDir,
   getConfig,
@@ -48,7 +49,7 @@ describe("getConfig", () => {
     expect(config.bridgeScriptPath).toBe(
       path.join(config.projectRoot, "scripts", "keyshot_bridge.py"),
     );
-    expect(config.tmpDir).toBe(path.join(config.projectRoot, "work", "tmp"));
+    expect(config.tmpDir).toBe(path.join(os.tmpdir(), "keyshot-mcp"));
     expect(config.cameraPresetsPath).toBe(
       path.join(config.projectRoot, "presets", "cameras.json"),
     );
@@ -57,6 +58,14 @@ describe("getConfig", () => {
   it("enables external outputs only for an explicit true value", () => {
     process.env.KEYSHOT_ALLOW_EXTERNAL_OUTPUTS = "true";
     expect(getConfig().keyshotAllowExternalOutputs).toBe(true);
+  });
+
+  it("keeps bridge exchange files outside potentially long package paths", () => {
+    const config = getConfig();
+    expect(config.tmpDir).not.toBe(
+      path.join(config.projectRoot, "work", "tmp"),
+    );
+    expect(config.tmpDir).toBe(path.join(os.tmpdir(), "keyshot-mcp"));
   });
 
   it("honors KEYSHOT_OUTPUT_DIR override", () => {

@@ -90,6 +90,7 @@ Safety: writes output; potentially destructive; local only.
 | Parameter        | Required | Type                                            | Description                                                                                                                |
 | ---------------- | -------- | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | `scenePath`      | Yes      | string                                          | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.       |
+| `overwrite`      | No       | boolean                                         | Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true.             |
 | `outputPath`     | No       | string                                          | Destination image path. When omitted, a PNG name is generated inside KEYSHOT_OUTPUT_DIR.                                   |
 | `width`          | No       | number                                          | Render width in pixels. Overrides the selected quality preset when provided.                                               |
 | `height`         | No       | number                                          | Render height in pixels. Overrides the selected quality preset when provided.                                              |
@@ -210,15 +211,16 @@ Import a supported local model into an empty or base scene, apply requested comp
 
 Safety: writes output; potentially destructive; local only.
 
-| Parameter            | Required | Type    | Description                                                                                                                                |
-| -------------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `modelPath`          | Yes      | string  | Absolute path to a model file supported by KeyShot, such as OBJ, FBX, STL, or glTF.                                                        |
-| `baseScenePath`      | No       | string  | Optional existing KeyShot scene to use as the import base. Omit to start from an empty scene.                                              |
-| `outputScenePath`    | Yes      | string  | Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
-| `centerGeometry`     | No       | boolean | Ask KeyShot to center imported geometry during import when supported.                                                                      |
-| `snapToGround`       | No       | boolean | Ask KeyShot to place imported geometry on the ground plane when supported.                                                                 |
-| `adjustCameraLookAt` | No       | boolean | Ask KeyShot to retarget the active camera to the imported geometry when supported.                                                         |
-| `adjustEnvironment`  | No       | boolean | Ask KeyShot to adjust the environment to the imported geometry when supported.                                                             |
+| Parameter            | Required | Type    | Description                                                                                                                                                                                          |
+| -------------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overwrite`          | No       | boolean | Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true.                                                                                       |
+| `modelPath`          | Yes      | string  | Absolute path to a model file supported by KeyShot, such as OBJ, FBX, STL, or glTF.                                                                                                                  |
+| `baseScenePath`      | No       | string  | Optional existing KeyShot scene to use as the import base. Omit to start from an empty scene.                                                                                                        |
+| `outputScenePath`    | Yes      | string  | Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
+| `centerGeometry`     | No       | boolean | Ask KeyShot to center imported geometry during import when supported.                                                                                                                                |
+| `snapToGround`       | No       | boolean | Ask KeyShot to place imported geometry on the ground plane when supported.                                                                                                                           |
+| `adjustCameraLookAt` | No       | boolean | Ask KeyShot to retarget the active camera to the imported geometry when supported.                                                                                                                   |
+| `adjustEnvironment`  | No       | boolean | Ask KeyShot to adjust the environment to the imported geometry when supported.                                                                                                                       |
 
 ### `keyshot_set_environment`
 
@@ -228,14 +230,15 @@ Select an environment by library name or local file, optionally change brightnes
 
 Safety: writes output; potentially destructive; local only.
 
-| Parameter         | Required | Type   | Description                                                                                                                                |
-| ----------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scenePath`       | Yes      | string | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                       |
-| `environmentName` | No       | string | Environment name from the KeyShot library. Cannot be combined with environmentPath.                                                        |
-| `environmentPath` | No       | string | Absolute path to a local KeyShot environment file. Cannot be combined with environmentName.                                                |
-| `brightness`      | No       | number | Positive brightness multiplier for the active environment.                                                                                 |
-| `rotation`        | No       | number | Environment rotation in degrees, from 0 inclusive to 360 exclusive.                                                                        |
-| `outputScenePath` | Yes      | string | Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
+| Parameter         | Required | Type    | Description                                                                                                                                                                                          |
+| ----------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overwrite`       | No       | boolean | Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true.                                                                                       |
+| `scenePath`       | Yes      | string  | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                                                                                 |
+| `environmentName` | No       | string  | Environment name from the KeyShot library. Cannot be combined with environmentPath.                                                                                                                  |
+| `environmentPath` | No       | string  | Absolute path to a local KeyShot environment file. Cannot be combined with environmentName.                                                                                                          |
+| `brightness`      | No       | number  | Positive brightness multiplier for the active environment.                                                                                                                                           |
+| `rotation`        | No       | number  | Environment rotation in degrees, from 0 inclusive to 360 exclusive.                                                                                                                                  |
+| `outputScenePath` | Yes      | string  | Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
 
 ### `keyshot_save_scene`
 
@@ -245,10 +248,11 @@ Open an existing scene and save a copy to a requested path inside the configured
 
 Safety: writes output; potentially destructive; local only.
 
-| Parameter         | Required | Type   | Description                                                                                                                                |
-| ----------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scenePath`       | Yes      | string | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                       |
-| `outputScenePath` | Yes      | string | Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
+| Parameter         | Required | Type    | Description                                                                                                                                                                                          |
+| ----------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overwrite`       | No       | boolean | Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true.                                                                                       |
+| `scenePath`       | Yes      | string  | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                                                                                 |
+| `outputScenePath` | Yes      | string  | Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
 
 ## Materials
 
@@ -260,14 +264,15 @@ Apply a KeyShot library material or local material file to a specific object, th
 
 Safety: writes output; potentially destructive; local only.
 
-| Parameter         | Required | Type   | Description                                                                                                                                 |
-| ----------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `scenePath`       | Yes      | string | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                        |
-| `objectName`      | No       | string | Scene object name to modify. Provide either objectName or the more specific objectPath.                                                     |
-| `objectPath`      | No       | string | Full scene-tree path of the object to modify. Use this instead of objectName when names are duplicated.                                     |
-| `materialName`    | No       | string | Material name from the local KeyShot library. Provide either materialName or materialPath.                                                  |
-| `materialPath`    | No       | string | Absolute path to a native single-material KeyShot MTL file, not a Wavefront OBJ companion MTL. Provide either materialPath or materialName. |
-| `outputScenePath` | Yes      | string | Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled.  |
+| Parameter         | Required | Type    | Description                                                                                                                                                                                          |
+| ----------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overwrite`       | No       | boolean | Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true.                                                                                       |
+| `scenePath`       | Yes      | string  | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                                                                                 |
+| `objectName`      | No       | string  | Scene object name to modify. Provide either objectName or the more specific objectPath.                                                                                                              |
+| `objectPath`      | No       | string  | Full scene-tree path of the object to modify. Use this instead of objectName when names are duplicated.                                                                                              |
+| `materialName`    | No       | string  | Material name from the local KeyShot library. Provide either materialName or materialPath.                                                                                                           |
+| `materialPath`    | No       | string  | Absolute path to a native single-material KeyShot MTL file, not a Wavefront OBJ companion MTL. Provide either materialPath or materialName.                                                          |
+| `outputScenePath` | Yes      | string  | Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
 
 ### `keyshot_list_material_presets`
 
@@ -287,13 +292,14 @@ Resolve a configured material preset, apply it to one scene object, and save a n
 
 Safety: writes output; potentially destructive; local only.
 
-| Parameter         | Required | Type   | Description                                                                                                                                |
-| ----------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scenePath`       | Yes      | string | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                       |
-| `presetName`      | Yes      | string | Case-insensitive material preset name returned by keyshot_list_material_presets.                                                           |
-| `objectName`      | No       | string | Scene object name to modify. Provide either objectName or objectPath.                                                                      |
-| `objectPath`      | No       | string | Full scene-tree path to modify. Prefer this when object names are duplicated.                                                              |
-| `outputScenePath` | Yes      | string | Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
+| Parameter         | Required | Type    | Description                                                                                                                                                                                          |
+| ----------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overwrite`       | No       | boolean | Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true.                                                                                       |
+| `scenePath`       | Yes      | string  | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                                                                                 |
+| `presetName`      | Yes      | string  | Case-insensitive material preset name returned by keyshot_list_material_presets.                                                                                                                     |
+| `objectName`      | No       | string  | Scene object name to modify. Provide either objectName or objectPath.                                                                                                                                |
+| `objectPath`      | No       | string  | Full scene-tree path to modify. Prefer this when object names are duplicated.                                                                                                                        |
+| `outputScenePath` | Yes      | string  | Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
 
 ## Cameras
 
@@ -305,17 +311,18 @@ Create or update a named camera using position, target, distance, field of view,
 
 Safety: writes output; potentially destructive; local only.
 
-| Parameter         | Required | Type   | Description                                                                                                                                |
-| ----------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scenePath`       | Yes      | string | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                       |
-| `cameraName`      | No       | string | Saved camera to update, or the name to use when creating a camera.                                                                         |
-| `position`        | No       | tuple  | Camera position [x, y, z]. Must be provided together with lookAt.                                                                          |
-| `lookAt`          | No       | tuple  | Camera target [x, y, z]. Must be provided together with position.                                                                          |
-| `up`              | No       | tuple  | Optional camera up direction [x, y, z]. Requires position and lookAt.                                                                      |
-| `distance`        | No       | number | Positive KeyShot camera distance.                                                                                                          |
-| `fieldOfView`     | No       | number | Field of view in degrees, greater than 0 and less than 180. Cannot be combined with focalLength.                                           |
-| `focalLength`     | No       | number | Focal length from 5 to 200 mm. Cannot be combined with fieldOfView.                                                                        |
-| `outputScenePath` | Yes      | string | Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
+| Parameter         | Required | Type    | Description                                                                                                                                                                                          |
+| ----------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overwrite`       | No       | boolean | Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true.                                                                                       |
+| `scenePath`       | Yes      | string  | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                                                                                 |
+| `cameraName`      | No       | string  | Saved camera to update, or the name to use when creating a camera.                                                                                                                                   |
+| `position`        | No       | tuple   | Camera position [x, y, z]. Must be provided together with lookAt.                                                                                                                                    |
+| `lookAt`          | No       | tuple   | Camera target [x, y, z]. Must be provided together with position.                                                                                                                                    |
+| `up`              | No       | tuple   | Optional camera up direction [x, y, z]. Requires position and lookAt.                                                                                                                                |
+| `distance`        | No       | number  | Positive KeyShot camera distance.                                                                                                                                                                    |
+| `fieldOfView`     | No       | number  | Field of view in degrees, greater than 0 and less than 180. Cannot be combined with focalLength.                                                                                                     |
+| `focalLength`     | No       | number  | Focal length from 5 to 200 mm. Cannot be combined with fieldOfView.                                                                                                                                  |
+| `outputScenePath` | Yes      | string  | Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
 
 ### `keyshot_list_camera_presets`
 
@@ -335,9 +342,10 @@ Create or update a saved camera from a configured standard-view or absolute came
 
 Safety: writes output; potentially destructive; local only.
 
-| Parameter         | Required | Type   | Description                                                                                                                                |
-| ----------------- | -------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `scenePath`       | Yes      | string | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                       |
-| `presetName`      | Yes      | string | Case-insensitive camera preset name returned by keyshot_list_camera_presets.                                                               |
-| `cameraName`      | No       | string | Optional saved camera name. Defaults to the preset name.                                                                                   |
-| `outputScenePath` | Yes      | string | Destination path for the saved KeyShot scene. The path must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |
+| Parameter         | Required | Type    | Description                                                                                                                                                                                          |
+| ----------------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `overwrite`       | No       | boolean | Allow replacing an existing output file. Defaults to false. Input files can never be replaced, even when true.                                                                                       |
+| `scenePath`       | Yes      | string  | Absolute path to an existing KeyShot scene file to open. Input files may be outside the configured output directory.                                                                                 |
+| `presetName`      | Yes      | string  | Case-insensitive camera preset name returned by keyshot_list_camera_presets.                                                                                                                         |
+| `cameraName`      | No       | string  | Optional saved camera name. Defaults to the preset name.                                                                                                                                             |
+| `outputScenePath` | Yes      | string  | Destination path for a saved scene copy, never an input file. Existing files are rejected unless overwrite=true. Must stay inside KEYSHOT_OUTPUT_DIR unless external outputs are explicitly enabled. |

@@ -5,6 +5,7 @@ Describe the user-facing problem and the focused change.
 ## Validation
 
 - [ ] `pnpm run check`
+- [ ] `pnpm run check:public-safety`
 - [ ] `pnpm test`
 - [ ] `python -m unittest discover -s tests -p "test_*.py"`
 - [ ] `pnpm run format:check`

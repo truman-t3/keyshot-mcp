@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version to publish (for example 0.13.1); tag v<version> must exist"
+        description: "Version to publish (for example 0.13.5); tag v<version> must exist"
         required: true
         type: string
       registry_metadata_ref:
@@ -49,6 +49,9 @@ jobs:
 
       - name: Reject high-severity dependency vulnerabilities
         run: pnpm audit --audit-level=high
+
+      - name: Reject private publication content
+        run: pnpm run check:public-safety
 
       - name: Resolve and validate release version
         id: release

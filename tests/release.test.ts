@@ -112,7 +112,7 @@ describe("release readiness", () => {
         read("../CHANGELOG.md"),
         VERSION,
       ),
-    ).toContain("材质");
+    ).toMatch(/[\u3400-\u9fff]/u);
     const workflow = read("../.github/workflows/npm-publish.yml");
     expect(workflow).toContain('scripts/check-release.mjs "$version" --ready');
     expect(

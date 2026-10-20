@@ -67,7 +67,7 @@ describe("KeyShot diagnostics", () => {
       requiresSavedScene: true,
       recommendedSyncTool: "keyshot_sync_saved_scene",
     });
-    expect(data.checks).toHaveLength(6);
+    expect(data.checks).toHaveLength(7);
     expect(data.config.outputDir).toContain("outputs");
     expect(data.availableFunctions).toBeUndefined();
     expect(data.availableFunctionCount).toBe(0);
@@ -140,5 +140,33 @@ describe("KeyShot diagnostics", () => {
   it("resolves a bare executable from PATH", async () => {
     const resolved = await resolveExecutable(path.basename(process.execPath));
     expect(resolved).not.toBeNull();
+  });
+
+  it("preserves completed checks when the startup runner throws", async () => {
+    const result = await runKeyShotDiagnostics(config(), async () => {
+      throw new Error("startup rejected");
+    });
+    expect(result.ok).toBe(false);
+    expect(result.errorCode).toBe("KEYSHOT_STARTUP_FAILED");
+    expect(result.data).toMatchObject({ ready: false });
+    expect((result.data as { checks: unknown[] }).checks).toHaveLength(7);
+    expect(result.suggestions?.some((value) => value.includes("请检查"))).toBe(
+      true,
+    );
+  });
+
+  it("checks temporary storage and skips startup if it is unusable", async () => {
+    const blocked = path.join(root, "temp-is-a-file");
+    writeFileSync(blocked, "keep");
+    const runner = vi.fn(async () => success);
+    const result = await runKeyShotDiagnostics(
+      config({ tmpDir: blocked }),
+      runner,
+    );
+    expect(result.ok).toBe(false);
+    expect(runner).not.toHaveBeenCalled();
+    expect((result.data as { checks: unknown[] }).checks).toContainEqual(
+      expect.objectContaining({ id: "temporary-directory", ok: false }),
+    );
   });
 });

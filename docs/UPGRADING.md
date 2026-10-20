@@ -1,5 +1,28 @@
 # Upgrading KeyShot MCP / KeyShot MCP 升级说明
 
+## 0.13.5: Output Protection / 0.13.5：输出保护
+
+This maintenance batch also fixes nested Windows install paths,
+isolates temporary requests and preserves diagnostics when startup fails.
+Pin `keyshot-mcp@0.13.5`, restart the MCP client and run `keyshot_status`.
+
+本批次还修复 Windows 深层安装路径、隔离临时请求，并在启动异常时保留诊断。
+固定为 `keyshot-mcp@0.13.5`，重启 MCP 客户端并运行 `keyshot_status`。
+
+This change is not included in npm 0.13.1. Tool names and existing input fields stay
+available, but implicit replacement of existing outputs is no longer allowed.
+For low-level render/edit/save tools, choose a new output path or explicitly pass
+`overwrite: true` after the user approves replacing a distinct output file.
+Input scene/model/material/environment files remain protected, including linked
+aliases, even when overwrite is enabled. Preview and saved-scene sync never overwrite.
+Keep scene and image paths separate; queue jobs must not replace another job's source.
+
+此变更尚未包含在 npm 0.13.1 中。工具名称和原有输入字段保留，但不再允许隐式覆盖已有
+输出。底层渲染、编辑和保存工具应换用新路径；确实需要覆盖另一份输出文件时，先获得
+用户确认，再明确设置 `overwrite: true`。输入场景、模型、材质、环境及其链接别名始终
+受保护，预览与保存同步始终不覆盖。场景和图片路径必须不同，队列任务不能覆盖其他
+任务的源文件。
+
 ## 0.13.1: Material Reliability Patch
 
 Update the pinned package to

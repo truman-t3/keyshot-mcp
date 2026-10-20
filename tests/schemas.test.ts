@@ -20,6 +20,32 @@ import {
   setEnvironmentSchema,
 } from "../src/schemas.js";
 
+describe("explicit overwrite compatibility", () => {
+  it.each([
+    [renderSchema, { scenePath: "s.bip" }],
+    [importModelSchema, { modelPath: "m.obj", outputScenePath: "copy.bip" }],
+    [
+      applyMaterialInputSchema,
+      { scenePath: "s.bip", outputScenePath: "copy.bip" },
+    ],
+    [setEnvironmentSchema, { scenePath: "s.bip", outputScenePath: "copy.bip" }],
+    [saveSceneSchema, { scenePath: "s.bip", outputScenePath: "copy.bip" }],
+    [
+      applyCameraPresetSchema,
+      { scenePath: "s.bip", presetName: "Front", outputScenePath: "copy.bip" },
+    ],
+  ] as const)(
+    "keeps old inputs and retains the optional overwrite flag",
+    (schema, input) => {
+      expect(schema.safeParse(input).success).toBe(true);
+      expect(schema.parse({ ...input, overwrite: true }).overwrite).toBe(true);
+      expect(schema.safeParse({ ...input, overwrite: "true" }).success).toBe(
+        false,
+      );
+    },
+  );
+});
+
 describe("productRenderSchema", () => {
   it("requires exactly one model or scene source and applies safe defaults", () => {
     expect(() => productRenderSchema.parse({})).toThrow();

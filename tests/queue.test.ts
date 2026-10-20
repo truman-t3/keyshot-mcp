@@ -82,4 +82,22 @@ describe("runRenderQueue", () => {
       expect.objectContaining({ operation: "render", scenePath: "a.bip" }),
     );
   });
+
+  it("protects every queue input and forwards per-job overwrite permission", async () => {
+    const runFn = vi.fn(async () => ok([]));
+    await runRenderQueue(
+      config,
+      [{ ...jobs[0], overwrite: true }, jobs[1]],
+      {},
+      runFn,
+    );
+    expect(runFn).toHaveBeenNthCalledWith(
+      1,
+      config,
+      expect.objectContaining({
+        overwrite: true,
+        _protectedInputPaths: ["a.bip", "b.bip"],
+      }),
+    );
+  });
 });

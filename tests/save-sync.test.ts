@@ -129,6 +129,12 @@ describe("saved scene synchronization", () => {
       const result = (await syncSavedScene(config, args))
         .structuredContent as any;
       expect(result.ok).toBe(false);
+      if (result.errorCode === "OUTPUT_EXISTS") {
+        expect(result.suggestions.join(" ")).toContain(
+          "Saved-scene sync never overwrites",
+        );
+        expect(result.suggestions.join(" ")).not.toContain("overwrite=true");
+      }
     }
   });
 });

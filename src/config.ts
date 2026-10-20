@@ -42,7 +42,7 @@ export function getConfig(): ServerConfig {
       process.env.KEYSHOT_TIMEOUT_MS,
       DEFAULT_TIMEOUT_MS,
     ),
-    tmpDir: path.join(projectRoot, "work", "tmp"),
+    tmpDir: path.join(os.tmpdir(), "keyshot-mcp"),
     bridgeScriptPath: path.join(projectRoot, "scripts", "keyshot_bridge.py"),
     materialPresetsPath: path.resolve(
       process.env.KEYSHOT_MATERIAL_PRESETS ??

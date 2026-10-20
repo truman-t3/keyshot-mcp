@@ -1,5 +1,86 @@
 # Release Readiness / 正式版验收
 
+## 0.13.5 Validation Record / 0.13.5 验证记录
+
+This batch consolidates output protection, publication privacy, bounded previews,
+Windows installation reliability and startup diagnostic recovery. Versions
+0.13.2 through 0.13.4 are intentionally skipped; they were not published.
+Release authorized on 2026-10-20; publication results are tracked separately.
+本批次集中修复输出保护、发布隐私、预览限制、Windows 安装及启动诊断，跳过未发布的
+0.13.2 至 0.13.4。2026-10-20 获准发布；实际发布结果独立核对。
+
+Local validation on 2026-10-15 and 2026-10-19; the candidate passed four remote
+Windows/Ubuntu Node.js 20/24 CI jobs and CodeQL. Final release-document checks
+are tracked in PR #35; GitHub, npm and Registry publication must be verified separately.
+2026-10-15、2026-10-19 完成本地验证，候选提交的四组跨平台 CI 与 CodeQL 已通过。
+最终发布文档检查见 PR #35；GitHub、npm 和 Registry 发布结果必须分别核对。
+
+- Default no-overwrite protection covers low-level saves, edits, renders and queue
+  jobs; explicit overwrite never permits declared input-file or linked-alias replacement.
+  / 默认不覆盖扩展到底层保存、编辑、渲染和队列；允许覆盖也不能替换本次声明的输入文件及其链接。
+- TypeScript: 213 tests passed. Python: 79 tests, 77 passed; file-symlink permission
+  and POSIX named-pipe tests skipped on Windows. Windows junction and hard-link
+  checks passed separately.
+  / TypeScript 213 项通过；Python 79 项中 77 项通过，Windows 上跳过文件软链接权限和
+  POSIX 命名管道两项；目录联接和硬链接检查单独通过。
+- KeyShot 14.1.0.154: output-protection smoke and all 14 original smoke steps passed;
+  input scene and generated OBJ hashes stayed unchanged. Glass/plastic presets and
+  a local native MTL passed saved-scene reinspection; invalid material inputs were
+  rejected. / 输出保护和原有 14 步实机测试通过，输入场景及生成 OBJ 哈希未变；玻璃、塑料
+  预设及本地原生 MTL 保存后复查通过，无效材质输入被拒绝。
+- Follow-up preview review: embedded and explicitly saved 320x240 PNGs passed in
+  KeyShot 14.1; temporary files were removed and the source hash was unchanged.
+  Oversized and growing-file reads are bounded by automated tests.
+  / 追加预览复核：KeyShot 14.1 返回并保存 320x240 PNG，临时文件已清理，源文件哈希
+  不变；自动测试覆盖超大文件与读取期间增长的大小限制。
+- Build, formatting, Ruff, tool/platform input-schema drift checks, release metadata,
+  dependency audit and npm pack passed locally. / 构建、格式、Ruff、工具文档与平台输入
+  Schema 漂移检查、发布元数据、依赖审计及 npm 打包本地通过。
+- Public-content scanning covers filenames, private paths, known credential formats,
+  unreviewed binary assets and PNG metadata. It is a prevention rule set, not proof
+  that Git history or previously published artifacts contain no private information.
+  / 公开内容扫描覆盖文件名、私人路径、常见凭据格式、未经复核的二进制素材和 PNG 元数据；
+  这是预防规则，不代表历史提交或过去的发布资产已无私人信息。
+- Remote Windows/Ubuntu Node.js 20/24 CI and CodeQL must pass before merging.
+  / 合并前必须通过 Windows/Ubuntu、Node.js 20/24 CI 与 CodeQL。
+
+This is not a 1.0 acceptance result. Fresh installations, two real MCP clients,
+independent designer feedback and representative framing checks remain outstanding.
+这不是 1.0 验收通过结论；干净安装、两款真实客户端、独立设计师反馈及代表性构图仍待验证。
+
+### Isolated Package Check / 独立安装包检查
+
+On 2026-10-19, a local tarball was installed with pnpm 10.17.1 and lifecycle
+scripts disabled into a separate directory on Windows 11 / Node.js 24.19.0.
+The first KeyShot run failed because result paths beneath the nested package
+directory exceeded the embedded Python path limit. Bridge exchange files now use
+the system temporary directory. With the fix, the installed package passed all
+14 KeyShot 14.1 smoke steps, including two cameras, standard/preview quality and
+numbered repeated outputs. SDK stdio checks also returned all 19 tools and an
+embedded preview PNG; the temporary image was removed and the source hash stayed
+unchanged. No development server files were substituted into the installation.
+The installed output-protection smoke also passed, covering existing outputs,
+source preservation and explicit replacement of copies only.
+
+2026-10-19，使用 pnpm 10.17.1 禁用生命周期脚本，将本地打包文件安装到独立目录，
+测试环境为 Windows 11 / Node.js 24.19.0。首次启动发现包目录嵌套过深，使 KeyShot
+内嵌 Python 无法写回结果；现已将通信文件移到系统临时目录。修复后的安装包通过
+KeyShot 14.1 全部 14 步测试，包括双相机、标准及预览质量、重复输出自动编号。
+SDK stdio 检查返回全部 19 个工具及预览 PNG，临时图片已删除，源场景哈希不变。
+未用开发目录文件替换安装包内容。
+安装包的输出保护实测也已通过，包括已有文件冲突、输入文件保护和仅明确覆盖副本。
+
+This is maintainer-run package integration evidence, not a clean operating-system
+installation, npm/npx installation acceptance, two graphical client tests or
+independent designer validation. / 这是维护者执行的安装包集成验证，不等于干净系统、
+npm/npx 安装、两款图形客户端或独立设计师验收通过。
+
+The 0.13.5 candidate was separately packed and reinstalled on the same date. Its
+14-step KeyShot smoke and SDK stdio preview checks passed again with the new
+temporary-request isolation and seventh diagnostic check enabled.
+同日已单独打包并重装 0.13.5 候选版；启用独立临时请求及第七项诊断后，完整 14 步
+KeyShot 测试和 SDK stdio 预览检查再次通过。
+
 ## 0.13.1 Validation Record / 版本验证记录
 
 **Validation baseline: 2026-10-15. Publication results are tracked separately. / 验证基线：2026-10-15；发布结果独立追踪。**
@@ -38,8 +119,8 @@ Native materials were read from the local installation only; no library file was
 3. Before final release approval, remove the README pending marker and replace its
    candidate notices with release wording; update the upgrade/demo notices and this
    checklist, and set the actual release date in Changelog.
-4. Run `node scripts/check-release.mjs 0.13.1 --ready`. Until step 3 it must fail.
-5. With explicit authorization, merge and tag `v0.13.1`. The existing OIDC workflow
+4. Run `node scripts/check-release.mjs 0.13.5 --ready`. Until step 3 it must fail.
+5. With explicit authorization, merge and tag `v0.13.5`. The existing OIDC workflow
    publishes npm, creates bilingual GitHub notes and then publishes MCP Registry.
 6. Verify all three versions separately. Registry/platform failures must be reported,
    not described as complete. Third-party directory cache refresh is non-blocking.
@@ -49,8 +130,8 @@ Native materials were read from the local installation only; no library file was
 1. 完成本地检查和 KeyShot 实机验证，仅使用生成资产。
 2. 获准后推送发布 PR，并等待全部 CI 通过。
 3. 最终发布批准前，移除 README 待发布标记，更新升级说明、演示文档和本清单的待发布提示；Changelog 填实际发布日期。
-4. 运行 `node scripts/check-release.mjs 0.13.1 --ready`；第 3 步完成前应被阻止。
-5. 经明确授权后合并并打 `v0.13.1` 标签，现有 OIDC 流程发布 npm、创建双语 Release，
+4. 运行 `node scripts/check-release.mjs 0.13.5 --ready`；第 3 步完成前应被阻止。
+5. 经明确授权后合并并打 `v0.13.5` 标签，现有 OIDC 流程发布 npm、创建双语 Release，
    随后登记 MCP Registry。
 6. 分别核对三个版本，失败必须如实报告；第三方目录缓存更新不阻塞正式发布。
 
