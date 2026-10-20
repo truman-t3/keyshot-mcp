@@ -1,13 +1,13 @@
 # Upgrading KeyShot MCP / KeyShot MCP 升级说明
 
-## 0.13.5 Candidate: Output Protection / 0.13.5 候选版：输出保护
+## 0.13.5: Output Protection / 0.13.5：输出保护
 
-Not published yet. This maintenance batch also fixes nested Windows install paths,
-isolates temporary requests and preserves diagnostics when startup fails. After
-publication, pin `keyshot-mcp@0.13.5`, restart the MCP client and run `keyshot_status`.
+This maintenance batch also fixes nested Windows install paths,
+isolates temporary requests and preserves diagnostics when startup fails.
+Pin `keyshot-mcp@0.13.5`, restart the MCP client and run `keyshot_status`.
 
-尚未发布。本批次还修复 Windows 深层安装路径、隔离临时请求，并在启动异常时保留诊断。
-正式发布后固定为 `keyshot-mcp@0.13.5`，重启 MCP 客户端并运行 `keyshot_status`。
+本批次还修复 Windows 深层安装路径、隔离临时请求，并在启动异常时保留诊断。
+固定为 `keyshot-mcp@0.13.5`，重启 MCP 客户端并运行 `keyshot_status`。
 
 This change is not included in npm 0.13.1. Tool names and existing input fields stay
 available, but implicit replacement of existing outputs is no longer allowed.

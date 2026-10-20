@@ -1,16 +1,19 @@
 # Release Readiness / 正式版验收
 
-## 0.13.5 Candidate / 0.13.5 发布候选版
+## 0.13.5 Validation Record / 0.13.5 验证记录
 
 This batch consolidates output protection, publication privacy, bounded previews,
 Windows installation reliability and startup diagnostic recovery. Versions
 0.13.2 through 0.13.4 are intentionally skipped; they were not published.
-Pending final validation and release approval. / 本批次集中修复输出保护、发布隐私、
-预览限制、Windows 安装及启动诊断。跳过未发布的 0.13.2 至 0.13.4，等待最终验证及发布批准。
+Release authorized on 2026-10-20; publication results are tracked separately.
+本批次集中修复输出保护、发布隐私、预览限制、Windows 安装及启动诊断，跳过未发布的
+0.13.2 至 0.13.4。2026-10-20 获准发布；实际发布结果独立核对。
 
-Local validation on 2026-10-15; this is not a published release. Remote CI results
-are tracked in the pull request checks.
-2026-10-15 本地验证；此变更尚未正式发布，远端 CI 结果在 PR 检查项中追踪。
+Local validation on 2026-10-15 and 2026-10-19; the candidate passed four remote
+Windows/Ubuntu Node.js 20/24 CI jobs and CodeQL. Final release-document checks
+are tracked in PR #35; GitHub, npm and Registry publication must be verified separately.
+2026-10-15、2026-10-19 完成本地验证，候选提交的四组跨平台 CI 与 CodeQL 已通过。
+最终发布文档检查见 PR #35；GitHub、npm 和 Registry 发布结果必须分别核对。
 
 - Default no-overwrite protection covers low-level saves, edits, renders and queue
   jobs; explicit overwrite never permits declared input-file or linked-alias replacement.

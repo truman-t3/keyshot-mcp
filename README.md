@@ -117,12 +117,11 @@ licensed KeyShot edition with headless scripting. **Windows 11 + KeyShot Studio
 KeyShot software, licenses and library assets are not included.
 
 <!-- release-version: 0.13.5 -->
-<!-- release-status: pending -->
 
-**0.13.5 release candidate — not yet published to npm.** This maintenance batch
+**Version 0.13.5.** This maintenance batch
 strengthens output protection, bounded previews, publication privacy, Windows
 installation paths and startup diagnostics. Installation examples below target
-the candidate and become usable after publication. See the [release validation record and 1.0 checklist](docs/RELEASE-READINESS.md).
+this version. See the [release validation record and 1.0 checklist](docs/RELEASE-READINESS.md).
 See [Changelog](CHANGELOG.md) and [upgrade notes](docs/UPGRADING.md).
 
 #### Ask Your Agent to Install
@@ -385,8 +384,8 @@ Community conduct is covered by [Code of Conduct](CODE_OF_CONDUCT.md).
 KeyShot**。已实测 **Windows 11 + KeyShot Studio 2025 / KeyShot 14.1**；其他系统和
 KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方材质库。
 
-**`0.13.5` 发布候选版，尚未发布到 npm：** 集中加固输出保护、预览大小限制、发布隐私、
-Windows 安装路径和启动诊断。下方安装示例将在正式发布后可用。
+**本版为 `0.13.5`：** 集中加固输出保护、预览大小限制、发布隐私、
+Windows 安装路径和启动诊断。下方安装示例使用此版本。
 验证记录与正式版准备见[验收清单](docs/RELEASE-READINESS.md)，
 版本变更见[更新记录](CHANGELOG.md)和[升级说明](docs/UPGRADING.md)。
 

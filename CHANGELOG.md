@@ -4,7 +4,7 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
-## [0.13.5] - Pending / 待发布
+## [0.13.5] - 2026-10-20
 
 ### Installation and Diagnostics / 安装与诊断
 
