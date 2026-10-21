@@ -4,6 +4,9 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+- Patch the development-only Vite dependency to 7.3.7 for GHSA-587h-7wmj-h5pm without upgrading Vitest's major version. Published runtime tools are unchanged.
+- 将仅用于开发测试的 Vite 依赖修补至 7.3.7，处理 GHSA-587h-7wmj-h5pm，不升级 Vitest 大版本；已发布的运行时工具不变。
+
 ## [0.13.5] - 2026-10-20
 
 ### Installation and Diagnostics / 安装与诊断
