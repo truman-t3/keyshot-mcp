@@ -19,6 +19,7 @@ describe("designer-facing README", () => {
     const header = source.split("## From a Request to a Render")[0];
     for (const label of [
       "npm version",
+      "npm total downloads: 3500+",
       "CI status",
       "MIT License",
       "19 MCP tools",
@@ -26,13 +27,30 @@ describe("designer-facing README", () => {
       "Node.js 20 or newer",
       "TypeScript 5.9",
       "MCP protocol 2026-07-28",
-      "M8ven external verification",
     ])
       expect(header).toContain(`alt="${label}"`);
-    expect(header).toContain(
-      "https://m8ven.ai/badge/mcp/truman-t3-keyshot-mcp-v7af97?variant=verified",
+    expect(header).not.toMatch(
+      /lobehub\.com\/badge|glama\.ai\/.*badge|m8ven\.ai\/badge/,
     );
-    expect(header).not.toMatch(/lobehub\.com\/badge|glama\.ai\/.*badge/);
+    const groups = [...header.matchAll(/<p align="center">([\s\S]*?)<\/p>/g)]
+      .map((match) => match[1])
+      .filter((group) => /alt="(?:npm version|19 MCP tools)"/.test(group));
+    expect(groups).toHaveLength(2);
+    expect(groups[0]).toContain('alt="npm total downloads: 3500+"');
+    expect(groups[1]).toContain('alt="KeyShot 14.1 tested"');
+  });
+
+  it("labels the cumulative download milestone with its cutoff and official source", () => {
+    const header = source.split("## From a Request to a Render")[0];
+    expect(header).toContain(
+      "https://img.shields.io/badge/npm%20downloads-3500%2B-00AEEF",
+    );
+    expect(header).toContain(
+      "https://api.npmjs.org/downloads/point/2026-07-09:2026-10-20/keyshot-mcp",
+    );
+    expect(header).toContain("Cumulative npm downloads as of 2026-10-20");
+    expect(header).toContain("npm 累计下载量，截至 2026-10-20");
+    expect(header).not.toMatch(/img\.shields\.io\/npm\/(?:dm|dt)\//);
   });
 
   it("keeps every tool discoverable without duplicating the full reference", () => {
