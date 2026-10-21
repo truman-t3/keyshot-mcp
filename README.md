@@ -13,18 +13,19 @@
 </p>
 
 <p align="center">
-  <a href="https://www.npmjs.com/package/keyshot-mcp"><img src="https://img.shields.io/npm/v/keyshot-mcp.svg" alt="npm version"></a>
-  <a href="https://api.npmjs.org/downloads/point/2026-07-09:2026-10-20/keyshot-mcp" title="Cumulative npm downloads as of 2026-10-20 / npm 累计下载量，截至 2026-10-20"><img src="https://img.shields.io/badge/npm%20downloads-3500%2B-00AEEF" alt="npm total downloads: 3500+"></a>
+  <a href="https://www.npmjs.com/package/keyshot-mcp"><img src="https://img.shields.io/npm/v/keyshot-mcp.svg?logo=npm&amp;logoColor=white" alt="npm version"></a>
+  <a href="https://api.npmjs.org/downloads/point/2026-07-09:2026-10-20/keyshot-mcp" title="Cumulative npm downloads as of 2026-10-20 / npm 累计下载量，截至 2026-10-20"><img src="https://img.shields.io/badge/npm%20downloads-3500%2B-00AEEF?logo=npm&amp;logoColor=white" alt="npm total downloads: 3500+"></a>
   <a href="https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml"><img src="https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
+  <a href="https://m8ven.ai/mcp/truman-t3-keyshot-mcp-v7af97" title="M8ven external verification (live status) / M8ven 第三方验证（动态状态）"><img src="https://m8ven.ai/badge/mcp/truman-t3-keyshot-mcp-v7af97?variant=verified" alt="M8ven live verification"></a>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/tools-19-55E6A5" alt="19 MCP tools">
   <img src="https://img.shields.io/badge/KeyShot-14.1_tested-00AEEF" alt="KeyShot 14.1 tested">
-  <img src="https://img.shields.io/badge/Node.js-20%2B-339933" alt="Node.js 20 or newer">
-  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6" alt="TypeScript 5.9">
-  <img src="https://img.shields.io/badge/MCP-2026--07--28-111827" alt="MCP protocol 2026-07-28">
+  <img src="https://img.shields.io/badge/Node.js-20%2B-339933?logo=nodedotjs&amp;logoColor=white" alt="Node.js 20 or newer">
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&amp;logoColor=white" alt="TypeScript 5.9">
+  <img src="https://img.shields.io/badge/MCP-2026--07--28-111827?logo=modelcontextprotocol&amp;logoColor=white" alt="MCP protocol 2026-07-28">
 </p>
 
 <p align="center">

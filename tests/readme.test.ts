@@ -15,7 +15,7 @@ const localDocs = [
 ];
 
 describe("designer-facing README", () => {
-  it("retains project header badges without reintroducing rating badges", () => {
+  it("retains project header badges without static third-party rating claims", () => {
     const header = source.split("## From a Request to a Render")[0];
     for (const label of [
       "npm version",
@@ -27,17 +27,32 @@ describe("designer-facing README", () => {
       "Node.js 20 or newer",
       "TypeScript 5.9",
       "MCP protocol 2026-07-28",
+      "M8ven live verification",
     ])
       expect(header).toContain(`alt="${label}"`);
-    expect(header).not.toMatch(
-      /lobehub\.com\/badge|glama\.ai\/.*badge|m8ven\.ai\/badge/,
-    );
+    expect(header).not.toMatch(/lobehub\.com\/badge|glama\.ai\/.*badge/);
     const groups = [...header.matchAll(/<p align="center">([\s\S]*?)<\/p>/g)]
       .map((match) => match[1])
       .filter((group) => /alt="(?:npm version|19 MCP tools)"/.test(group));
     expect(groups).toHaveLength(2);
     expect(groups[0]).toContain('alt="npm total downloads: 3500+"');
     expect(groups[1]).toContain('alt="KeyShot 14.1 tested"');
+  });
+
+  it("uses standard brand logos and the provider's live verification badge", () => {
+    const header = source.split("## From a Request to a Render")[0];
+    for (const logo of [
+      "npm",
+      "nodedotjs",
+      "typescript",
+      "modelcontextprotocol",
+    ])
+      expect(header).toContain(`logo=${logo}&amp;logoColor=white`);
+    expect(header).toContain(
+      "https://m8ven.ai/badge/mcp/truman-t3-keyshot-mcp-v7af97?variant=verified",
+    );
+    expect(header).toContain("M8ven external verification (live status)");
+    expect(header).not.toMatch(/img\.shields\.io\/badge\/M8ven/);
   });
 
   it("labels the cumulative download milestone with its cutoff and official source", () => {
