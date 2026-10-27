@@ -175,6 +175,31 @@ repository's pnpm lockfile, so their resolved dependency graphs are separate.
 These are proposed release gates, not completed work or a promised date.
 以下为建议验收门槛，不是已经完成的结果，也不承诺发布日期。
 
+### Product Camera Regression, 2026-10-27 / 产品取景回归
+
+The original default product camera clipped the generated cube and tall model.
+The unreleased fix fits the world-space bounding box using the actual perspective
+FOV and render aspect ratio, reserving 10% edge padding. KeyShot 14.1 rendered
+five generated cases (cube, tall, flat, offset and multiple objects) plus portrait
+and wide outputs; all seven images were visually checked for unclipped geometry.
+The five source-model hashes remained unchanged. Models, scenes and images stay
+local and are not included in the repository or npm package. Explicit distance,
+absolute camera coordinates, base scenes and existing scenes bypass automatic
+fitting. This geometric fit does not judge aesthetics or select the main object.
+
+原默认产品相机会裁切生成立方体和高瘦模型。未发布修复根据实际透视视野角、输出宽高比
+和世界坐标包围盒调整距离，四边预留 10% 空间。KeyShot 14.1 已渲染立方体、高瘦、薄板、
+偏移及多对象五种生成模型，并补充竖版和宽幅输出；七张图片均经目视复核，几何体没有
+裁切，五个源模型哈希不变。模型、场景和图片仅保留本地，不进入仓库或 npm 包。显式距离、
+绝对坐标、基础场景和已有场景不执行自动取景。该算法只做几何适配，不评判美感或自动
+识别主产品。
+
+The framing branch passes 220 TypeScript tests and 84 Python tests (two additional
+platform-specific skips), all 14 real KeyShot smoke steps, type checks, formatting,
+Ruff, generated tool-documentation checks and the full dependency audit.
+取景修复分支通过 220 项 TypeScript 测试、84 项 Python 测试（另有两项平台相关跳过），
+以及全部 14 步真实 KeyShot 测试、类型检查、格式检查、Ruff、工具文档漂移检查和完整依赖审计。
+
 - **Fresh installation:** at least 3 independent designers complete setup, diagnosis,
   preview and final output, with problems recorded. / **全新安装：** 至少 3 位独立设计师
   完成安装、诊断、预览及出图，记录遇到的问题。

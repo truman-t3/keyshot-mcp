@@ -60,7 +60,8 @@ export async function prepareProductRenderRequest(
   );
 
   const presetName =
-    input.cameraPresetName ?? (input.modelPath ? "Isometric" : undefined);
+    input.cameraPresetName ??
+    (input.modelPath && !input.position ? "Isometric" : undefined);
   if (presetName) {
     const presets = await loadCameraPresets(config);
     const preset = findCameraPreset(presets, presetName);
@@ -76,6 +77,9 @@ export async function prepareProductRenderRequest(
       input.cameraName ?? (input.modelPath ? "Product Hero" : preset.name);
     if (preset.type === "standard") {
       request.standardView = preset.standardView;
+      request._fitProductCamera = Boolean(
+        input.modelPath && !input.baseScenePath && input.distance === undefined,
+      );
     } else {
       request.position = preset.position;
       request.lookAt = preset.lookAt;

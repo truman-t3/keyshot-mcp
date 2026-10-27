@@ -1,4 +1,5 @@
 import json
+import math
 import os
 import re
 import sys
@@ -451,6 +452,8 @@ def configure_product_camera(payload, output_files, warnings):
                 "focalLength": lens_data.get("focalLength"),
             })
         standard_data["presetName"] = payload.get("cameraPresetName")
+        if payload.get("_fitProductCamera"):
+            standard_data["fit"] = fit_product_camera(payload)
         return standard_data
 
     if transform_requested or lens_requested:
@@ -465,6 +468,84 @@ def configure_product_camera(payload, output_files, warnings):
         return {"cameraName": camera_name, "selected": True}
 
     return None
+
+
+def product_camera_frame(bounds, position, look_at, up, field_of_view, width, height):
+    def vector(value):
+        if all(hasattr(value, axis) for axis in ("x", "y", "z")):
+            components = (getattr(value, axis) for axis in ("x", "y", "z"))
+            result = tuple(float(component() if callable(component) else component) for component in components)
+        else:
+            result = tuple(float(value[i]) for i in range(3))
+        if not all(math.isfinite(component) for component in result):
+            raise RuntimeError("Camera framing requires finite scene bounds and camera vectors")
+        return result
+
+    def dot(a, b):
+        return sum(a[i] * b[i] for i in range(3))
+
+    def unit(value):
+        length = math.sqrt(dot(value, value))
+        if length <= 1e-12:
+            raise RuntimeError("Camera framing requires a nonzero camera direction and up vector")
+        return tuple(component / length for component in value)
+
+    def cross(a, b):
+        return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
+    lower, upper = (vector(bound) for bound in bounds)
+    if any(lower[i] > upper[i] for i in range(3)) or max(upper[i] - lower[i] for i in range(3)) <= 1e-12:
+        raise RuntimeError("Camera framing requires a nonempty scene bounding box")
+    field_of_view, width, height = float(field_of_view), float(width), float(height)
+    if not all(math.isfinite(value) for value in (field_of_view, width, height)) or not (
+        0 < field_of_view < 180 and width > 0 and height > 0
+    ):
+        raise RuntimeError("Camera framing requires valid field of view and render dimensions")
+    position, look_at, up = vector(position), vector(look_at), vector(up)
+    backward = unit(tuple(position[i] - look_at[i] for i in range(3)))
+    right = unit(cross(up, backward))
+    vertical = unit(cross(backward, right))
+    center = tuple((lower[i] + upper[i]) / 2 for i in range(3))
+    # KeyShot's perspective FOV is horizontal. Reserve ten percent on every edge.
+    tan_horizontal = math.tan(math.radians(field_of_view) / 2) * 0.8
+    tan_vertical = tan_horizontal * height / width
+    distance = 0.0
+    for x in (lower[0], upper[0]):
+        for y in (lower[1], upper[1]):
+            for z in (lower[2], upper[2]):
+                offset = tuple(value - center[i] for i, value in enumerate((x, y, z)))
+                distance = max(distance, dot(offset, backward) + max(
+                    abs(dot(offset, right)) / tan_horizontal,
+                    abs(dot(offset, vertical)) / tan_vertical,
+                ))
+    return {
+        "position": tuple(center[i] + backward[i] * distance for i in range(3)),
+        "lookAt": center,
+        "distance": distance,
+        "bounds": (lower, upper),
+        "padding": 0.1,
+        "width": width,
+        "height": height,
+    }
+
+
+def fit_product_camera(payload):
+    required = ("getSceneTree", "getCameraPosition", "getCameraLookAt", "getCameraUp",
+                "getCameraFieldOfView", "getCameraLens", "setCameraLookAt", "setCameraPosition")
+    if any(not callable(getattr(lux, name, None)) for name in required):
+        raise RuntimeError("KeyShot API does not support automatic product camera framing")
+    lens = lux.getCameraLens()
+    if lens.get("lens") != getattr(lux, "CAMERA_TYPE_PERSPECTIVE", None):
+        raise RuntimeError("Automatic product camera framing supports perspective cameras only; specify a camera distance")
+    frame = product_camera_frame(
+        lux.getSceneTree().getBoundingBox(world=True), lux.getCameraPosition(),
+        lux.getCameraLookAt(), lux.getCameraUp(), lux.getCameraFieldOfView(),
+        payload["width"], payload["height"],
+    )
+    call_non_false_variants("frame camera target", lambda: lux.setCameraLookAt(pt=frame["lookAt"]))
+    call_non_false_variants("frame camera position", lambda: lux.setCameraPosition(pos=frame["position"]))
+    call_non_false_variants("save framed camera", lambda: lux.saveCamera(), lambda: lux.saveCamera(payload["cameraName"]))
+    return frame
 
 
 def product_stage(name, ok, data=None, skipped=False, error=None):
