@@ -49,6 +49,7 @@ describe("product render request preparation", () => {
     expect(request.outputScenePath).toBe("My-Speaker-product.bip");
     expect(request.outputPath).toBe("My-Speaker-product.png");
     expect(request.standardView).toBe("isometric");
+    expect(request._fitProductCamera).toBe(true);
     expect(request.cameraName).toBe("Product Hero");
     expect(request.centerGeometry).toBe(true);
     expect(request.overwrite).toBe(false);
@@ -71,6 +72,7 @@ describe("product render request preparation", () => {
     expect(request.outputScenePath).toBe("watch-product.bip");
     expect(request.outputDir).toBe("watch-renders");
     expect(request.cameraName).toBeUndefined();
+    expect(request._fitProductCamera).toBeUndefined();
     expect(request.centerGeometry).toBeUndefined();
     expect(request._automaticOutputFields).toEqual([
       "outputScenePath",
@@ -105,5 +107,50 @@ describe("product render request preparation", () => {
     await expect(prepareProductRenderRequest(config, input)).rejects.toThrow(
       "Available: Isometric, Hero",
     );
+  });
+
+  it("does not replace explicit coordinates with the default preset", async () => {
+    const request = await prepareProductRenderRequest(
+      config,
+      productRenderSchema.parse({
+        modelPath: "model.obj",
+        position: [10, 5, 10],
+        lookAt: [0, 0, 0],
+      }),
+    );
+    expect(request.standardView).toBeUndefined();
+    expect(request.position).toEqual([10, 5, 10]);
+    expect(request._fitProductCamera).toBeUndefined();
+  });
+
+  it.each([
+    { distance: 20 },
+    { baseScenePath: "studio.bip" },
+    { cameraPresetName: "Hero" },
+  ])("preserves explicit framing and base scenes: %j", async (overrides) => {
+    const request = await prepareProductRenderRequest(
+      config,
+      productRenderSchema.parse({
+        modelPath: "model.obj",
+        ...overrides,
+      }),
+    );
+    expect(request._fitProductCamera).not.toBe(true);
+  });
+
+  it("fits standard views after lens overrides using the requested aspect ratio", async () => {
+    const request = await prepareProductRenderRequest(
+      config,
+      productRenderSchema.parse({
+        modelPath: "model.obj",
+        cameraPresetName: "Isometric",
+        focalLength: 85,
+        width: 480,
+        height: 640,
+      }),
+    );
+    expect(request._fitProductCamera).toBe(true);
+    expect(request.focalLength).toBe(85);
+    expect([request.width, request.height]).toEqual([480, 640]);
   });
 });

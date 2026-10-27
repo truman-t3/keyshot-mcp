@@ -4,6 +4,9 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+- Fit standard-view cameras for newly imported products to world-space scene bounds and output aspect ratio with 10% edge padding. Preserve explicit camera coordinates/distances, base scenes and saved-scene framing; do not replace custom coordinates with the default Isometric preset.
+- 新导入产品的标准视角按世界坐标包围盒与输出宽高比自动取景，四边预留 10% 空间；保留显式坐标、距离、基础场景及已有场景构图，修复默认 Isometric 预设覆盖自定义坐标的问题。
+
 - Raise the Zod and Vitest minimum patch versions and refresh vulnerable SDK test dependencies while retaining the existing MCP SDK and Vitest major versions. Preserve all 19 public tools and their inputs.
 - 提高 Zod 与 Vitest 的最低修补版本，更新 SDK 测试依赖链中的安全修复，保持现有 MCP SDK 和 Vitest 大版本；保留全部 19 个公开工具及其输入。
 

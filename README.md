@@ -207,7 +207,11 @@ a camera adjustment before rendering the approved scene at standard quality.
 
 `keyshot_product_render` accepts one model or one saved scene. New models use import
 composition options by default; existing scenes keep their setup unless changes
-are requested. Automatic framing is a starting point, not a guarantee.
+are requested. On unreleased `main`, standard-view cameras for new models without
+a base scene fit the world-space scene bounds to the render aspect ratio, with
+10% edge padding. Explicit distance, absolute camera coordinates and base scenes
+keep their framing. This includes all scene geometry, not just the main product;
+review a preview before final rendering. Published 0.13.5 retains the earlier framing.
 
 #### Compare Materials on One Object
 
@@ -469,7 +473,10 @@ pnpm run build
 ```
 
 `keyshot_product_render` 接受一个模型或一个已保存场景。新模型默认开启导入构图选项；
-已有场景没有明确要求时保留原有设置。自动构图只是起点，不保证所有模型都合适。
+已有场景没有明确要求时保留原有设置。未发布的 `main` 中，不使用基础场景的新模型在
+标准视角下会按世界坐标包围盒和输出宽高比调整取景，四边预留 10% 空间；显式距离、
+绝对相机坐标和基础场景保留原有构图。包围盒包含场景全部几何体，不只主产品，正式出图
+前仍需检查预览。已发布的 0.13.5 仍使用此前的取景逻辑。
 
 #### 只改一个对象的材质
 
