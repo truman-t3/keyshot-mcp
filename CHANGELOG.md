@@ -4,6 +4,9 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+- Raise the Zod and Vitest minimum patch versions and refresh vulnerable SDK test dependencies while retaining the existing MCP SDK and Vitest major versions. Preserve all 19 public tools and their inputs.
+- 提高 Zod 与 Vitest 的最低修补版本，更新 SDK 测试依赖链中的安全修复，保持现有 MCP SDK 和 Vitest 大版本；保留全部 19 个公开工具及其输入。
+
 - Patch the development-only Vite dependency to 7.3.7 for GHSA-587h-7wmj-h5pm without upgrading Vitest's major version. Published runtime tools are unchanged.
 - 将仅用于开发测试的 Vite 依赖修补至 7.3.7，处理 GHSA-587h-7wmj-h5pm，不升级 Vitest 大版本；已发布的运行时工具不变。
 

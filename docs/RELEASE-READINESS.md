@@ -137,6 +137,41 @@ Native materials were read from the local installation only; no library file was
 
 ## 1.0 Acceptance / 1.0 验收目标
 
+### Local Preflight, 2026-10-27 / 本地预检
+
+The unreleased dependency-fix branch resolves the current nine audit findings
+without changing MCP SDK or Vitest major versions. Zod 4.6.7 and Vitest 4.1.12
+pass 215 TypeScript tests; Python passes 77 tests with two Windows-specific skips.
+Full and production-only dependency audits report no known vulnerabilities.
+The patched branch also passed all 14 KeyShot 14.1 smoke steps locally.
+Dependabot's failed mocker update was blocked on the older Vitest dependency
+graph; the patch refreshes the complete Vitest 4.x family. The next automated
+update on the merged default branch must be checked separately.
+
+未发布的依赖修复分支已处理当前九项审计告警，不改变 MCP SDK 或 Vitest 大版本。
+Zod 4.6.7、Vitest 4.1.12 通过 215 项 TypeScript 测试；Python 77 项通过、两项 Windows
+平台相关跳过。完整及仅生产依赖审计均无已知漏洞。Dependabot 的 mocker 更新失败源于
+旧 Vitest 依赖图无法解析安全版本，本补丁同步更新整个 Vitest 4.x 系列；合并后的下一次
+自动更新结果仍需单独核对。
+修补后的分支也已通过本机 KeyShot 14.1 全部 14 步测试。
+
+The public npm package `keyshot-mcp@0.13.5` was installed from the registry, not a
+local tarball, into an isolated prefix containing spaces and Chinese characters.
+Both its Windows global command shim and `npx -y keyshot-mcp@0.13.5` passed SDK
+stdio checks: 19 tools, ready diagnostics, a returned PNG preview, temporary-image
+cleanup and unchanged source hashes. The global-install path also imported the
+generated cube. Environment: Windows 11, Node.js 24.22.1, npm 12.2.1, KeyShot 14.1.
+Account and machine-wide npm configuration were not used. This does not establish
+clean-OS, GUI-client or independent-user acceptance; npm installs do not use the
+repository's pnpm lockfile, so their resolved dependency graphs are separate.
+
+公开 npm 包 `keyshot-mcp@0.13.5` 已从 registry 安装到带空格及中文的独立目录，不使用
+本地压缩包。Windows 全局命令入口及 `npx -y keyshot-mcp@0.13.5` 均通过 SDK stdio
+检查：19 个工具、诊断就绪、返回 PNG、临时清理及源文件哈希不变；全局安装路径还完成
+了生成立方体的导入。环境为 Windows 11、Node.js 24.22.1、npm 12.2.1、KeyShot 14.1，
+未使用账号或全机 npm 配置。此结果不代表干净系统、图形客户端或独立用户验收；npm
+安装不使用仓库的 pnpm 锁文件，其解析出的依赖图需区别记录。
+
 These are proposed release gates, not completed work or a promised date.
 以下为建议验收门槛，不是已经完成的结果，也不承诺发布日期。
 
