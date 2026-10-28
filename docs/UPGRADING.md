@@ -1,5 +1,27 @@
 # Upgrading KeyShot MCP / KeyShot MCP 升级说明
 
+## Preparing for 1.0 (Unreleased) / 准备升级至 1.0（未发布）
+
+1. Save the current MCP configuration and record its pinned npm version. Keep original scenes separate from outputs.
+2. Only after 1.0 is published and verified, change the package argument to `keyshot-mcp@1.0.0`; retain KeyShot, output and preset environment settings. Do not use this version before publication.
+3. Restart the MCP server, run `keyshot_status`, inspect a saved scene and request a small preview before editing a scene copy.
+4. To roll back, restore the previous pinned package/configuration and restart the server. Rollback does not undo scene edits or remove generated files; retest from an untouched original copy.
+
+All 19 tool names and existing input fields are intended to remain available.
+New-model standard-view framing on `main` now fits geometry and aspect ratio;
+existing scenes, base scenes and explicit coordinates/distances retain their framing.
+Rollback to 0.13.5 loses that fix and the newer dependency patch baseline.
+No migration changes the KeyShot installation, materials library or license.
+
+1. 备份 MCP 配置并记录当前固定 npm 版本，原始场景与输出目录分开保存。
+2. 等 1.0 正式发布且核对通过后，再将包参数改为 `keyshot-mcp@1.0.0`，保留 KeyShot、输出目录和预设环境配置；发布前不要使用该版本。
+3. 重启 MCP 服务，运行 `keyshot_status`，检查已保存场景，先请求小尺寸预览，再编辑副本。
+4. 回退时恢复原固定版本和配置并重启服务；回退不会撤销场景修改或删除输出，重测应使用未改动的原始副本。
+
+计划保留全部 19 个工具名称和现有输入字段。`main` 的新模型标准视角按几何体和宽高比
+取景，已有场景、基础场景及显式坐标/距离保留构图。回退到 0.13.5 会失去该取景修复和
+更新后的依赖修补基线；升级不修改 KeyShot 安装、材质库或许可证。
+
 ## 0.13.5: Output Protection / 0.13.5：输出保护
 
 This maintenance batch also fixes nested Windows install paths,
