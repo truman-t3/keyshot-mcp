@@ -4,6 +4,18 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+## [1.0.0]
+
+### Candidate / 候选版
+
+- Pin transitive `qs` to 6.16.1, including the legacy SDK test chain, for GHSA-6pq8-jhm2-2vcw.
+- 将间接依赖 `qs` 统一固定至 6.16.1，覆盖旧 SDK 测试依赖链，处理 GHSA-6pq8-jhm2-2vcw。
+
+- Unpublished candidate preserving all 19 tools, existing input fields, local saved-scene workflows and source/output protection. Windows 11 + KeyShot 14.1 is the tested rendering scope; graphical-client and independent-user acceptance are deferred, not passed.
+- 未发布候选版，保留全部 19 个工具、现有输入、本地已保存场景工作流及源文件/输出保护。实测渲染范围为 Windows 11 + KeyShot 14.1；图形客户端与独立用户验收后置，未标记通过。
+- Document tested support, planned 1.x compatibility, explicit upgrade/rollback steps and release gates. Re-test the final tagged commit before publication; no release date is assigned yet.
+- 补充实测支持范围、拟定 1.x 兼容承诺、升级回退步骤及发布门槛。发布前须复测最终提交，目前不填写发布日期。
+
 - Fit standard-view cameras for newly imported products to world-space scene bounds and output aspect ratio with 10% edge padding. Preserve explicit camera coordinates/distances, base scenes and saved-scene framing; do not replace custom coordinates with the default Isometric preset.
 - 新导入产品的标准视角按世界坐标包围盒与输出宽高比自动取景，四边预留 10% 空间；保留显式坐标、距离、基础场景及已有场景构图，修复默认 Isometric 预设覆盖自定义坐标的问题。
 
@@ -193,7 +205,8 @@ All notable changes to KeyShot MCP are documented in this file.
 
 - Documented that scene metadata and preview images may be sent by an MCP client to its configured model provider.
 
-[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.5...HEAD
+[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v1.0.0...HEAD
+[1.0.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.5...v1.0.0
 [0.13.5]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.1...v0.13.5
 [0.13.1]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.0...v0.13.1
 [0.13.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.12.1...v0.13.0

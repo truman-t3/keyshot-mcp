@@ -137,6 +137,81 @@ Native materials were read from the local installation only; no library file was
 
 ## 1.0 Acceptance / 1.0 验收目标
 
+### Candidate Preparation, 2026-10-28 / 候选版准备
+
+The local `chore/one-zero-candidate` branch now aligns runtime, npm, Registry,
+Skill and listing metadata to unpublished 1.0.0. README retains a pending marker
+and the release guard must reject `--ready`. The 1.0.0 tarball passed isolated
+installation and SDK checks for tool discovery, ready status, product framing,
+PNG delivery, temporary cleanup, source preservation and output restrictions.
+Client and independent-user acceptance remain deferred by maintainer choice.
+Final publication needs explicit approval and revalidation after any further edit.
+
+本地 `chore/one-zero-candidate` 分支已将运行时、npm、Registry、Skill 和目录元数据统一为
+未发布的 1.0.0。README 保留 pending 标记，发布检查必须拒绝 `--ready`。1.0.0 压缩包
+已通过隔离安装及 SDK 工具发现、状态、取景、PNG 返回、临时清理、源文件保护和输出
+限制验证。客户端与独立用户验收按维护者安排后置，正式发布仍需明确批准，后续修改后
+需重新验证。
+
+The October 28 full audit additionally detected GHSA-6pq8-jhm2-2vcw in legacy
+SDK development dependencies. A targeted pnpm override removes qs 6.16.0 in favor
+of 6.16.1; the refreshed full audit reports no known vulnerabilities. This pin
+is for the development lockfile and is not a claim that npm consumers use it.
+10 月 28 日完整审计新增发现旧 SDK 开发链的 qs 告警，已通过定向 pnpm override 将
+6.16.0 替换为 6.16.1，复查无已知漏洞。该固定针对开发锁文件，不表示 npm 用户会使用
+仓库锁文件。
+
+PRs #41 and #42 are merged into `main` at `d730d0e`. Post-merge CI and CodeQL
+passed. These fixes are not yet in the published npm 0.13.5 package. This starts
+1.0 preparation; it is not approval to tag or publish 1.0.
+
+PR #41、#42 已合并至 `main`（`d730d0e`），合并后 CI 与 CodeQL 通过。
+已发布的 npm 0.13.5 尚不包含这些修复。当前进入 1.0 准备阶段，不代表已批准打标签或发布。
+
+- [x] Merge dependency patches and product-camera regressions; retain 19 tools.
+      / 合并依赖安全修补及产品取景修复，保留 19 个工具。
+- [x] Diagnose failed Dependabot runs independently of passing CI: runs
+      40438680339, 40438681959 and 40438682890 used a 4320-minute release-age filter
+      and rejected locked `ip-address@10.7.5`, published on October 25, during the
+      October 27 update. Preserve the age filter; a future successful updater run
+      remains unverified. Defer Vitest 5 / Vite 8 major upgrades.
+      / 已查明三个更新失败均因三天发布时间过滤拒绝锁定的 `ip-address@10.7.5`，不是功能
+      回归；保留等待期，后续自动更新成功与否仍待核对。暂不升级 Vitest 5 / Vite 8。
+- [x] Install the packed candidate in an isolated prefix and repeat diagnostics,
+      previews, source-preservation and output-safety checks. Previous public-package
+      installation tests validate 0.13.5, not the new candidate.
+      / 隔离安装候选版压缩包，复核诊断、预览、源文件保护和输出安全；此前公开包安装验证
+      只适用于 0.13.5，不能替代候选版验证。
+- [ ] Deferred: record versions and image delivery in two actual MCP clients; do not count
+      SDK transport tests as client acceptance.
+      / 按维护者安排后置：记录两款真实 MCP 客户端的版本和图片显示结果，不用 SDK 测试替代。
+- [ ] Finalize the 1.0 support contract, known limitations, upgrade/rollback guide
+      and bilingual release notes, then align all release metadata in one change.
+      / 完成 1.0 支持范围、已知限制、升级回退指南和双语更新说明，再统一版本元数据。
+- [ ] Independent designer trials are deferred by maintainer choice. Before
+      release, record either their results or an explicit decision to accept this
+      remaining validation gap; never report them as completed.
+      / 独立设计师试用按维护者安排后置；发布前记录试用结果，或明确接受该验证缺口的决定，
+      不将其标记为已完成。
+- [ ] Obtain explicit release approval before creating the 1.0 tag, npm release
+      and official Registry entry; verify all three after publication.
+      / 获得明确发布授权后再创建 1.0 标签、npm 发布及官方 Registry 登记，发布后逐项核对。
+
+On October 28, an isolated install of a locally packed candidate containing the
+`d730d0e` runtime passed discovery of 19 tools, ready diagnostics, new-camera fit,
+embedded PNG preview, temporary-preview cleanup, unchanged model/scene hashes and
+external-output rejection. Its independently resolved production dependencies
+reported zero audit findings. This is a maintainer SDK test, not a published 1.0
+package or graphical-client acceptance. Support scope, upgrade/rollback steps and
+[bilingual release notes](V1-RELEASE-DRAFT.md) are drafted; final version alignment,
+exact-tag-commit testing and release approval remain outstanding.
+
+10 月 28 日，含 `d730d0e` 运行时代码的本地候选压缩包已完成隔离安装：19 个工具、诊断
+就绪、新取景、PNG 预览、临时清理、模型/场景哈希不变和外部路径拒绝均通过；独立解析的
+生产依赖审计无告警。这是维护者 SDK 验证，不是已发布的 1.0 或图形客户端验收。支持范围、
+升级回退及[双语发布说明](V1-RELEASE-DRAFT.md)已起草，最终版本统一、待打标签提交的
+完整复测和发布授权仍待完成。
+
 ### Local Preflight, 2026-10-27 / 本地预检
 
 The unreleased dependency-fix branch resolves the current nine audit findings

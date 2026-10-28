@@ -5,3 +5,4 @@ onlyBuiltDependencies:
 overrides:
   nanoid: 3.3.18
   postcss: 8.5.23
+  qs: 6.16.1
