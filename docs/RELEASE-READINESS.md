@@ -137,6 +137,39 @@ Native materials were read from the local installation only; no library file was
 
 ## 1.0 Acceptance / 1.0 验收目标
 
+### Local Closeout, 2026-11-03 / 本地收尾
+
+Local revalidation of the unpublished 1.0.0 candidate passed 220 TypeScript tests
+and 84 Python tests (two additional platform-specific skips), types, formatting,
+Ruff, generated tool docs, metadata and public-content checks. The full dependency
+audit reported no known vulnerabilities at this check; this is time-specific,
+not a guarantee about future advisories or historical publication content.
+
+A freshly packed candidate was installed in isolation and passed actual KeyShot
+diagnostics, product-camera framing, embedded PNG preview, temporary cleanup,
+unchanged source hashes and rejection of external outputs. This validates the
+candidate runtime from `3af2cc7` with local release-document edits, not a new
+graphical-client acceptance or an official published package.
+
+本地重新验证通过 220 项 TypeScript、84 项 Python 测试（另有两项平台相关跳过），以及
+类型、格式、Ruff、生成文档、元数据和公开内容检查。本次完整依赖审计无已知漏洞，
+该结果只对应本次检查，不代表未来不会出现新公告，也不代表已全面审查历史发布内容。
+
+重新打包的候选版完成隔离安装，通过真实 KeyShot 诊断、产品取景、PNG 预览、临时清理、
+源文件哈希保持及外部输出拒绝。验证对象为 `3af2cc7` 运行时代码加本地发布文档修改，
+不是新增的图形客户端验收，也不是正式发布包。
+
+The pending marker and undated 1.0.0 changelog remain in place. The `--ready`
+release check intentionally fails. Client and independent-user acceptance remain
+deferred. No push, merge, tag, Release, npm or Registry publication was performed
+for this closeout. Before authorized publication, set the actual release date,
+remove pending notices, and repeat checks/CI on the final commit.
+
+保留 pending 标记和未填写日期的 1.0.0 Changelog，`--ready` 发布检查按预期阻止发布。
+客户端与独立用户验收仍后置；本次收尾不推送、不合并、不打标签，不发布 Release、npm
+或 Registry。获得发布授权后，再填写实际发布日期、移除未发布提示，并针对最终提交
+重新执行检查与 CI。
+
 ### Candidate Preparation, 2026-10-28 / 候选版准备
 
 The local `chore/one-zero-candidate` branch now aligns runtime, npm, Registry,

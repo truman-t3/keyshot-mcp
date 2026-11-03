@@ -3,7 +3,7 @@
 Unreleased preparation document. No release date, tag or publication is approved.
 未发布准备文档，不代表已确定发布日期或批准打标签、发布。
 
-## Release Notes Draft / 更新说明草案
+## Release Notes / 更新说明
 
 KeyShot MCP 1.0 focuses on local, saved-scene product rendering: inspect a scene,
 edit selected materials and cameras, review an Agent-visible preview, then render
@@ -21,6 +21,37 @@ Agent 可见预览，再从副本出图。计划保留全部 19 个工具及现�
 相对已发布的 0.13.5，候选代码新增按几何体适配的新模型标准视角取景，修复默认预设
 覆盖自定义坐标，并更新 Zod/Vitest 安全修补基线，不进行 SDK 大版本迁移。最终包含
 哪些提交，以发布时的 Changelog 为准。
+
+### Highlights / 主要变化
+
+- New-model standard-view cameras fit scene geometry to the output aspect ratio with 10% edge padding. Explicit coordinates, camera distance, base scenes and existing scenes retain their framing.
+- Custom product-camera coordinates are no longer replaced by the default Isometric preset.
+- Dependency patches improve the release baseline without adding tools or changing the local headless workflow.
+
+- 新模型标准视角按场景几何体和输出宽高比取景，四边预留 10% 空间；显式坐标、相机距离、基础场景及已有场景保留构图。
+- 修复默认 Isometric 预设覆盖自定义产品相机坐标的问题。
+- 更新依赖修补基线，不增加工具，不改变本地 headless 工作流。
+
+### Usage and Limits / 使用与限制
+
+After publication, pin the desired package version, restart the MCP client and
+run `keyshot_status`. Inspect a saved scene and request a preview before editing
+or final rendering. See [upgrade and rollback](UPGRADING.md).
+
+Rendering is tested on Windows 11 + KeyShot 14.1. Automatic framing considers
+all scene geometry; it does not identify the main product or judge composition.
+The stable server does not control the open KeyShot GUI or read unsaved edits.
+Graphical-client and independent-user acceptance remain deferred; automated SDK
+tests are not a substitute. Scene metadata and previews may be sent by the client
+Agent to its model provider; see [security and privacy](../SECURITY.md).
+
+正式发布后，固定所需版本、重启 MCP 客户端并运行 `keyshot_status`。先检查已保存场景，
+请求预览，再进行修改或正式渲染。详见[升级与回退](UPGRADING.md)。
+
+渲染实测范围为 Windows 11 + KeyShot 14.1。自动取景考虑全部场景几何体，不识别主产品
+或评判构图美感。稳定服务不能控制已打开的 KeyShot GUI 或读取未保存修改。图形客户端
+和独立用户验收仍后置，自动 SDK 测试不能替代。客户端 Agent 可能将场景信息与预览发送
+至模型服务，详见[安全与隐私](../SECURITY.md)。
 
 ## Proposed Stability Contract / 拟定稳定性承诺
 
