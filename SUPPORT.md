@@ -2,6 +2,13 @@
 
 ## English
 
+### Tested Scope
+
+- Real KeyShot validation: Windows 11 and KeyShot 14.1.0.154 with a working headless scripting license.
+- Node.js 20 and 24 are covered by automated Windows/Ubuntu server tests. Ubuntu CI does not establish KeyShot rendering support on Linux.
+- Stable workflow: local stdio, saved scenes, explicit object edits, previews and scene-copy rendering. Unsaved GUI edits, realtime GUI control and remote Events are not supported by the stable server.
+- Other KeyShot versions and operating systems are unverified. Graphical MCP-client acceptance is tracked separately from SDK protocol tests.
+
 Use the channel that matches the request:
 
 - Installation and usage questions: [GitHub Discussions](https://github.com/truman-t3/keyshot-mcp/discussions)
@@ -15,6 +22,13 @@ Support is provided by the community on a best-effort basis. KeyShot product,
 license, or account support must be requested from KeyShot.
 
 ## 中文
+
+### 实测范围
+
+- KeyShot 实机验证：Windows 11、KeyShot 14.1.0.154，需要可用的 headless 脚本许可证。
+- Node.js 20、24 已纳入 Windows/Ubuntu 自动测试；Ubuntu CI 不代表已验证 Linux 上的 KeyShot 渲染。
+- 稳定工作流为本地 stdio、已保存场景、指定对象编辑、预览和场景副本出图；稳定服务不支持未保存 GUI 修改、实时 GUI 控制或远程 Events。
+- 其他 KeyShot 版本和操作系统未经实机验证。图形 MCP 客户端验收与 SDK 协议测试分开记录。
 
 请根据问题选择对应入口：
 
