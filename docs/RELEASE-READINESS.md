@@ -137,6 +137,17 @@ Native materials were read from the local installation only; no library file was
 
 ## 1.0 Acceptance / 1.0 验收目标
 
+### Publication Authorization, 2026-11-04 / 发布授权
+
+The maintainer authorized 1.0.0 publication for November 4, accepting that graphical
+client and independent-user trials remain deferred. This supersedes the earlier
+pending-approval notes below, which are retained as dated historical records.
+Successful publication and post-publication verification must be confirmed separately.
+
+维护者已授权 11 月 4 日发布 1.0.0，接受图形客户端和独立用户试用仍后置的验证缺口。
+该决定取代下方历史记录中的待批准状态，历史日期和记录保持不变；实际发布结果和
+发布后复核仍须分别核对，不因授权就视为发布成功。
+
 ### Local Closeout, 2026-11-03 / 本地收尾
 
 Local revalidation of the unpublished 1.0.0 candidate passed 220 TypeScript tests

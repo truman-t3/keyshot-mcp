@@ -121,11 +121,8 @@ licensed KeyShot edition with headless scripting. **Windows 11 + KeyShot Studio
 KeyShot software, licenses and library assets are not included.
 
 <!-- release-version: 1.0.0 -->
-<!-- release-status: pending -->
 
-**1.0.0 candidate, not yet published.** Use a source checkout for candidate testing;
-do not run the version-pinned npm examples below until publication. The published
-stable version remains 0.13.5. This candidate preserves 19 tools and adds corrected
+**Version 1.0.0.** This release preserves 19 tools and adds corrected
 product framing and dependency patches. Client and independent-user acceptance
 are deferred, not passed. See the [release validation record and 1.0 checklist](docs/RELEASE-READINESS.md).
 See [Changelog](CHANGELOG.md) and [upgrade notes](docs/UPGRADING.md).
@@ -209,11 +206,11 @@ a camera adjustment before rendering the approved scene at standard quality.
 
 `keyshot_product_render` accepts one model or one saved scene. New models use import
 composition options by default; existing scenes keep their setup unless changes
-are requested. On unreleased `main`, standard-view cameras for new models without
+are requested. In 1.0.0, standard-view cameras for new models without
 a base scene fit the world-space scene bounds to the render aspect ratio, with
 10% edge padding. Explicit distance, absolute camera coordinates and base scenes
 keep their framing. This includes all scene geometry, not just the main product;
-review a preview before final rendering. Published 0.13.5 retains the earlier framing.
+review a preview before final rendering.
 
 #### Compare Materials on One Object
 
@@ -394,8 +391,7 @@ Community conduct is covered by [Code of Conduct](CODE_OF_CONDUCT.md).
 KeyShot**。已实测 **Windows 11 + KeyShot Studio 2025 / KeyShot 14.1**；其他系统和
 KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方材质库。
 
-**当前为未发布的 `1.0.0` 候选版：** 候选测试请使用源码运行，正式发布前不要运行下方
-固定版本的 npm 安装示例。已发布稳定版仍为 0.13.5。候选版保留 19 个工具，包含取景修复
+**版本 `1.0.0`：** 保留 19 个工具，包含取景修复
 及依赖安全修补。客户端与独立用户验收均后置，不代表已通过。
 验证记录与正式版准备见[验收清单](docs/RELEASE-READINESS.md)，
 版本变更见[更新记录](CHANGELOG.md)和[升级说明](docs/UPGRADING.md)。
@@ -476,10 +472,10 @@ pnpm run build
 ```
 
 `keyshot_product_render` 接受一个模型或一个已保存场景。新模型默认开启导入构图选项；
-已有场景没有明确要求时保留原有设置。未发布的 `main` 中，不使用基础场景的新模型在
+已有场景没有明确要求时保留原有设置。1.0.0 中，不使用基础场景的新模型在
 标准视角下会按世界坐标包围盒和输出宽高比调整取景，四边预留 10% 空间；显式距离、
 绝对相机坐标和基础场景保留原有构图。包围盒包含场景全部几何体，不只主产品，正式出图
-前仍需检查预览。已发布的 0.13.5 仍使用此前的取景逻辑。
+前仍需检查预览。
 
 #### 只改一个对象的材质
 

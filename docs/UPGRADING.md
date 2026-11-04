@@ -1,6 +1,6 @@
 # Upgrading KeyShot MCP / KeyShot MCP 升级说明
 
-## Preparing for 1.0 (Unreleased) / 准备升级至 1.0（未发布）
+## 1.0.0 Upgrade / 1.0.0 升级
 
 1. Save the current MCP configuration and record its pinned npm version. Keep original scenes separate from outputs.
 2. Only after 1.0 is published and verified, change the package argument to `keyshot-mcp@1.0.0`; retain KeyShot, output and preset environment settings. Do not use this version before publication.

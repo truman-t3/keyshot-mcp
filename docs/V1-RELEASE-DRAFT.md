@@ -1,7 +1,9 @@
 # 1.0 Release Draft / 1.0 发布草案
 
-Unreleased preparation document. No release date, tag or publication is approved.
-未发布准备文档，不代表已确定发布日期或批准打标签、发布。
+Archived preparation draft, superseded by the dated 1.0.0 entry in [Changelog](../CHANGELOG.md).
+The maintainer authorized publication on November 4, 2026; deferred client/user acceptance is not reported as passed.
+准备阶段草案存档，以[更新记录](../CHANGELOG.md)中带日期的 1.0.0 条目为准。
+维护者已授权于 2026 年 11 月 4 日发布，后置的客户端与用户验收不记为通过。
 
 ## Release Notes / 更新说明
 
