@@ -100,6 +100,24 @@ function classifyError(error: string): {
   suggestions: string[];
 } {
   const normalized = error.toLowerCase();
+  if (normalized.includes("camera not found")) {
+    return {
+      errorCode: "CAMERA_NOT_FOUND",
+      suggestions: [
+        "Call keyshot_list_cameras and use an exact returned camera name, or omit camera to render the active view.",
+        "请先调用 keyshot_list_cameras，使用返回的准确相机名；也可省略 camera 渲染当前视角。",
+      ],
+    };
+  }
+  if (normalized.includes("select render camera")) {
+    return {
+      errorCode: "CAMERA_SELECTION_FAILED",
+      suggestions: [
+        "KeyShot did not activate the requested camera. Check its saved name and retry; no fallback view was rendered.",
+        "KeyShot 未能切换到指定相机；请核对已保存的相机名后重试，本次未改用其他视角出图。",
+      ],
+    };
+  }
   if (normalized.includes("output must not replace an input file")) {
     return {
       errorCode: "OUTPUT_IS_INPUT",

@@ -123,8 +123,11 @@ KeyShot software, licenses and library assets are not included.
 <!-- release-version: 1.0.0 -->
 
 **Version 1.0.0.** This release preserves 19 tools and adds corrected
-product framing and dependency patches. Client and independent-user acceptance
-are deferred, not passed. See the [release validation record and 1.0 checklist](docs/RELEASE-READINESS.md).
+product framing and dependency patches. Core workflows were subsequently checked
+in two graphical clients; independent-user trials remain deferred. See the
+[current acceptance scope and remaining gates](docs/INTERNAL-ACCEPTANCE.md) and
+[historical release validation record](docs/RELEASE-READINESS.md). Unreleased source
+fixes are not yet included in the npm package.
 See [Changelog](CHANGELOG.md) and [upgrade notes](docs/UPGRADING.md).
 
 #### Ask Your Agent to Install
@@ -195,6 +198,17 @@ problems, but wait for approval before editing or producing a final render.
 Recommended sequence: **check status → inspect → preview → discuss → approve → render**.
 `keyshot_preview_render` embeds a PNG and deletes its temporary file after reading.
 Provide `outputPath` only when a saved image is needed.
+
+Choose the final aspect ratio before reviewing the preview. For example, use
+`640x480` to review a `1440x1080` output; switching that scene to `1920x1080` may
+crop its saved framing. Existing-scene cameras are not automatically refitted.
+If the ratio changes, preview again before rendering the approved scene.
+
+`imageEmbedded: true` means the response contains an MCP image, not that the
+client displayed it. Expand tool details if needed. If inline images are unavailable,
+request a new safe `.png` `outputPath` and open that saved file in the client or a
+local image viewer. Temporary previews are deleted; do not reuse their paths or
+upload the image to another service just to display it.
 
 #### Make a Product Render
 
@@ -361,6 +375,8 @@ See [Contributing](CONTRIBUTING.md) for setup and checks. CI covers Windows/Ubun
 and Node.js 20/24; Linux CI does not establish KeyShot-on-Linux support.
 The generated cube remains an automated smoke-test fixture. Run `npm run smoke:keyshot`
 only with a supported, licensed local KeyShot installation.
+Development checkouts can also run `pnpm run smoke:keyshot:acceptance` for the
+representative MCP regression described in the [internal acceptance record](docs/INTERNAL-ACCEPTANCE.md).
 
 Next priorities: real validation on more KeyShot releases and macOS, and further lens
 controls when stable headless APIs are available. GUI control requires a supported
@@ -392,8 +408,9 @@ KeyShot**。已实测 **Windows 11 + KeyShot Studio 2025 / KeyShot 14.1**；其�
 KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方材质库。
 
 **版本 `1.0.0`：** 保留 19 个工具，包含取景修复
-及依赖安全修补。客户端与独立用户验收均后置，不代表已通过。
-验证记录与正式版准备见[验收清单](docs/RELEASE-READINESS.md)，
+及依赖安全修补。后续已在两款图形客户端检查核心流程，独立用户试用仍后置。
+当前范围与未完成门禁见[内部验收记录](docs/INTERNAL-ACCEPTANCE.md)，历史验证见
+[验收清单](docs/RELEASE-READINESS.md)；未发布的源码修复尚未进入 npm 包。
 版本变更见[更新记录](CHANGELOG.md)和[升级说明](docs/UPGRADING.md)。
 
 #### 把安装交给 Agent
@@ -463,6 +480,15 @@ pnpm run build
 
 推荐顺序：**状态检查 → 场景检查 → 预览 → 讨论 → 确认 → 正式渲染**。
 `keyshot_preview_render` 返回 PNG 后清理临时文件；需要保留图片时才填写 `outputPath`。
+
+预览前先确定最终宽高比。例如，`1440x1080` 的出图可用 `640x480` 预览；若改为
+`1920x1080`，原构图可能被裁切。已有场景的相机不会自动重新取景；比例改变后，应重新
+预览并确认，再渲染已批准的场景。
+
+`imageEmbedded: true` 表示响应包含 MCP 图片，不代表客户端已显示。必要时展开工具
+详情；若客户端不支持内嵌图片，可要求另存到安全目录中的新 `.png` `outputPath`，
+再用客户端文件面板或本地图像查看器打开。临时预览会被删除，不复用其路径，也不为了
+显示图片而上传到其他服务。
 
 #### 一句话准备产品出图
 
@@ -606,6 +632,8 @@ pnpm run build
 环境准备与完整测试命令见[贡献指南](CONTRIBUTING.md)。CI 覆盖 Windows/Ubuntu 和
 Node.js 20/24；Linux CI 不代表 KeyShot 已在 Linux 上实机可用。原有立方体保留为
 自动 smoke test 夹具，`npm run smoke:keyshot` 只在已安装并合法授权 KeyShot 的机器运行。
+源码开发目录还可运行 `pnpm run smoke:keyshot:acceptance`，复现[内部验收记录](docs/INTERNAL-ACCEPTANCE.md)
+中的代表性 MCP 回归。
 
 后续重点：更多 KeyShot 版本和 macOS 实机验证，以及稳定 headless API 可用时的镜头
 控制。实时 GUI 需要受支持的非阻塞接入方式，不采用长期阻挡窗口的脚本。

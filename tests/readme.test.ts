@@ -12,6 +12,7 @@ const localDocs = [
   "examples/lantern-demo/README.md",
   "assets/demo/lantern/ATTRIBUTION.md",
   "docs/GUI-LIMITATIONS.md",
+  "docs/INTERNAL-ACCEPTANCE.md",
 ];
 
 describe("designer-facing README", () => {
@@ -140,6 +141,26 @@ describe("designer-facing README", () => {
       expect(bytes.readUInt32BE(20)).toBe(1080);
       expect(source).toContain("assets/demo/lantern/" + name + ".png");
     }
+  });
+
+  it("explains framing and image-display boundaries in both languages", () => {
+    expect(source).toContain(
+      "Existing-scene cameras are not automatically refitted",
+    );
+    expect(source).toContain("已有场景的相机不会自动重新取景");
+    expect(source).toContain("not that the");
+    expect(source).toContain("client displayed it");
+    expect(source).toContain("不代表客户端已显示");
+    expect(source).toContain("Temporary previews are deleted");
+    expect(source).toContain("临时预览会被删除");
+    const skill = fs.readFileSync(
+      path.join(root, "skills/keyshot-mcp/SKILL.md"),
+      "utf8",
+    );
+    expect(skill).toContain("share that ratio");
+    expect(skill).toContain("not client display");
+    expect(skill).toContain("Never link a deleted temporary preview");
+    expect(skill).toContain("不为显示而上传图片");
   });
 
   it("keeps installation JSON parseable and pinned to the published version", () => {

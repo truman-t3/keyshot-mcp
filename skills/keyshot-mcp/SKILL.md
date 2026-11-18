@@ -101,6 +101,12 @@ Example configuration:
 - Never combine `samples` with `maxTimeSeconds`.
 - Never combine camera `fieldOfView` with `focalLength`.
 - Supply camera `position` and `lookAt` together.
+- Choose the final aspect ratio before previewing; preview and final render must
+  share that ratio. Explicit width and height can preserve it while changing quality.
+  Existing-scene cameras are not automatically refitted. If the ratio changes,
+  preview again and obtain approval for any new framing adjustment.
+- 预览和正式出图保持同一宽高比；改变比例后重新预览。已有相机不会自动重新取景，
+  新的构图调整需用户确认，不静默改变相机。
 
 ## Result handling
 
@@ -113,6 +119,13 @@ Every tool returns `ok`, operation-specific `data`, `outputFiles`, `warnings`,
 3. Surface warnings without presenting them as failures.
 4. On failure, explain `error` and the first relevant suggestion.
 5. Run `keyshot_status` when the cause is unclear.
+6. `imageEmbedded: true` confirms protocol delivery, not client display. Do not
+   claim the user saw an image unless that is confirmed. Suggest expanding tool
+   details; if inline viewing is unavailable, offer a new safe PNG `outputPath`
+   for local file viewing. Never link a deleted temporary preview or upload it
+   elsewhere as a display workaround.
+7. `imageEmbedded: true` 不代表客户端已显示。可展开详情，或经用户同意另存安全 PNG
+   后在本地查看；不链接已删除的临时预览，不为显示而上传图片。
 
 ## Recommended feedback loop
 

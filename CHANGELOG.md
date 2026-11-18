@@ -4,6 +4,17 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
+### Internal Acceptance Fixes / 内部验收修复
+
+- Pin development-only Hono dependencies to patched releases. Keep unresolved dependency findings visible; this is not a zero-vulnerability acceptance claim.
+- 将仅用于开发测试的 Hono 依赖固定到安全修补版，保留尚未解决的依赖告警，不宣称已实现零漏洞验收。
+- Reject missing render cameras and failed camera activation before rendering, instead of silently rendering the active view. Preserve partial queue successes and return actionable camera errors.
+- 指定的渲染相机不存在或切换失败时停止该项，不静默改用当前视角出图；保留队列部分成功的文件，并返回明确的相机错误建议。
+- Preserve the canonical material preset name through the MCP tool and bridge result, without changing the actual material assignment or existing tool inputs.
+- 将解析后的材质预设名称传入 bridge 并保留在返回结果中，不改变材质赋值或现有工具输入。
+- Explain matching preview/final aspect ratios and distinguish MCP image delivery from actual client display. Document safe local PNG viewing without uploading images or linking deleted temporary files.
+- 补充预览与出图宽高比一致的要求，区分 MCP 图片返回和客户端实际显示，说明安全的本地 PNG 查看方式，不上传图片或链接已删除的临时文件。
+
 ## [1.0.0] - 2026-11-04
 
 ### Stable Headless Workflows / 稳定后台工作流

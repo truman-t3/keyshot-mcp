@@ -72,6 +72,17 @@ class MaterialTest(unittest.TestCase):
         self.assertEqual(result['appliedMaterial'], 'Steel Brushed #1')
         self.assertEqual(self.lux.calls, [('Steel Brushed', 42)])
 
+    def test_resolved_preset_name_is_retained_without_changing_assignment(self):
+        result = kb.apply_material_current({
+            'materialName': 'Steel Brushed', 'presetName': 'Brushed Steel',
+        }, [])
+        self.assertEqual(result['presetName'], 'Brushed Steel')
+        self.assertEqual(result['appliedMaterial'], 'Steel Brushed #1')
+
+    def test_direct_material_does_not_invent_a_preset_name(self):
+        result = kb.apply_material_current({'materialName': 'Steel Brushed'}, [])
+        self.assertIsNone(result['presetName'])
+
     def test_existing_scene_material_needs_no_library_lookup(self):
         self.lux.getLibraryMaterials = lambda: self.fail('unnecessary library lookup')
         self.assertEqual(kb.resolve_material('Original', None, []), 'Original')

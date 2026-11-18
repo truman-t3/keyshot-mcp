@@ -1,5 +1,15 @@
 # Release Readiness / 正式版验收
 
+## Latest Internal Check, 2026-11-18 / 最新内部检查
+
+See the [current internal acceptance record](INTERNAL-ACCEPTANCE.md) for published
+1.0.0 graphical-client evidence and unreleased source fixes. Functional regressions
+passed; the full development dependency audit still blocks overall acceptance.
+Historical dated records below are preserved, not silently relabelled as complete.
+
+已发布 1.0.0 的客户端证据和未发布源码修复见[当前内部验收记录](INTERNAL-ACCEPTANCE.md)。
+功能回归通过，完整开发依赖审计仍阻止整体验收；下方历史日期与记录保持原样，不静默改成已通过。
+
 ## 0.13.5 Validation Record / 0.13.5 验证记录
 
 This batch consolidates output protection, publication privacy, bounded previews,

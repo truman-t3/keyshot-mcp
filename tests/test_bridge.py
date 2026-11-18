@@ -363,6 +363,40 @@ class ListCamerasTest(unittest.TestCase):
 
 
 class RenderTest(unittest.TestCase):
+    def test_unknown_camera_cannot_silently_render_the_active_view(self):
+        lux = AllCameraRenderLux(["Front"])
+        kb.lux = lux
+        output_files = []
+        with self.assertRaisesRegex(RuntimeError, "Camera not found"):
+            kb.render({"outputPath": "render.png", "camera": "Missing"}, output_files, [])
+        self.assertEqual(lux.render_calls, [])
+        self.assertEqual(output_files, [])
+
+    def test_false_camera_activation_prevents_rendering(self):
+        lux = AllCameraRenderLux(["Front"])
+        lux.setCamera = lambda camera: False
+        kb.lux = lux
+        with self.assertRaisesRegex(RuntimeError, "select render camera.*returned false"):
+            kb.render({"outputPath": "render.png", "camera": "Front"}, [], [])
+        self.assertEqual(lux.render_calls, [])
+
+    def test_camera_selection_requires_supported_apis(self):
+        for missing_api in ("getCameras", "setCamera"):
+            with self.subTest(api=missing_api):
+                lux = AllCameraRenderLux(["Front"])
+                setattr(lux, missing_api, None)
+                kb.lux = lux
+                with self.assertRaisesRegex(RuntimeError, "Camera selection is unsupported"):
+                    kb.render({"outputPath": "render.png", "camera": "Front"}, [], [])
+                self.assertEqual(lux.render_calls, [])
+
+    def test_void_camera_setter_remains_compatible(self):
+        lux = AllCameraRenderLux(["Front"])
+        kb.lux = lux
+        kb.render({"outputPath": "render.png", "camera": "Front"}, [], [])
+        self.assertEqual(lux.current_camera, "Front")
+        self.assertEqual(len(lux.render_calls), 1)
+
     def test_applies_max_samples_through_render_options(self):
         lux = RenderLux()
         kb.lux = lux
