@@ -6,8 +6,8 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ### Internal Acceptance Fixes / 内部验收修复
 
-- Pin development-only Hono dependencies to patched releases. Keep unresolved dependency findings visible; this is not a zero-vulnerability acceptance claim.
-- 将仅用于开发测试的 Hono 依赖固定到安全修补版，保留尚未解决的依赖告警，不宣称已实现零漏洞验收。
+- Pin development-only Hono dependencies to patched releases without changing runtime dependencies or relaxing the audit gate.
+- 将仅用于开发测试的 Hono 依赖固定到修补版，不改变运行时依赖，也不放宽审计门禁。
 - Reject missing render cameras and failed camera activation before rendering, instead of silently rendering the active view. Preserve partial queue successes and return actionable camera errors.
 - 指定的渲染相机不存在或切换失败时停止该项，不静默改用当前视角出图；保留队列部分成功的文件，并返回明确的相机错误建议。
 - Preserve the canonical material preset name through the MCP tool and bridge result, without changing the actual material assignment or existing tool inputs.
