@@ -142,14 +142,15 @@ def render(payload, output_files, warnings):
 
     camera = payload.get("camera")
     if camera:
-        if hasattr(lux, "setCamera"):
-            call_variants(
-                "set camera",
-                lambda: lux.setCamera(camera),
-                lambda: lux.setCamera(str(camera)),
-            )
-        else:
-            warnings.append("Camera selection was requested, but lux.setCamera is not available.")
+        if not callable(getattr(lux, "getCameras", None)) or not callable(getattr(lux, "setCamera", None)):
+            raise RuntimeError("Camera selection is unsupported: lux.getCameras and lux.setCamera are required")
+        if camera not in camera_names():
+            raise RuntimeError("Camera not found: %s" % camera)
+        call_non_false_variants(
+            "select render camera",
+            lambda: lux.setCamera(camera),
+            lambda: lux.setCamera(str(camera)),
+        )
 
     width = payload.get("width") or 1920
     height = payload.get("height") or 1080

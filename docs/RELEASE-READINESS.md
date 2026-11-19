@@ -1,5 +1,16 @@
 # Release Readiness / 正式版验收
 
+## Latest Internal Check, 2026-11-19 / 最新内部检查
+
+See the [current internal acceptance record](INTERNAL-ACCEPTANCE.md) for published
+1.0.0 graphical-client evidence and unreleased source fixes. Functional regressions
+passed. The full dependency audit rerun found no advisories after GitHub withdrew
+the picomatch advisory. Refer to the pull request for remote checks.
+
+已发布 1.0.0 的客户端证据和未发布源码修复见[当前内部验收记录](INTERNAL-ACCEPTANCE.md)。
+功能回归通过。GitHub 撤回 picomatch 公告后，重跑完整依赖审计未发现告警。
+远端检查以 PR 结果为准。
+
 ## 0.13.5 Validation Record / 0.13.5 验证记录
 
 This batch consolidates output protection, publication privacy, bounded previews,

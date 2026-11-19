@@ -6,6 +6,22 @@ import {
 } from "../src/result.js";
 
 describe("localFailure", () => {
+  it.each([
+    ["Camera not found: Missing", "CAMERA_NOT_FOUND"],
+    [
+      "select render camera is unsupported or failed: returned false",
+      "CAMERA_SELECTION_FAILED",
+    ],
+  ])(
+    "explains camera failures without suggesting a fallback view: %s",
+    (error, code) => {
+      const result = localFailure(error);
+      expect(result.errorCode).toBe(code);
+      expect(result.outputFiles).toEqual([]);
+      expect(result.suggestions).toHaveLength(2);
+      expect(result.suggestions?.[1]).toMatch(/[\u4e00-\u9fff]/);
+    },
+  );
   it("explains invalid native material files without confusing them with missing files", () => {
     const result = localFailure(
       "Material file did not return any loaded material names: companion.mtl",

@@ -3,6 +3,8 @@ allowBuilds:
 onlyBuiltDependencies:
   - esbuild
 overrides:
+  '@hono/node-server': 2.1.6
+  hono: 4.13.16
   nanoid: 3.3.18
   postcss: 8.5.23
   qs: 6.16.1

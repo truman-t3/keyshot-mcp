@@ -49,6 +49,13 @@ describe("MCP tool registration", () => {
         content.text.indexOf("keyshot_preview_render"),
       );
       expect(content.text).toContain("preview the returned scene path again");
+      expect(content.text).toContain("same aspect ratio");
+      expect(content.text).toContain(
+        "existing-scene cameras are not automatically refitted",
+      );
+      expect(content.text).toContain("not that the client displayed it");
+      expect(content.text).toContain("never link a deleted temporary preview");
+      expect(content.text).toContain("预览前先确定最终宽高比");
       if (args.goal) expect(content.text).toContain(args.goal);
     }
   });

@@ -30,6 +30,7 @@
     "status": "node ./dist/cli/status.js",
     "smoke:keyshot": "tsc -p tsconfig.json && node ./scripts/keyshot-smoke.mjs",
     "smoke:keyshot:materials": "tsc -p tsconfig.json && node ./scripts/keyshot-material-smoke.mjs",
+    "smoke:keyshot:acceptance": "tsc -p tsconfig.json && node ./scripts/keyshot-acceptance-smoke.mjs",
     "smoke:keyshot:outputs": "tsc -p tsconfig.json && node ./scripts/keyshot-output-smoke.mjs"
   },
   "keywords": [
