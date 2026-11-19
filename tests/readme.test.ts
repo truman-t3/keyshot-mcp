@@ -19,7 +19,7 @@ describe("designer-facing README", () => {
     const header = source.split("## From a Request to a Render")[0];
     for (const label of [
       "npm version",
-      "npm total downloads: 3500+",
+      "npm total downloads: 5,000+",
       "CI status",
       "MIT License",
       "19 MCP tools",
@@ -35,7 +35,7 @@ describe("designer-facing README", () => {
       .map((match) => match[1])
       .filter((group) => /alt="(?:npm version|19 MCP tools)"/.test(group));
     expect(groups).toHaveLength(2);
-    expect(groups[0]).toContain('alt="npm total downloads: 3500+"');
+    expect(groups[0]).toContain('alt="npm total downloads: 5,000+"');
     expect(groups[1]).toContain('alt="KeyShot 14.1 tested"');
   });
 
@@ -58,13 +58,13 @@ describe("designer-facing README", () => {
   it("labels the cumulative download milestone with its cutoff and official source", () => {
     const header = source.split("## From a Request to a Render")[0];
     expect(header).toContain(
-      "https://img.shields.io/badge/npm%20downloads-3500%2B-00AEEF",
+      "https://img.shields.io/badge/npm%20downloads-5%2C000%2B-00AEEF",
     );
     expect(header).toContain(
-      "https://api.npmjs.org/downloads/point/2026-07-09:2026-10-20/keyshot-mcp",
+      "https://api.npmjs.org/downloads/point/2026-07-09:2026-11-17/keyshot-mcp",
     );
-    expect(header).toContain("Cumulative npm downloads as of 2026-10-20");
-    expect(header).toContain("npm 累计下载量，截至 2026-10-20");
+    expect(header).toContain("Cumulative npm downloads as of 2026-11-17");
+    expect(header).toContain("npm 累计下载量，截至 2026-11-17");
     expect(header).not.toMatch(/img\.shields\.io\/npm\/(?:dm|dt)\//);
   });
 
