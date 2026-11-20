@@ -14,7 +14,7 @@
 
 <p align="center">
   <a href="https://www.npmjs.com/package/keyshot-mcp"><img src="https://img.shields.io/npm/v/keyshot-mcp.svg?logo=npm&amp;logoColor=white" alt="npm version"></a>
-  <a href="https://api.npmjs.org/downloads/point/2026-07-09:2026-10-20/keyshot-mcp" title="Cumulative npm downloads as of 2026-10-20 / npm 累计下载量，截至 2026-10-20"><img src="https://img.shields.io/badge/npm%20downloads-3500%2B-00AEEF?logo=npm&amp;logoColor=white" alt="npm total downloads: 3500+"></a>
+  <a href="https://api.npmjs.org/downloads/point/2026-07-09:2026-11-17/keyshot-mcp" title="Cumulative npm downloads as of 2026-11-17 / npm 累计下载量，截至 2026-11-17"><img src="https://img.shields.io/badge/npm%20downloads-5%2C000%2B-00AEEF?logo=npm&amp;logoColor=white" alt="npm total downloads: 5,000+"></a>
   <a href="https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml"><img src="https://github.com/truman-t3/keyshot-mcp/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License"></a>
   <a href="https://m8ven.ai/mcp/truman-t3-keyshot-mcp-v7af97" title="M8ven external verification (live status) / M8ven 第三方验证（动态状态）"><img src="https://m8ven.ai/badge/mcp/truman-t3-keyshot-mcp-v7af97?variant=verified" alt="M8ven live verification"></a>
@@ -120,22 +120,21 @@ licensed KeyShot edition with headless scripting. **Windows 11 + KeyShot Studio
 2025 / KeyShot 14.1 is tested.** Other systems and KeyShot versions are not verified.
 KeyShot software, licenses and library assets are not included.
 
-<!-- release-version: 1.0.0 -->
+<!-- release-version: 1.0.1 -->
 
-**Version 1.0.0.** This release preserves 19 tools and adds corrected
-product framing and dependency patches. Core workflows were subsequently checked
-in two graphical clients; independent-user trials remain deferred. See the
-[current acceptance scope and remaining gates](docs/INTERNAL-ACCEPTANCE.md) and
-[historical release validation record](docs/RELEASE-READINESS.md). Unreleased source
-fixes are not yet included in the npm package.
-See [Changelog](CHANGELOG.md) and [upgrade notes](docs/UPGRADING.md).
+**Version 1.0.1** keeps all 19 tools, rejects invalid render-camera selections
+instead of silently using the active view, and returns the resolved material
+preset name. The preview guide explains how to preserve framing and check image
+display. Use the pinned commands below once [npm lists 1.0.1](https://www.npmjs.com/package/keyshot-mcp/v/1.0.1).
+See the [changelog](CHANGELOG.md), [upgrade notes](docs/UPGRADING.md) and
+[tested scope](docs/INTERNAL-ACCEPTANCE.md).
 
 #### Ask Your Agent to Install
 
 Send this to an Agent that can edit your client's MCP configuration:
 
 ```text
-Install KeyShot MCP 1.0.0 in my MCP client using npx -y keyshot-mcp@1.0.0.
+Install KeyShot MCP 1.0.1 in my MCP client using npx -y keyshot-mcp@1.0.1.
 Find the full path of my local keyshot_headless.exe and set KEYSHOT_HEADLESS_EXE.
 Keep the default Documents/KeyShot MCP Outputs folder and external outputs disabled.
 Use my client's configuration format, restart or reload it, and run keyshot_status.
@@ -154,7 +153,7 @@ and replace the executable path with the actual path on your computer.
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@1.0.0"],
+      "args": ["-y", "keyshot-mcp@1.0.1"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -169,7 +168,7 @@ the executable, output access, bridge, presets and a minimal KeyShot startup.
 <details>
 <summary>Global npm installation or source build</summary>
 
-**Global:** run `npm install -g keyshot-mcp@1.0.0`, then use `keyshot-mcp` as the
+**Global:** run `npm install -g keyshot-mcp@1.0.1`, then use `keyshot-mcp` as the
 client command with no `npx` arguments. Keep the same environment settings.
 
 **Source:**
@@ -407,18 +406,17 @@ Community conduct is covered by [Code of Conduct](CODE_OF_CONDUCT.md).
 KeyShot**。已实测 **Windows 11 + KeyShot Studio 2025 / KeyShot 14.1**；其他系统和
 KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方材质库。
 
-**版本 `1.0.0`：** 保留 19 个工具，包含取景修复
-及依赖安全修补。后续已在两款图形客户端检查核心流程，独立用户试用仍后置。
-当前范围与未完成门禁见[内部验收记录](docs/INTERNAL-ACCEPTANCE.md)，历史验证见
-[验收清单](docs/RELEASE-READINESS.md)；未发布的源码修复尚未进入 npm 包。
-版本变更见[更新记录](CHANGELOG.md)和[升级说明](docs/UPGRADING.md)。
+**版本 `1.0.1`：** 保留全部 19 个工具。指定的渲染相机无效时返回错误，不再改用当前视角；
+材质工具会返回解析后的预设名称。预览指南也补充了保持构图和确认图片显示的方法。
+[npm 上线 1.0.1](https://www.npmjs.com/package/keyshot-mcp/v/1.0.1) 后可使用下方安装命令。
+详见[更新记录](CHANGELOG.md)、[升级说明](docs/UPGRADING.md)和[实测范围](docs/INTERNAL-ACCEPTANCE.md)。
 
 #### 把安装交给 Agent
 
 将下面这段话发给能够修改客户端 MCP 配置的 Agent：
 
 ```text
-请用 npx -y keyshot-mcp@1.0.0 将 KeyShot MCP 安装到我的 MCP 客户端。
+请用 npx -y keyshot-mcp@1.0.1 将 KeyShot MCP 安装到我的 MCP 客户端。
 找到本机 keyshot_headless.exe 的完整路径，设置 KEYSHOT_HEADLESS_EXE。
 保留默认“文档/KeyShot MCP Outputs”输出目录，关闭外部输出。
 按这个客户端实际支持的格式配置，重启或重新加载后运行 keyshot_status。
@@ -437,7 +435,7 @@ KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方�
   "mcpServers": {
     "keyshot": {
       "command": "npx",
-      "args": ["-y", "keyshot-mcp@1.0.0"],
+      "args": ["-y", "keyshot-mcp@1.0.1"],
       "env": {
         "KEYSHOT_HEADLESS_EXE": "C:/Program Files/KeyShot Studio/bin/keyshot_headless.exe"
       }
@@ -452,7 +450,7 @@ KeyShot 版本尚未实机验证。项目不包含 KeyShot、许可证或官方�
 <details>
 <summary>全局 npm 安装或源码运行</summary>
 
-**全局安装：** 运行 `npm install -g keyshot-mcp@1.0.0`，客户端命令改成 `keyshot-mcp`，
+**全局安装：** 运行 `npm install -g keyshot-mcp@1.0.1`，客户端命令改成 `keyshot-mcp`，
 不再填写 `npx` 参数；环境变量保持一致。
 
 **源码运行：**

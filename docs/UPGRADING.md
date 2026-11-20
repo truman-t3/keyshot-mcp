@@ -1,5 +1,16 @@
 # Upgrading KeyShot MCP / KeyShot MCP 升级说明
 
+## 1.0.1 Upgrade / 1.0.1 升级
+
+Once npm lists `keyshot-mcp@1.0.1`, update the version in your existing MCP
+configuration, keep your environment settings, and restart the server. Run
+`keyshot_status` and preview a saved scene. No migration is needed. To roll back,
+restore the `keyshot-mcp@1.0.0` pin and restart.
+
+npm 上线 `keyshot-mcp@1.0.1` 后，更新已有 MCP 配置中的版本号，保留环境变量并重启服务。
+运行 `keyshot_status` 并预览已保存的场景。无需迁移；如需回退，将版本改回
+`keyshot-mcp@1.0.0` 并重启服务。
+
 ## 1.0.0 Upgrade / 1.0.0 升级
 
 1. Save the current MCP configuration and record its pinned npm version. Keep original scenes separate from outputs.

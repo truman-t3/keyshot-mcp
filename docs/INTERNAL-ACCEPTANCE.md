@@ -1,19 +1,20 @@
 # Internal Acceptance / 内部技术验收
 
-## Status, 2026-11-19 / 当前状态
+## Status, 2026-11-20 / 当前状态
 
 **Local functional regression and the refreshed full dependency audit passed.**
-Remote CI and graphical-client revalidation of this patch are separate checks.
-No advisory was muted and the CI audit gate remains enabled.
+[PR #46](https://github.com/truman-t3/keyshot-mcp/pull/46) and its merge into
+`main` passed Windows/Ubuntu CI on Node.js 20/24 and CodeQL. No advisory was
+muted; graphical-client revalidation remains separate.
 
-**本地功能回归和复查后的完整依赖审计均通过。** 远端 CI 和本批补丁的图形客户端复验
-属于独立检查。未忽略告警，CI 安全门禁保持开启。
+**本地功能回归和复查后的完整依赖审计均通过。** PR #46 及其合并后的 `main` 均通过
+Windows/Ubuntu × Node.js 20/24 CI 和 CodeQL。未忽略告警；图形客户端复验单独记录。
 
-The fixes described here are **unreleased source changes based on 1.0.0**, not an
-update already available in npm. Tested rendering scope: Windows 11, KeyShot
-14.1.0.154, Node.js 24.22.1. No new OS or KeyShot-version support is claimed.
+This record covers the source fixes prepared for 1.0.1, based on 1.0.0. Tested
+rendering scope: Windows 11, KeyShot 14.1.0.154, and Node.js 24.22.1.
+No new OS or KeyShot-version support is claimed.
 
-以下修复是**基于 1.0.0 的未发布源码变更**，不是 npm 已上线的更新。渲染实测范围为
+本记录覆盖为 1.0.1 准备的源码修复，基于 1.0.0。渲染实测范围为
 Windows 11、KeyShot 14.1.0.154、Node.js 24.22.1，不扩大系统或 KeyShot 版本支持声明。
 
 ## Fixes and Regression / 修复与回归

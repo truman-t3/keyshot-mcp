@@ -1,6 +1,6 @@
 {
   "name": "keyshot-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "mcpName": "io.github.truman-t3/keyshot-mcp",
   "description": "Local MCP server for KeyShot product visualization, scene editing, camera control, and rendering.",
   "type": "module",
