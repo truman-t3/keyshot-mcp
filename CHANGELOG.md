@@ -4,7 +4,9 @@ All notable changes to KeyShot MCP are documented in this file.
 
 ## [Unreleased]
 
-### Internal Acceptance Fixes / 内部验收修复
+## [1.0.1] - 2026-11-20
+
+### Render Reliability and Preview Guidance / 渲染可靠性与预览指引
 
 - Pin development-only Hono dependencies to patched releases without changing runtime dependencies or relaxing the audit gate.
 - 将仅用于开发测试的 Hono 依赖固定到修补版，不改变运行时依赖，也不放宽审计门禁。
@@ -14,6 +16,13 @@ All notable changes to KeyShot MCP are documented in this file.
 - 将解析后的材质预设名称传入 bridge 并保留在返回结果中，不改变材质赋值或现有工具输入。
 - Explain matching preview/final aspect ratios and distinguish MCP image delivery from actual client display. Document safe local PNG viewing without uploading images or linking deleted temporary files.
 - 补充预览与出图宽高比一致的要求，区分 MCP 图片返回和客户端实际显示，说明安全的本地 PNG 查看方式，不上传图片或链接已删除的临时文件。
+
+All 19 tools and existing inputs are preserved. Real rendering validation covers
+Windows 11 with KeyShot 14.1. Graphical-client revalidation of this patch and
+independent user trials were not performed.
+
+保留全部 19 个工具和现有输入。真实渲染的实测范围为 Windows 11 + KeyShot 14.1；
+本补丁未在图形客户端复验，也未进行独立用户试用。
 
 ## [1.0.0] - 2026-11-04
 
@@ -216,7 +225,8 @@ All notable changes to KeyShot MCP are documented in this file.
 
 - Documented that scene metadata and preview images may be sent by an MCP client to its configured model provider.
 
-[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/truman-t3/keyshot-mcp/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/truman-t3/keyshot-mcp/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.5...v1.0.0
 [0.13.5]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.1...v0.13.5
 [0.13.1]: https://github.com/truman-t3/keyshot-mcp/compare/v0.13.0...v0.13.1
